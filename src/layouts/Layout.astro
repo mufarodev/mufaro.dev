@@ -1,0 +1,52 @@
+---
+interface Props {
+	title: string;
+}
+
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Mufaro's portfolio" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body>
+    <slot />
+
+    <footer class="fixed bottom-10 left-[50%] translate-x-[-50%] text-center">
+      <div class="flex gap-4 text-white font-bold">
+        <p>
+          Discord ~ @mufaro
+        </p>
+        <p>
+          GitHub ~ @mufaroxyz
+        </p>
+      </div>
+      <span class="text-violet-400">Mufaro(c) mufaro.dev 2024</span>
+    </footer>
+	</body>
+</html>
+<style is:global>
+	html {
+		font-family: system-ui, sans-serif;
+    background: #1e1f21;
+	}
+	code {
+		font-family:
+			Menlo,
+			Monaco,
+			Lucida Console,
+			Liberation Mono,
+			DejaVu Sans Mono,
+			Bitstream Vera Sans Mono,
+			Courier New,
+			monospace;
+	}
+</style>
