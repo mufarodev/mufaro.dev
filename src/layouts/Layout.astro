@@ -3,42 +3,41 @@ interface Props {
 	title: string;
 }
 
-
 const { title } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="Mufaro's portfolio" />
-		<meta name="viewport" content="width=device-width" />
+    <meta charset="UTF-8" /> 
+    <meta name="description" content="Mufaro's portfolio" />
+    <meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body>
+	<body class="flex flex-col">
     <slot />
 
-    <footer class="fixed bottom-10 left-[50%] translate-x-[-50%] text-center">
-      <div class="flex gap-4 text-white font-bold">
+    <div class="flex flex-col items-center justify-center mb-4 font-bold">
+      <div class="flex flex-col sm:flex-row gap-1 sm:gap-4 text-text-foreground">
         <p>
-          Discord ~ @mufaro
+          Discord ~ <a href="https://discord.com/users/769702535124090904">@mufaro</a>
         </p>
         <p>
-          GitHub ~ @mufaroxyz
+          GitHub ~ <a href="https://github.com/mufaroxyz">@mufaroxyz</a>
         </p>
       </div>
-      <span class="text-violet-400">Mufaro(c) mufaro.dev 2024</span>
-    </footer>
+      <span class="text-theme-foreground">Mufaro(c) mufaro.dev 2024</span>
+    </div>
 	</body>
 </html>
 <style is:global>
 	html {
 		font-family: system-ui, sans-serif;
-    background: #1e1f21;
+    background: theme(colors.background);
 	}
-	code {
+  code {
 		font-family:
 			Menlo,
 			Monaco,
@@ -48,5 +47,20 @@ const { title } = Astro.props;
 			Bitstream Vera Sans Mono,
 			Courier New,
 			monospace;
-	}
+  }
+
+  html,
+  body {
+    min-height: 100svh;
+  }
+
+  a {
+    text-decoration-line: underline;
+    text-underline-offset: 0.25rem;
+    transition: color 0.1s ease-in-out;
+  
+    &:hover {
+      color: theme(colors.theme.foreground.secondary)
+    }
+  }
 </style>

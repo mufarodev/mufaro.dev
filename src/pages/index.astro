@@ -1,24 +1,16 @@
 ---
+import Card from '../components/Card.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Welcome to Astro.">
-	<main>
-    <h1>Welcome to <span class="text-gradient">Astro</span></h1>
-		<p class="instructions">
-			To get started, open the directory <code>src/pages</code> in your project.<br />
-			<strong>Code Challenge:</strong> Tweak the "Welcome to Astro" message above.
-		</p>
+<Layout title="Mufaro">
+  <main class="container space-y-4 m-auto px-4 sm:px-0 place-self-center text-text-foreground leading-4">
+    <div class="flex items-center gap-6 mb-10">
+      <img src="/alya.webp" alt="Profile Picture" class="w-14 h-14 rounded-lg"></img>
+      <h1 class="font-extrabold text-[1.8rem]">Mufaro</h1>
+    </div>
+    <Card class="min-h-28" title="About Me">
+      Hello world 
+    </Card>
 	</main>
 </Layout>
-
-<style>
-	main {
-		margin: auto;
-    width: 800px;
-    max-width: calc(100% - 2rem);
-		color: white;
-		font-size: 20px;
-		line-height: 1.6;
-	}
-</style>
