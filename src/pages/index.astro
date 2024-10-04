@@ -5,19 +5,39 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Mufaro">
   <main class="container space-y-4 m-auto px-4 sm:px-0 place-self-center text-text-foreground leading-4 ">
-    <div class="flex items-center gap-6 mb-10">
-      <img src="/alya.webp" alt="Profile Picture" class="w-14 h-14 rounded-lg"></img>
-      <h1 class="font-extrabold text-[1.8rem]">Mufaro</h1>
-    </div>
-    <div class="flex gap-2">
-      <div class="w-full">
-        <Card class="min-h-28" title="About Me">
-          I'm a self taught software developer mainly writing for the web.
-        </Card>
+    <div class="flex items-center gap-6 mb-10 ml-6">
+      <img src="/alya.webp" alt="Profile Picture" class="w-14 h-14 rounded-sm"></img>
+      <div class="flex self-stretch justify-center gap-2 flex-col">
+        <h1 class="font-bold text-[1.6rem] m-0 p-0">Mufaro</h1>
+        <p>software dev | polish | linux enjoyer</p>
       </div>
-      <Card class="min-h-28 w-48" title="Tech Stack">
-        Hello world 
+    </div>
+    <div class="space-y-6">
+
+      <Card title="about">
+        hi, i'm mufaro,  a self-taught software developer from Poland. I've started programming back in 2020. I'm currently learning rust and working on my personal projects. I'm also a linux user and a big fan of open-source software & free speech.
+      </Card>
+      
+      <Card title="technologies">
+        <ul class="list-disc list-inside grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-2">
+          <li>JavaScript / TypeScript</li>
+          <li>React / Svelte</li>
+          <li>Node.js / Bun</li>
+          <li>TailwindCSS</li>
+          <li>DiscordJS / Hono</li>
+          <li>Rust</li>
+        </ul>
+      </Card>
+  
+      <Card title="socials">
+       <ul class="list-none list-inside grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          <li><a href="https://github.com/mufaroxyz">github@mufaroxyz</a></li>
+          <li><a href="https://x.com/mufaro__xyz">twitter@mufaro__xyz</a></li>
+          <li><a href="https://discord.com/users/769702535124090904">discord@mufaro</a></li>
+          <li><a href="https://t.me/mufaroxyz">telegram@mufaroxyz</a></li>
+        </ul>
       </Card>
     </div>
-	</main>
+
+  </main>
 </Layout>
