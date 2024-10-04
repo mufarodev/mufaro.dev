@@ -4,13 +4,20 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Mufaro">
-  <main class="container space-y-4 m-auto px-4 sm:px-0 place-self-center text-text-foreground leading-4">
+  <main class="container space-y-4 m-auto px-4 sm:px-0 place-self-center text-text-foreground leading-4 ">
     <div class="flex items-center gap-6 mb-10">
       <img src="/alya.webp" alt="Profile Picture" class="w-14 h-14 rounded-lg"></img>
       <h1 class="font-extrabold text-[1.8rem]">Mufaro</h1>
     </div>
-    <Card class="min-h-28" title="About Me">
-      Hello world 
-    </Card>
+    <div class="flex gap-2">
+      <div class="w-full">
+        <Card class="min-h-28" title="About Me">
+          I'm a self taught software developer mainly writing for the web.
+        </Card>
+      </div>
+      <Card class="min-h-28 w-48" title="Tech Stack">
+        Hello world 
+      </Card>
+    </div>
 	</main>
 </Layout>

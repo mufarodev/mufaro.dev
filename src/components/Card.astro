@@ -1,12 +1,12 @@
 ---
-import clsx from "clsx";
+import { cn } from "../utils";
 
 const { class:className, title } = Astro.props;
 ---
 
-<div class={clsx("relative border-2 border-theme-foreground rounded-sm", className)}>
-  <span class="absolute bg-background px-4 py-1 translate-y-[-50%] left-4 select-none font-bold text-theme-foreground border-2 border-theme-foreground rounded-3xl">{title}</span>
-  <div class="mt-4 px-4 py-2">
+<div class={cn("relative border-2 border-theme-foreground rounded-sm", className)}>
+  <span class="absolute bg-background px-4 py-1 translate-y-[-50%] left-4 select-none font-bold text-theme-foreground border-2 border-theme-foreground rounded-lg">{title}</span>
+  <div class="mt-4 px-4 py-2 text-[1.2rem]">
     <slot />
   </div>
 </div>
