@@ -1,0 +1,45 @@
+---
+import { fade } from "astro:transitions";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Mufaro">
+  <main
+    class="container flex-1 flex flex-col m-auto space-y-8 my-6 px-4 py-0 md:py-0 lg:py-2 sm:px-6 max-w-6xl place-self-center text-text-foreground leading-4"
+  >
+    <div class="flex items-center gap-6 fixed">
+      <div class="flex items-center gap-6">
+        <img
+          src="/alya.webp"
+          alt="Profile Picture"
+          width={64}
+          height={64}
+          class="rounded-sm"
+          transition:name="profile"
+        />
+      </div>
+      <div class="flex items-center" transition:name="headerinfo">
+        <div>
+          <h1 class="font-black text-4xl m-0 p-0">Mufaro</h1>
+          <p class="font-medium">software dev | polish</p>
+        </div>
+        <ul
+          class="list-none hidden flex-col lg:flex-row gap-2 *:no-underline font-semibold"
+        >
+          <li>
+            [discord: <a href="https://discord.com/users/769702535124090904"
+              >mufaro</a
+            >]
+          </li>
+          <li>
+            [github: <a href="https://github.com/mufaroxyz">mufaroxyz</a>]
+          </li>
+          <li>[x: <a href="https://x.com/mufaro_dev">mufaro_dev</a>]</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex-1 grid place-content-center" transition:animate={fade({duration: 2.0})}>
+      Not much to see here, yet.
+    </div>
+  </main>
+</Layout>

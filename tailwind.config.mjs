@@ -7,8 +7,22 @@ export default {
         center: true,
       },
 
+      // old
+      // colors: {
+      //   background: "#1e1f21",
+      //   theme: {
+      //     foreground: {
+      //       DEFAULT: "#ded2e8",
+      //       secondary: "#9e89b8",
+      //     },
+      //   },
+      //   text: {
+      //     foreground: "#d4d4d4",
+      //   },
+      // },
+
       colors: {
-        background: "#1e1f21",
+        background: "#131313",
         theme: {
           foreground: {
             DEFAULT: "#ded2e8",
@@ -18,7 +32,7 @@ export default {
         text: {
           foreground: "#d4d4d4",
         },
-      },
+      }
     },
   },
   plugins: [],

@@ -1,0 +1,26 @@
+---
+const { url } = Astro.props;
+---
+
+<a id={`goto-${url}`} class="flex justify-between gap-4 bg-zinc-950 no-underline rounded-full w-fit px-6 py-3" href={url}>
+  <span class="text-sm tracking-widest font-bold uppercase"><slot /></span>
+</a>
+
+<style>
+    a, span {
+        transition: all 1.5s var(--smooth-animation);
+    }
+
+    a {
+        box-shadow: inset 0 -5px 10px rgba(158, 137, 184, 0.0);
+    }
+
+    a:hover {
+        @apply bg-zinc-900;
+        color: currentColor;
+        box-shadow: inset 0 -5px 10px rgba(158, 137, 184, 0.5);
+        & > span {
+            transform: translateY(-0.15rem);
+        }
+    }
+</style>
