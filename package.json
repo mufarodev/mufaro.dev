@@ -23,8 +23,8 @@
     "mini-svg-data-uri": "^1.4.4",
     "motion": "^11.16.4",
     "non.geist": "^1.0.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tailwind-merge": "^2.5.3",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2"
