@@ -1,0 +1,18 @@
+---
+import { cn } from "../utils";
+
+const { class:className, title } = Astro.props;
+---
+
+<div class={cn("relative my-2 border-t-[1px] border-dashed border-white rounded-sm", className)}>
+  <span class="absolute bg-background px-4 py-1 translate-y-[-50%] left-4 select-none font-bold text-theme-foreground border-[1px] border-dashed border-white rounded-sm">{title}</span>
+  <div class="mt-3 px-8 py-6 text-[1.2rem] leading-7 text-lg font-semibold">
+    <slot />
+  </div>
+</div>
+
+<style>
+  span {
+    font-family: "Geist Mono Variable", system-ui, sans-serif;
+  }
+</style>

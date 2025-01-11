@@ -1,76 +1,53 @@
 ---
-import Card from "../components/Card.astro";
-import SourceButton from "../components/SourceButton.astro";
+import DotBackgroundWrapper from "../components/DotBackgroundWrapper.astro";
+import Seperator from "../components/Seperator.astro";
 import Layout from "../layouts/Layout.astro";
-
 ---
 
 <Layout title="Mufaro">
-  <main
-    class="container space-y-8 m-auto px-4 py-24 md:py-16 lg:py-4 sm:px-6 max-w-6xl place-self-center text-text-foreground leading-4"
-  >
-    <div class="flex items-center gap-6">
-      <div class="flex items-center gap-6">
-        <img
-          src="/alya.webp"
-          alt="Profile Picture"
-          class="rounded-sm"
-          width={128}
-          height={128}
-          transition:name="profile"
-        />
-      </div>
-      <div class="flex self-stretch justify-around gap-2 flex-col" transition:name="headerinfo">
-        <div>
-          <h1 class="font-black text-4xl m-0 p-0">Mufaro</h1>
-          <p class="font-medium">software dev | polish</p>
+  <DotBackgroundWrapper>
+    <div
+      class="h-dvh mx-auto max-w-[52rem] w-full border-x border-white border-dashed"
+    >
+      <div class="flex items-center gap-6 text-white px-8 py-8">
+        <div class="flex items-center gap-6">
+          <img
+            src="/alya.webp"
+            alt="Profile Picture"
+            class="rounded-sm grayscale-[0.3]"
+            width={128}
+            height={128}
+            transition:name="profile"
+          />
         </div>
-        <ul
-          class="list-none flex flex-col lg:flex-row gap-2 *:no-underline font-semibold"
+        <div
+          class="flex self-stretch justify-around gap-2 flex-col"
+          transition:name="headerinfo"
         >
-          <li><a href="https://discord.com/users/769702535124090904">mufaro@discord</a></li>
-          <li><a href="https://github.com/mufaroxyz">mufaroxyz@github</a></li>
-          <li><a href="https://x.com/mufaro_dev">mufaro_dev@x</a></li>
-        </ul>
+          <div>
+            <h1 class="font-black text-4xl m-0 p-0">Mufaro</h1>
+            <p class="font-medium">17yo. software dev | polish</p>
+          </div>
+          <ul
+            class="list-none flex flex-col lg:flex-row gap-2 *:no-underline geist-mono"
+          >
+            <li>
+              <a href="https://discord.com/users/769702535124090904"
+                >mufaro@discord</a>
+            </li>
+            <li><a href="https://github.com/mufaroxyz">mufaroxyz@github</a></li>
+            <li><a href="https://x.com/mufaro_dev">mufaro_dev@x</a></li>
+          </ul>
+        </div>
       </div>
+      <Seperator title="About Me">
+        <p class="text-text-foreground font-normal geist-mono text-base">
+            hey, I'm mufaro, a self-taught software developer from Poland, interested
+            in programming since 2020. I'm a big fan of open-source software & free
+            speech. I'm currently trying out various tech such as 3D
+            modeling, rendering, motion graphics, and backend development.
+        </p>
+        </Seperator>
     </div>
-    <div class="space-y-6">
-      <Card title="about">
-        <span class="font-medium">
-          Hi, I'm mufaro, a self-taught software developer from Poland, interested
-          in programming since 2020. I'm a big fan of open-source software & free
-          speech. I'm currently trying out various technologies such as 3D
-          modeling, rendering, motion graphics, and backend development.
-        </span>
-      </Card>
-<!-- 
-      <Card title="knowledge">
-        <ul
-          class="list-disc list-inside grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2"
-        >
-          <li>typescript</li>
-        </ul>
-      </Card> -->
-
-      <SourceButton
-        url="/experience"
-        >Experience</SourceButton>
-      <!--
-      <Card title="contact">
-        <ul
-          class="list-none list-inside grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 *:no-underline"
-        >
-          <li>
-            [discord: <a href="https://discord.com/users/769702535124090904"
-              >mufaro</a
-            >]
-          </li>
-          <li>
-            [github: <a href="https://github.com/mufaroxyz">mufaroxyz</a>]
-          </li>
-          <li>[x: <a href="https://x.com/mufaro_dev">mufaro_dev</a>]</li>
-        </ul>
-      </Card> -->
-    </div>
-  </main>
+  </DotBackgroundWrapper>
 </Layout>
