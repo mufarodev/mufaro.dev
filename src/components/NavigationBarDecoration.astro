@@ -1,0 +1,64 @@
+---
+import { cn } from "../utils";
+
+const { class: className } = Astro.props;
+---
+
+<div class={cn("relative rounded-sm w-full", className)}>
+  <!-- outer part -->
+  <div
+    class="inset-x-0 inset-y-0 border-t-2 border-white h-0"
+    style="
+            mask-image: linear-gradient(to right, black 12.5%, transparent 12.5%, transparent 87.5%, black 87.5%);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            mask-mode: alpha;
+        "
+  >
+  </div>
+  <svg
+    class="absolute h-10 pb-[1px] fill-white transform -translate-y-[50%] -translate-x-[50%]"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+  >
+    <path d="M19 11H13V5H11V11H5V13H11V19H13V13H19V11Z"></path>
+  </svg>
+  <svg
+    class="absolute h-10 pb-[1px] right-0 fill-white transform -translate-y-[50%] translate-x-[50%]"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+  >
+    <path d="M19 11H13V5H11V11H5V13H11V19H13V13H19V11Z"></path>
+  </svg>
+  <div
+    class="absolute w-10 h-12 bg-transparent -translate-y-[50%] left-[12.4%] border-2 border-white rounded-l-lg"
+    style="
+            mask-image: linear-gradient(to right, black 12.5%, transparent 12.5%, transparent 100%, black 100%);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            mask-mode: alpha;
+        "
+  >
+  </div>
+  <div
+    class="absolute w-10 h-12 bg-transparent -translate-y-[50%] right-[12.4%] border-2 border-white rounded-r-lg"
+    style="
+        mask-image: linear-gradient(to left, black 12.5%, transparent 12.5%, transparent 100%, black 100%);
+        mask-size: 100% 100%;
+        mask-repeat: no-repeat;
+        mask-mode: alpha;
+    "
+  >
+  </div>
+  <div class="-translate-y-[50%] h-10 w-[72.5%] flex gap-10 justify-evenly mx-auto px-4">
+    <slot />
+  </div>
+</div>
+
+<style>
+  span {
+    font-family: "Geist Mono Variable", system-ui, sans-serif;
+  }
+</style>

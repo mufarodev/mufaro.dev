@@ -1,0 +1,19 @@
+---
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import MainContent from "../components/MainContent.astro";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Mufaro">
+  <main class="relative">
+    <MainContent>
+        <Header />
+        <div class="absolute flex flex-col gap-4 items-center justify-center w-full h-full pointer-events-none">
+            <p class="text-sm font-medium text-white opacity-90 geist-mono">There doesn't seem to be anything, yet.</p>
+            <img src="/ikuya-kita-laying.webp" class="h-24 grayscale-[100] opacity-30" alt="">
+        </div>
+    </MainContent>
+    <Footer />
+  </main>
+</Layout>

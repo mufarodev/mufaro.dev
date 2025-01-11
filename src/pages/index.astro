@@ -1,11 +1,11 @@
 ---
-import DotBackgroundWrapper from "../components/DotBackgroundWrapper.astro";
+import Footer from "../components/Footer.astro";
 import Seperator from "../components/Seperator.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Mufaro">
-  <DotBackgroundWrapper>
+  <main class="relative">
     <div
       class="h-dvh mx-auto max-w-[52rem] w-full border-x border-white border-dashed"
     >
@@ -21,33 +21,46 @@ import Layout from "../layouts/Layout.astro";
           />
         </div>
         <div
-          class="flex self-stretch justify-around gap-2 flex-col"
+          class="flex self-stretch justify-around gap-2 flex-col relative"
           transition:name="headerinfo"
+          transition:animate="fade"
         >
           <div>
             <h1 class="font-black text-4xl m-0 p-0">Mufaro</h1>
             <p class="font-medium">17yo. software dev | polish</p>
           </div>
+          <div class="h-10"></div>
           <ul
-            class="list-none flex flex-col lg:flex-row gap-2 *:no-underline geist-mono"
+            class="list-none flex flex-col lg:flex-row gap-2 *:no-underline geist-mono absolute bottom-2"
           >
             <li>
               <a href="https://discord.com/users/769702535124090904"
-                >mufaro@discord</a>
+                >mufaro@discord</a
+              >
             </li>
-            <li><a href="https://github.com/mufaroxyz">mufaroxyz@github</a></li>
+            <li>
+              <a href="https://github.com/mufaroxyz">mufaroxyz@github</a>
+            </li>
             <li><a href="https://x.com/mufaro_dev">mufaro_dev@x</a></li>
           </ul>
         </div>
       </div>
-      <Seperator title="About Me">
-        <p class="text-text-foreground font-normal geist-mono text-base">
-            hey, I'm mufaro, a self-taught software developer from Poland, interested
-            in programming since 2020. I'm a big fan of open-source software & free
-            speech. I'm currently trying out various tech such as 3D
-            modeling, rendering, motion graphics, and backend development.
-        </p>
+      <div class="space-y-6 pt-4">
+        <Seperator title="About Me">
+          <p class="text-text-foreground font-normal geist-mono text-base">
+            hey, I'm mufaro, a self-taught software developer from Poland,
+            interested in programming since 2020. I'm a big fan of open-source
+            software & free speech. I'm currently trying out various tech such
+            as 3D modeling, rendering, motion graphics, and backend development.
+          </p>
         </Seperator>
+        <Seperator title="Activity">
+          <p class="text-text-foreground font-normal geist-mono text-base">
+            Nothing here yet. (WIP)
+          </p>
+        </Seperator>
+      </div>
     </div>
-  </DotBackgroundWrapper>
+    <Footer />
+  </main>
 </Layout>

@@ -2,6 +2,7 @@
 import 'non.geist/mono';
 import 'non.geist'
 import { ClientRouter } from 'astro:transitions';
+import DotBackgroundWrapper from '../components/DotBackgroundWrapper.astro';
 
 interface Props {
 	title: string;
@@ -30,16 +31,29 @@ const { title } = Astro.props;
     <ClientRouter />
 	</head>
 	<body class="flex flex-col">
-    <slot />
+    <DotBackgroundWrapper>
+      <slot />
+    </DotBackgroundWrapper>
 
     <div class="fixed bottom-0 right-0 p-4 text-xs text-theme-foreground">
-      <span class="text-theme-foreground">© 2024 mufaroxyz</span>
+      <span class="text-theme-foreground">© 2025 mufaroxyz</span>
     </div>
 	</body>
 </html>
 <style is:global>
   :root {
     --smooth-animation: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes bump {
+    0% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
 	html {
@@ -63,15 +77,6 @@ const { title } = Astro.props;
     pointer-events: none;
   }
 
-  @keyframes backgroundScroll {
-    0% {
-      background-position: 0 0;
-    }
-    100% {
-      background-position: 0 100%;
-    }
-  }
-
   code {
 		font-family:
 			Menlo,
@@ -87,6 +92,7 @@ const { title } = Astro.props;
   html,
   body {
     min-height: 100svh;
+    overflow-x: hidden;
   }
 
   a {

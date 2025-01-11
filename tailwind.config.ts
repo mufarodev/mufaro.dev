@@ -1,7 +1,7 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
- 
+
 const svgToDataUri = require("mini-svg-data-uri");
- 
+
 const colors = require("tailwindcss/colors");
 const {
   default: flattenColorPalette,
@@ -36,12 +36,16 @@ export default {
           foreground: {
             DEFAULT: "#ded2e8",
             secondary: "#9e89b8",
+            contrast: "#7e5bab"
           },
         },
         text: {
           foreground: "#d4d4d4",
         },
-      }
+      },
+      animation: {
+        pulse: "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
     },
   },
   plugins: [
@@ -76,7 +80,7 @@ function addVariablesForColors({ addBase, theme }: any) {
   let newVars = Object.fromEntries(
     Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
   );
- 
+
   addBase({
     ":root": newVars,
   });

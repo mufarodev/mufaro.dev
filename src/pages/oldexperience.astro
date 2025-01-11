@@ -1,0 +1,89 @@
+---
+import { fade } from "astro:transitions";
+import Layout from "../layouts/Layout.astro";
+import { getExperience } from "../content/experience";
+
+const experience = await getExperience();
+---
+
+<Layout title="Mufaro">
+  <main
+    class="container flex-1 flex flex-col m-auto space-y-32 my-6 px-4 py-0 md:py-0 lg:py-2 sm:px-6 max-w-6xl place-self-center text-text-foreground leading-4"
+  >
+    <div class="flex items-center gap-6 fixed">
+      <div class="flex items-center gap-6">
+        <img
+          src="/alya.webp"
+          alt="Profile Picture"
+          width={64}
+          height={64}
+          class="rounded-sm"
+          transition:name="profile"
+        />
+      </div>
+      <div class="flex items-center" transition:name="headerinfo">
+        <div>
+          <h1 class="font-black text-4xl m-0 p-0">Mufaro</h1>
+          <p class="font-medium">software dev | polish</p>
+        </div>
+        <ul
+          class="list-none hidden flex-col lg:flex-row gap-2 *:no-underline font-semibold"
+        >
+          <li>
+            [discord: <a href="https://discord.com/users/769702535124090904"
+              >mufaro</a
+            >]
+          </li>
+          <li>
+            [github: <a href="https://github.com/mufaroxyz">mufaroxyz</a>]
+          </li>
+          <li>[x: <a href="https://x.com/mufaro_dev">mufaro_dev</a>]</li>
+        </ul>
+      </div>
+    </div>
+    <div
+      class="h-full grid w-7xl max-w-7xl place-content-center"
+      transition:animate={fade({ duration: 2.0 })}
+    >
+      {
+        experience.map((exp) => (
+          <a
+            href={exp.slug}
+            class="h-64 w-screen px-6 lg:w-[48rem] lg:max-w-3xl bg-stone-800 rounded-md *:no-underline"
+          >
+            <div class="flex flex-col gap-2 bg-background-foreground rounded-md relative">
+              <div
+                style={`background-image: url(${exp.data.heroImage})`}
+                class="relative flex rounded-tl-md rounded-tr-md h-40 w-full object-cover exp"
+              >
+                <div class="absolute bottom-0 left-0 w-full p-4">
+                  <h2 class="text-white font-bold text-2xl">
+                    {exp.data.company}
+                  </h2>
+                </div>
+              </div>
+              <div class="p-4 ">
+                <p class="text-sm no-underline">{exp.data.title}</p>
+              </div>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .exp {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    border-image-source: linear-gradient(
+      0deg,
+      rgb(10, 10, 10, 0.8) 0%,
+      rgb(10, 10, 10, 0.8) 100%
+    );
+    border-image-slice: fill 1 !important;
+  }
+</style>

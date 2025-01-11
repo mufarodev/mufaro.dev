@@ -1,0 +1,25 @@
+---
+import { HoverBorderGradient } from "./HoverBorderGradient";
+
+const routeString = {
+  Experience: "/experience",
+  Projects: "/projects",
+  Blog: "/blog",
+};
+---
+
+{
+  Object.entries(routeString).map(([routeName, routePath]) => (
+    <a href={routePath} class="no-underline w-full h-full">
+      <HoverBorderGradient
+        client:load
+        client:only="react"
+        containerClassName="rounded-lg border-none w-full h-full"
+        as="button"
+        className="bg-black text-white flex items-center justify-center space-x-2 w-full"
+      >
+        <span class="geist-mono">{routeName}</span>
+      </HoverBorderGradient>
+    </a>
+  ))
+}
