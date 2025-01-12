@@ -32,12 +32,14 @@ const card = {
 }
 
 export function ExperienceList({ experiences }: ExperienceListProps) {
+  console.log(experiences)
+
   return (
     <motion.div 
       variants={container}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 gap-4 px-6"
+      className="grid grid-cols-1 gap-4 px-6 overflow-y-auto"
     >
       {experiences.map((experience) => {
         const data = experience.data;
@@ -65,7 +67,8 @@ export function ExperienceList({ experiences }: ExperienceListProps) {
                 </h2>
                 {data.flag ? (
                   <span
-                    className={`px-2 bg-theme-foreground-secondary rounded-sm uppercase font-semibold text-xs text-black`}
+                    className={cn(`px-2 rounded-sm uppercase font-semibold text-xs text-black`, data.flagColor ? null : "bg-theme-foreground-secondary")}
+                    style={data.flagColor ? { backgroundColor: `#${data.flagColor}` } : {}}
                   >
                     {data.flag}
                   </span>
@@ -78,7 +81,7 @@ export function ExperienceList({ experiences }: ExperienceListProps) {
                 {data.shortDescription}
               </p>
               <p className="text-[0.7rem] text-white opacity-50">
-                {data.startDate} - {data.endDate}
+                {data.startDate} {data.endDate ? ` - ${data.endDate}` : ""}
               </p>
             </div>
             <img
@@ -89,6 +92,8 @@ export function ExperienceList({ experiences }: ExperienceListProps) {
           </motion.div>
         );
       })}
+      {/* blank space */}
+      <div className="h-32"></div>
     </motion.div>
   );
 }

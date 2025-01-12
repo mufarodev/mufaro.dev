@@ -35,6 +35,9 @@ const { title } = Astro.props;
       <slot />
     </DotBackgroundWrapper>
 
+    <div class="fixed top-0 left-[50%] -translate-x-[50%] text-base text-yellow-500 font-bold lg:hidden">
+      <span class="text-yellow-300">! Mobile support WIP !</span>
+    </div>
     <div class="fixed bottom-0 right-0 p-4 text-xs text-theme-foreground">
       <span class="text-theme-foreground">© 2025 mufaroxyz</span>
     </div>
@@ -60,6 +63,23 @@ const { title } = Astro.props;
     font-family: "Geist Variable", system-ui, sans-serif;
     background: theme(colors.background);
 	}
+
+  ::selection {
+    background: theme(colors.theme.foreground.secondary);
+  }
+
+  ::-moz-selection {
+    background: theme(colors.theme.foreground.secondary);
+  }
+
+  ::-webkit-scrollbar {
+    width: 0.4rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: theme(colors.background);
+    border-radius: 0.25rem;
+  }
 
   .geist-mono {
     font-family: "Geist Mono Variable", system-ui, sans-serif;

@@ -8,7 +8,7 @@ const experienceSchema = z.object({
     flagColor: z.string().default(""),
     heroImage: z.string(),
     startDate: z.string(),
-    endDate: z.string(),
+    endDate: z.string().default(""),
     company: z.string(),
     position: z.string(),
 });

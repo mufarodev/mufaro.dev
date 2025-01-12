@@ -4,7 +4,7 @@ import { cn } from "../utils";
 const { class: className } = Astro.props;
 ---
 
-<div class={cn("relative rounded-sm w-full", className)}>
+<div class={cn("relative rounded-sm w-full z-50", className)}>
   <!-- outer part -->
   <div
     class="inset-x-0 inset-y-0 border-t-2 border-white h-0"

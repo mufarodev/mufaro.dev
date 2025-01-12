@@ -6,7 +6,9 @@ import MainContent from "../components/MainContent.astro";
 import { getExperience } from "../content/experience";
 import Layout from "../layouts/Layout.astro";
 
-const experience = (await getExperience()).sort((a, b) => +b.data.startDate.valueOf().split(" ").at(-1)! - +a.data.startDate.valueOf().split(" ").at(-1)!);
+const experience = (await getExperience())
+  // @ts-ignore
+  .sort((a, b) => new Date(b.data.startDate) - new Date(a.data.startDate));
 ---
 
 <Layout title="Mufaro">
