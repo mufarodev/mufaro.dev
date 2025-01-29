@@ -1,11 +1,12 @@
 ---
-import 'non.geist/mono';
-import 'non.geist'
-import { ClientRouter } from 'astro:transitions';
-import DotBackgroundWrapper from '../components/DotBackgroundWrapper.astro';
+import "non.geist/mono";
+import "non.geist";
+import '../components/tw.css'
+import { ClientRouter } from "astro:transitions";
+import DotBackgroundWrapper from "../components/DotBackgroundWrapper.astro";
 
 interface Props {
-	title: string;
+  title: string;
 }
 
 const { title } = Astro.props;
@@ -13,35 +14,46 @@ const { title } = Astro.props;
 
 <!doctype html>
 <html lang="en">
-	<head>
-    <meta charset="UTF-8" /> 
+  <head>
+    <meta charset="UTF-8" />
     <meta name="description" content="Mufaro's portfolio" />
-    <meta name="keywords" content="mufaro, mufaroxyz, software, developer, portfolio, projects, oss, typescript" />
+    <meta
+      name="keywords"
+      content="mufaro, mufaroxyz, software, developer, portfolio, projects, oss, typescript"
+    />
     <meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
-    <meta property="og:title" content={`Mufaro ${title.toLowerCase() != "mufaro" ? title : ""}`} />
+    <meta
+      property="og:title"
+      content={`Mufaro ${title.toLowerCase() != "mufaro" ? title : ""}`}
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://mufaro.dev" />
     <meta property="og:image" content="https://mufaro.dev/alya.webp" />
-    <meta property="og:description" content="self-taught software developer from Poland. OSS enthusiast" />
-    <meta name="theme-color" content="#ded2e8">
-    <meta name="twitter:card" content="summary_large_image">
-		<title>{title}</title>
+    <meta
+      property="og:description"
+      content="self-taught software developer from Poland. OSS enthusiast"
+    />
+    <meta name="theme-color" content="#ded2e8" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>{title}</title>
     <ClientRouter />
-	</head>
-	<body class="flex flex-col">
+  </head>
+  <body class="flex flex-col">
     <DotBackgroundWrapper>
       <slot />
     </DotBackgroundWrapper>
 
-    <div class="fixed top-0 left-[50%] -translate-x-[50%] text-base text-yellow-500 font-bold lg:hidden">
+    <div
+      class="fixed top-0 left-[50%] -translate-x-[50%] text-base text-yellow-500 font-bold lg:hidden"
+    >
       <span class="text-yellow-300">! Mobile support WIP !</span>
     </div>
     <div class="fixed bottom-0 right-0 p-4 text-xs text-theme-foreground">
       <span class="text-theme-foreground">© 2025 mufaroxyz</span>
     </div>
-	</body>
+  </body>
 </html>
 <style is:global>
   :root {
@@ -58,11 +70,11 @@ const { title } = Astro.props;
       transform: translateY(0);
     }
   }
-  
-	html {
+
+  html {
     font-family: "Geist Variable", system-ui, sans-serif;
     background: theme(colors.background);
-	}
+  }
 
   ::selection {
     background: theme(colors.theme.foreground.secondary);
@@ -98,15 +110,15 @@ const { title } = Astro.props;
   }
 
   code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
+    font-family:
+      Menlo,
+      Monaco,
+      Lucida Console,
+      Liberation Mono,
+      DejaVu Sans Mono,
+      Bitstream Vera Sans Mono,
+      Courier New,
+      monospace;
   }
 
   html,
@@ -119,9 +131,11 @@ const { title } = Astro.props;
     text-decoration-line: underline;
     text-underline-offset: 0.25rem;
     transition: color 0.1s ease-in-out;
-  
+
     &:hover {
-      color: theme(colors.theme.foreground.secondary)
+      color: theme(colors.theme.foreground.secondary);
     }
   }
+
+
 </style>

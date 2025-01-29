@@ -1,13 +1,15 @@
 ---
+import ActivityIsland from "../components/ActivityIsland.astro";
 import Footer from "../components/Footer.astro";
 import Seperator from "../components/Seperator.astro";
 import Layout from "../layouts/Layout.astro";
+import {ActivityDisplayFallback} from "../components/ActivityDisplayFallback";
 ---
 
 <Layout title="Mufaro">
   <main class="relative">
     <div
-      class="h-dvh mx-auto max-w-[52rem] w-full border-x border-white border-dashed"
+      class="h-dvh mx-auto max-w-[52rem] w-full border-x border-white border-dashed overflow-y-auto"
     >
       <div class="flex items-center gap-6 text-white px-8 py-8">
         <div class="flex items-center gap-6">
@@ -54,10 +56,13 @@ import Layout from "../layouts/Layout.astro";
             as 3D modeling, rendering, motion graphics, and backend development.
           </p>
         </Seperator>
-        <Seperator title="Activity">
-          <p class="text-text-foreground font-normal geist-mono text-base">
-            Nothing here yet. (WIP)
-          </p>
+        <Seperator title="Activity (WIP)" class="px-0 pb-24">
+          <ActivityIsland server:defer>
+            <!-- <p class="text-text-foreground font-normal geist-mono text-base" slot="fallback">
+              Loading...
+            </p> -->
+            <ActivityDisplayFallback slot="fallback" />
+          </ActivityIsland>          
         </Seperator>
       </div>
     </div>
