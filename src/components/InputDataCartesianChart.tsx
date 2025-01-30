@@ -99,7 +99,7 @@ export function InputDataCartesianChart({ data }: InputDataCartesianChartProps) 
     console.log(new Date(normalizedData[0].snapshot_time).getTime());
 
     return (
-        <ChartContainer config={chartConfig} className="max-h-[250px] w-full">
+        <ChartContainer config={chartConfig} className="max-h-[250px] w-full [&_.recharts-text]:fill-theme-foreground-secondary">
             <LineChart
                 accessibilityLayer
                 data={mergedData}
@@ -108,18 +108,25 @@ export function InputDataCartesianChart({ data }: InputDataCartesianChartProps) 
                     right: 12,
                 }}
             >
-                <CartesianGrid vertical={false} />
+                <CartesianGrid
+                    strokeDasharray="2 2"
+                    vertical={false}
+                    className="stroke-theme-foreground-secondary/40"
+                />
                 <XAxis
                     dataKey={"snapshot_time"}
                     tickLine={false}
                     axisLine={false}
+                    interval={5}
+                    className="[&_.recharts-cartesian-axis-tick-value]:!fill-theme-foreground/80"
                     tickMargin={8}
                     tickFormatter={(value) => new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 />
                 <YAxis
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
+                    tickMargin={10}
+                    className="[&_.recharts-cartesian-axis-tick-value]:!fill-theme-foreground/80"
                     allowDecimals={false}
                 />
                 <ChartTooltip 
@@ -129,28 +136,28 @@ export function InputDataCartesianChart({ data }: InputDataCartesianChartProps) 
                 <Line
                     dataKey="totalMouseDistance"
                     type="monotone"
-                    stroke="#fff"
+                    stroke="#74c7ec"
                     strokeWidth={2}
                     dot={false}
                 />
                 <Line
                     dataKey="rightClicks"
                     type="monotone"
-                    stroke="#f56565"
+                    stroke="#f9e2af"
                     strokeWidth={2}
                     dot={false}
                 />
                 <Line
                     dataKey="leftClicks"
                     type="monotone"
-                    stroke="#48bb78"
+                    stroke="#cba6f7"
                     strokeWidth={2}
                     dot={false}
                 />
                 <Line
                     dataKey="keyboard_presses"
                     type="monotone"
-                    stroke="#a0aec0"
+                    stroke="#a6e3a1"
                     strokeWidth={2}
                     dot={false}
                 />

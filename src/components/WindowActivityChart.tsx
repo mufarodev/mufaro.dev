@@ -86,7 +86,8 @@ export function WindowActivityChart({ data }: WindowActivityChartProps) {
 
     return (<div className="flex items-center min-h-[350px]">
         <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px] w-full pb-0 [&_.recharts-pie-label-text]:fill-text-foreground">
-            <PieChart>
+            <PieChart
+            >
                 <ChartTooltip 
                     content={<ChartTooltipContent hideLabel color="#9e89b8" />} 
                 />
@@ -101,6 +102,8 @@ export function WindowActivityChart({ data }: WindowActivityChartProps) {
                     data={chartData}
                     dataKey="time"
                     nameKey="activity"
+                    startAngle={-270}
+                    endAngle={90}
                     label={(props) => renderActiveShape(props, chartConfig[props.name as keyof typeof chartConfig].label)}
                     innerRadius={40}
                     outerRadius={80}>

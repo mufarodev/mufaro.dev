@@ -3,14 +3,13 @@ import ActivityIsland from "../components/ActivityIsland.astro";
 import Footer from "../components/Footer.astro";
 import Seperator from "../components/Seperator.astro";
 import Layout from "../layouts/Layout.astro";
-import {ActivityDisplayFallback} from "../components/ActivityDisplayFallback";
+import { ActivityDisplayFallback } from "../components/ActivityDisplayFallback";
+import MainContent from "../components/MainContent.astro";
 ---
 
 <Layout title="Mufaro">
   <main class="relative">
-    <div
-      class="h-dvh mx-auto max-w-[52rem] w-full border-x border-white border-dashed overflow-y-auto"
-    >
+    <MainContent>
       <div class="flex items-center gap-6 text-white px-8 py-8">
         <div class="flex items-center gap-6">
           <img
@@ -47,7 +46,7 @@ import {ActivityDisplayFallback} from "../components/ActivityDisplayFallback";
           </ul>
         </div>
       </div>
-      <div class="space-y-6 pt-4">
+      <div class="space-y-6 pt-4 overflow-y-auto">
         <Seperator title="About Me">
           <p class="text-text-foreground font-normal geist-mono text-base">
             hey, I'm mufaro, a self-taught software developer from Poland,
@@ -56,16 +55,13 @@ import {ActivityDisplayFallback} from "../components/ActivityDisplayFallback";
             as 3D modeling, rendering, motion graphics, and backend development.
           </p>
         </Seperator>
-        <Seperator title="Activity (WIP)" class="px-0 pb-24">
+        <Seperator title="Activity (WIP)" class="px-0 pb-40">
           <ActivityIsland server:defer>
-            <!-- <p class="text-text-foreground font-normal geist-mono text-base" slot="fallback">
-              Loading...
-            </p> -->
             <ActivityDisplayFallback slot="fallback" />
-          </ActivityIsland>          
+          </ActivityIsland>
         </Seperator>
       </div>
-    </div>
+    </MainContent>
     <Footer />
   </main>
 </Layout>

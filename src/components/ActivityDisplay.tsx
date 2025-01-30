@@ -32,18 +32,18 @@ export function ActivityDisplay({ activity, totalActivity }: ActivityDisplayProp
                 </div>
                 <div className="space-y-1">
                     <div className="text-sm geist-mono text-theme-foreground opacity-90">Left Clicks</div>
-                    <div className="text-text-foreground text-3xl">{abbreviateNumber(totalActivity.mouse_activity.leftClicks)}</div>
+                    <div className="text-text-foreground geist-mono text-3xl">{abbreviateNumber(totalActivity.mouse_activity.leftClicks)}</div>
                 </div>
                 <div className="space-y-1">
                     <div className="text-sm geist-mono text-theme-foreground opacity-90">Right Clicks</div>
-                    <div className="text-text-foreground text-3xl">{abbreviateNumber(totalActivity.mouse_activity.rightClicks)}</div>
+                    <div className="text-text-foreground geist-mono text-3xl">{abbreviateNumber(totalActivity.mouse_activity.rightClicks)}</div>
                 </div>
                 <div className="space-y-1">
                     <div className="text-sm geist-mono text-theme-foreground opacity-90">Keypresses</div>
-                    <div className="text-text-foreground text-3xl">{abbreviateNumber(totalActivity.keyboard_presses)}</div>
+                    <div className="text-text-foreground geist-mono text-3xl">{abbreviateNumber(totalActivity.keyboard_presses)}</div>
                 </div>
             </div>
-            <div className="w-full max-h-[300px] pr-4">
+            <div className="w-full max-h-[300px] pr-4 pt-4">
                 <InputDataCartesianChart data={activity} />
             </div>
         </div>
