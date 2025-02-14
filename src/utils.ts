@@ -18,6 +18,18 @@ export function parseActivityTrack(data: DatabaseQueryResponse) {
 }
 
 export function computeTotalActivityTrack(data: ActivityTrack[]): ActivityTrack {
+  if (data.length === 0) return {
+    id: 0,
+    snapshot_time: 0,
+    mouse_activity: {
+      totalMouseDistance: 0,
+      rightClicks: 0,
+      leftClicks: 0
+    },
+    keyboard_presses: 0,
+    window_activity: []
+  }
+  
   return data.reduce((acc, curr) => ({
     id: 0,
     snapshot_time: 0,

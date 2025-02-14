@@ -2,39 +2,44 @@
 import { checkDb, query } from "../cloudflare";
 import { parseActivityTrack, computeTotalActivityTrack } from "../utils";
 import { ActivityDisplay } from "./ActivityDisplay";
+import { type ActivityTrack } from "../types";
+import { ActivityDisplayError } from "./ActivityDisplayError";
 
 const { env } = Astro.locals.runtime;
 checkDb(env);
 
-
 const activityData = await query(
   env,
-  `SELECT * FROM activity WHERE snapshot_time > ${Math.floor(Date.now()/1000) - 24*60*60} ORDER BY snapshot_time`
+  `SELECT * FROM activity WHERE snapshot_time > ${Math.floor(Date.now() / 1000) - 24 * 60 * 60} ORDER BY snapshot_time`,
 );
 
 const activityTrack = parseActivityTrack(activityData);
 const totalActivity = computeTotalActivityTrack(activityTrack);
 
-const mergedActivities = totalActivity.window_activity.reduce<typeof totalActivity.window_activity>((acc, curr) => {
-  const existing = acc.find(item => item.activity === curr.activity);
-  if (existing) {
-    existing.time += curr.time;
-  } else {
-    acc.push({ ...curr });
-  }
-  return acc;
-}, []).filter((activity) => activity.time > 0);
+const mergedActivities = totalActivity.window_activity
+  .reduce<typeof totalActivity.window_activity>((acc, curr) => {
+    const existing = acc.find((item) => item.activity === curr.activity);
+    if (existing) {
+      existing.time += curr.time;
+    } else {
+      acc.push({ ...curr });
+    }
+    return acc;
+  }, [])
+  .filter((activity) => activity.time > 0);
 
 totalActivity.window_activity = mergedActivities.map((activity) => {
   return {
     ...activity,
     fill: "rgba(255, 99, 132, 0.2)",
-};
+  };
 });
 ---
 
-<ActivityDisplay
+{totalActivity.window_activity.length > 0 ? 
+  <ActivityDisplay
     client:load
     client:only="React"
-    activity={activityTrack} {totalActivity} 
-/>
+    activity={activityTrack}
+    {totalActivity}
+  /> : <ActivityDisplayError /> }
