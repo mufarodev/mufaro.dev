@@ -1,10 +1,13 @@
 ---
+import NavigationBar from "./NavigationBar.astro";
 import NavigationBarDecoration from "./NavigationBarDecoration.astro";
 import NavigationBarRoutes from "./NavigationBarRoutes.astro";
 ---
 
-<div class="absolute w-full bottom-0">
-    <NavigationBarDecoration>
-      <NavigationBarRoutes />
-    </NavigationBarDecoration>
+<footer class="relative w-full py-12">
+  <NavigationBar />
+  
+  <div class="max-w-5xl mx-auto px-4 pt-8 pb-4 text-center text-white/40 text-sm">
+    <p>© {new Date().getFullYear()} mufaro • Built with Astro</p>
   </div>
+</footer>
