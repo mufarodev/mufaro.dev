@@ -1,6 +1,6 @@
 import { Cell, Label, LabelList, Pie, PieChart, PolarAngleAxis, PolarGrid, Radar, RadarChart, Sector, type PieLabel } from "recharts"
-import type { WindowActivity } from "../types"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "./Charts"
+import type { WindowActivity } from "../../types"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "../ui/charts"
 import type { JSX } from "astro/jsx-runtime"
 
 type WindowActivityChartProps = {

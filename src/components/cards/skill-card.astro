@@ -1,0 +1,63 @@
+---
+import Award from "../icons/Award.astro";
+---
+
+<div
+  class="backdrop-blur-md bg-black/10 border border-white/10 rounded-xl p-6 transition-all duration-300 relative overflow-hidden"
+>
+  <!-- inner gradient -->
+  <!-- <div
+    class="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-white/5 pointer-events-none opacity-30"
+  >
+  </div> -->
+
+  <!-- grain -->
+  <div
+    class="absolute inset-0 opacity-[0.1] pointer-events-none"
+    style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMSAwIDAgMCAwIDEgMCAwIDAgMCAxIDAgMCAwIDAuNSAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==');"
+  >
+  </div>
+
+  <div class="relative z-10">
+    <h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-white">
+      <Award size="20" class="text-indigo-400 stroke-[3px]" />
+      Skills
+    </h3>
+    <div class="flex flex-wrap gap-2 mt-3">
+      <span
+        class="px-3 py-1.5 bg-white/10 rounded-full text-xs text-white border border-white/5 hover:border-indigo-500/40 transition-colors"
+      >
+        TypeScript
+      </span>
+      <span
+        class="px-3 py-1.5 bg-white/10 rounded-full text-xs text-white border border-white/5 hover:border-indigo-500/40 transition-colors"
+      >
+        React
+      </span>
+      <span
+        class="px-3 py-1.5 bg-white/10 rounded-full text-xs text-white border border-white/5 hover:border-indigo-500/40 transition-colors"
+      >
+        Svelte
+      </span>
+      <span
+        class="px-3 py-1.5 bg-white/10 rounded-full text-xs text-white border border-white/5 hover:border-indigo-500/40 transition-colors"
+      >
+        Astro
+      </span>
+      <span
+        class="px-3 py-1.5 bg-white/10 rounded-full text-xs text-white border border-white/5 hover:border-indigo-500/40 transition-colors"
+      >
+        Docker
+      </span>
+      <span
+        class="px-3 py-1.5 bg-white/10 rounded-full text-xs text-white border border-white/5 hover:border-indigo-500/40 transition-colors"
+      >
+        Postgres
+      </span>
+    </div>
+  </div>
+  <div
+    class="element-glow absolute inset-0 rounded-lg mask-border pointer-events-none"
+  >
+  </div>
+</div>

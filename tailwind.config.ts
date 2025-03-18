@@ -45,6 +45,10 @@ export default {
       },
       animation: {
         pulse: "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        'smooth-in': "smooth-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        'smooth-out': "smooth-out 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards",
+        'spring': "spring 1s cubic-bezier(0.25, 1, 0.5, 1) forwards",
+        'bounce': "bounce 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards",
       },
     },
   },

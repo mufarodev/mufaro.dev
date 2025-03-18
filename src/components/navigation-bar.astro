@@ -1,5 +1,5 @@
 ---
-import { cn } from "../utils";
+import { cn } from "../util";
 
 const routes = [
   { name: "Home", path: "/" },
@@ -12,7 +12,7 @@ const currentPath = Astro.url.pathname;
 ---
 
 <!-- i absolutely hate pseudo element effects -->
-<div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-auto">
+<div class="fixed bottom-8 md:top-8 md:bottom-full left-1/2 transform -translate-x-1/2 z-50 w-auto">
   <div class="relative">
     <!-- glow -->
     <div
@@ -34,7 +34,7 @@ const currentPath = Astro.url.pathname;
 
       <div
         id="nav-indicator"
-        class="absolute top-1/2 -translate-y-1/2 h-[calc(100%-10px)] backdrop-blur-sm border-2 border-white/10 rounded-full transition-all duration-300 ease-out"
+        class="absolute top-1/2 -translate-y-1/2 h-[calc(100%-10px)] backdrop-blur-sm border-2 border-white/10 rounded-full"
       >
         <!-- gradient border -->
         <div
@@ -158,10 +158,8 @@ const currentPath = Astro.url.pathname;
       "nav-indicator",
     ) as HTMLDivElement;
     if (indicator) {
-      setTimeout(() => {
-        indicator.style.transition = "all 0.3s ease-out";
+        indicator.style.transition = "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
         positionIndicator();
-      }, 10);
     }
   });
 
@@ -180,6 +178,7 @@ const currentPath = Astro.url.pathname;
         left: target.offsetLeft - padding,
         width: target.offsetWidth + padding * 2,
       };
+
     });
   });
 

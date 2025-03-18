@@ -1,8 +1,7 @@
 ---
-import { checkDb, query } from "../cloudflare";
-import { parseActivityTrack, computeTotalActivityTrack } from "../utils";
+import { checkDb, query } from "../../cloudflare";
+import { parseActivityTrack, computeTotalActivityTrack } from "../../util";
 import { ActivityDisplay } from "./ActivityDisplay";
-import { type ActivityTrack } from "../types";
 import { ActivityDisplayError } from "./ActivityDisplayError";
 
 const { env } = Astro.locals.runtime;

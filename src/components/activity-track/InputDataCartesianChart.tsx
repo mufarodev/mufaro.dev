@@ -1,7 +1,7 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
-import type { ActivityTrack, NormalizedInputData } from "../types"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "./Charts"
-import { normalizeInputData } from "../utils"
+import type { ActivityTrack, NormalizedInputData } from "../../types"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "../ui/charts"
+import { normalizeInputData } from "../../util"
 
 type InputDataCartesianChartProps = {
     data: ActivityTrack[]

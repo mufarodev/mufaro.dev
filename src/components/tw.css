@@ -18,4 +18,21 @@
       --chart-4: 280 65% 60%;
       --chart-5: 340 75% 55%;
     }
+
+    .mask-border {
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      @apply overflow-hidden pointer-events-none p-[2px]
+    }
+  
+    .element-glow {
+      @apply absolute z-[1]
+    }
+    
   }

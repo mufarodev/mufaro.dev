@@ -1,0 +1,21 @@
+---
+import { DiscordActivity } from "../discord-activity/discord-activity";
+import ElementGlow from "../ui/element-glow.astro";
+---
+
+<div
+  class="relative backdrop-blur-md bg-black/10 border border-white/10 rounded-xl p-6 min-h-36"
+>
+  <!-- grain -->
+  <div
+    class="absolute inset-0 opacity-[0.1] pointer-events-none"
+    style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMSAwIDAgMCAwIDEgMCAwIDAgMCAxIDAgMCAwIDAuNSAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==');"
+  >
+  </div>
+
+  <h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-white">
+    Current Activity
+  </h3>
+  <DiscordActivity client:only="react" />
+  <ElementGlow />
+</div>

@@ -1,15 +1,18 @@
 ---
 import "non.geist/mono";
 import "non.geist";
-import '../components/tw.css'
+import "../components/tw.css";
 import { ClientRouter } from "astro:transitions";
-import DotBackgroundWrapper from "../components/DotBackgroundWrapper.astro";
+import DotBackgroundWrapper from "../components/ui/dot-background-wrapper.astro";
 
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
+
+const userAgent = Astro.request.headers.get("user-agent") || "";
+const unsupportedEngine = userAgent.includes("Gecko") || userAgent.includes("Firefox");
 ---
 
 <!doctype html>
@@ -30,7 +33,7 @@ const { title } = Astro.props;
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://mufaro.dev" />
-    <meta property="og:image" content="https://mufaro.dev/alya.webp" />
+    <meta property="og:image" content="https://mufaro.dev/avatar.png" />
     <meta
       property="og:description"
       content="self-taught software developer from Poland. OSS enthusiast"
@@ -42,6 +45,22 @@ const { title } = Astro.props;
   </head>
   <body class="flex flex-col">
     <DotBackgroundWrapper>
+      <div
+        class="absolute inset-0 -z-10 h-full w-full bg-[#0a0a0a] bg-[radial-gradient(#27272a_1px,transparent_1px)] bg-[size:24px_24px]"
+      >
+      </div>
+      <div
+        class="absolute top-0 right-0 -z-10 h-[35rem] w-[35rem] bg-[#3b00b5] opacity-20 blur-[120px] rounded-full"
+      >
+      </div>
+      <div
+        class="absolute bottom-0 left-0 -z-10 h-[25rem] w-[25rem] bg-[#4f46e5] opacity-20 blur-[120px] rounded-full"
+      >
+      </div>
+      <div
+        class="absolute top-1/3 left-1/4 -z-10 h-[15rem] w-[15rem] bg-[#0ea5e9] opacity-10 blur-[100px] rounded-full"
+      >
+      </div>
       <slot />
     </DotBackgroundWrapper>
 
@@ -73,19 +92,12 @@ const { title } = Astro.props;
     background: theme(colors.background);
   }
 
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-  }
-
   ::selection {
-    background: theme(colors.theme.foreground.secondary);
+    background: theme(colors.theme.foreground.contrast);
   }
 
   ::-moz-selection {
-    background: theme(colors.theme.foreground.secondary);
+    background: theme(colors.theme.foreground.contrast);
   }
 
   ::-webkit-scrollbar {
@@ -107,7 +119,6 @@ const { title } = Astro.props;
     top: 0;
     width: 100%;
     height: 100%;
-    /* background-image: linear-gradient(rgba(0, 0, 0, 0.4) 1px, transparent 1px); */
     background-size: 2px 2px;
     background-repeat: repeat;
     pointer-events: none;
@@ -115,6 +126,7 @@ const { title } = Astro.props;
 
   code {
     font-family:
+      "Geist Mono",
       Menlo,
       Monaco,
       Lucida Console,
@@ -128,6 +140,7 @@ const { title } = Astro.props;
   html,
   body {
     min-height: 100svh;
+    height: 100svh;
     overflow-x: hidden;
   }
 
@@ -140,27 +153,16 @@ const { title } = Astro.props;
       color: theme(colors.theme.foreground.secondary);
     }
   }
-
-  .mask-border {
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    padding: 1px;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  .element-glow {
-    position: absolute;
-    opacity: 100;
-    z-index: 1;
-  }
 </style>
 
+<script define:vars={{ unsupportedEngine }}>
+  if (unsupportedEngine) {
+    console.warn("Unsupported engine detected. Some features may not work as expected. You may want to switch to a modern browser.");
+  }
+</script>
+
 <script>
-  import { initGlowEffect } from "../utils";
+  import { initGlowEffect } from "../util";
 
   document.addEventListener("DOMContentLoaded", () => {
     initGlowEffect();

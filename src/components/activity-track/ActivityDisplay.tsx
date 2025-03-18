@@ -1,5 +1,5 @@
 import type { JSX } from "react/jsx-runtime";
-import type { ActivityTrack, MouseActivity, WindowActivity } from "../types";
+import type { ActivityTrack, MouseActivity, WindowActivity } from "../../types";
 import { WindowActivityChart } from "./WindowActivityChart";
 import { InputDataCartesianChart } from "./InputDataCartesianChart";
 
