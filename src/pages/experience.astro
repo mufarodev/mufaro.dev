@@ -1,8 +1,7 @@
 ---
-import { ExperienceList } from "../components/ExperienceList";
-import Footer from "../components/Footer.astro";
-import Header from "../components/Header.astro";
-import MainContent from "../components/MainContent.astro";
+import { ExperienceList } from "../components/experience-list";
+import Footer from "../components/footer.astro";
+import MainContent from "../components/ui/main-content.astro";
 import { getExperience } from "../content/experience";
 import Layout from "../layouts/Layout.astro";
 
@@ -12,13 +11,8 @@ const experience = (await getExperience())
 ---
 
 <Layout title="Mufaro">
-  <main class="relative">
     <MainContent>
-        <Header />
-        <ExperienceList
-          client:only="react"
-        experiences={experience} />
+      
+      <Footer />
     </MainContent>
-    <Footer />
-  </main>
 </Layout>

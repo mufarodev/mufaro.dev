@@ -1,0 +1,18 @@
+---
+import NavigationBarProgressiveBlur from "../navigation-bar-progressive-blur.astro";
+
+interface Props {
+  progressiveBlur?: boolean;
+}
+
+const { progressiveBlur } = Astro.props as Props;
+---
+
+<main
+  class="relative max-w-5xl px-4 h-full grid place-content-center"
+>
+  <slot transition:animate="fade" />
+  {
+    progressiveBlur && <NavigationBarProgressiveBlur />
+  }
+</main>

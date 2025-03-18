@@ -90,8 +90,8 @@ export function initGlowEffect() {
     const glowMaskElement = document.createElement('div');
     glowMaskElement.id = `glow-element-${index}`;
     glowMaskElement.className = 'absolute bg-gradient-to-r from-indigo-600/40 via-purple-600/40 to-indigo-600/40 opacity-0 blur-xl';
-    glowMaskElement.style.width = '200px';
-    glowMaskElement.style.height = '200px';
+    glowMaskElement.style.width = '175px';
+    glowMaskElement.style.height = '175px';
     glowMaskElement.style.borderRadius = '50%';
     glowMaskElement.style.transform = 'translate(-50%, -50%)';
     glowMaskElement.style.transition = 'opacity 150ms ease';
@@ -175,4 +175,32 @@ export function initGlowEffect() {
       }, 1000);
     }
   });
+}
+
+
+export function trimToLength(str: string, length: number): string {
+  if (str.length > length) {
+      return str.slice(0, length) + "...";
+  }
+  return str;
+}
+
+export function timestampToRelativeTime(timestamp: number): string {
+  const now = Date.now();
+  const diffMs = now - timestamp;
+  
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) {
+      return days > 1 ? `${days}d` : `${days}d ${hours % 24}h`;
+  } else if (hours > 0) {
+      return hours > 1 ? `${hours}h` : `${hours}h ${minutes % 60}m`;
+  } else if (minutes > 0) {
+      return `${minutes}m`;
+  } else {
+      return 'now';
+  }
 }

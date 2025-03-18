@@ -1,5 +1,5 @@
 import type { Experience } from "../content.config";
-import { cn } from "../utils";
+import { cn } from "../util";
 import { motion } from "framer-motion";
 
 interface ExperienceListProps {
