@@ -12,7 +12,7 @@ interface Props {
 const { title } = Astro.props;
 
 const userAgent = Astro.request.headers.get("user-agent") || "";
-const unsupportedEngine = userAgent.includes("Gecko") || userAgent.includes("Firefox");
+const unsupportedEngine = userAgent.includes("Gecko/") || userAgent.includes("Firefox");
 ---
 
 <!doctype html>
