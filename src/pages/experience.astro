@@ -13,12 +13,7 @@ const experience = (await getExperience())
 
 <Layout title="Mufaro">
   <main class="relative">
-    <MainContent>
-        <Header />
-        <ExperienceList
-          client:only="react"
-        experiences={experience} />
-    </MainContent>
+    <MainContent />
     <Footer />
   </main>
 </Layout>

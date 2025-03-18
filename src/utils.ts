@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function parseActivityTrack(data: DatabaseQueryResponse) {
-  return data.flatMap(item => 
+  return data.flatMap(item =>
     (item["results"] as Array<ActivityTrackDatabaseRow>)?.map((result) => ({
       ...result,
       mouse_activity: JSON.parse(result.mouse_activity),
@@ -29,7 +29,7 @@ export function computeTotalActivityTrack(data: ActivityTrack[]): ActivityTrack 
     keyboard_presses: 0,
     window_activity: []
   }
-  
+
   return data.reduce((acc, curr) => ({
     id: 0,
     snapshot_time: 0,
@@ -52,4 +52,127 @@ export function normalizeInputData(data: ActivityTrack[]): Array<NormalizedInput
     rightClicks: item.mouse_activity.rightClicks,
     leftClicks: item.mouse_activity.leftClicks
   }))
+}
+
+export function initGlowEffect() {
+  // prevent dupe
+  document.removeEventListener('mousemove', handleMouseMove);
+  
+  const card = document.getElementById('mainCard') as HTMLElement;
+  if (!card) return;
+
+  // cleanup
+  const existingGlowContainers = card.querySelectorAll('.glow-container');
+  existingGlowContainers.forEach(container => container.remove());
+  const existingElementGlows = document.querySelectorAll('[id^="glow-element-"]');
+  existingElementGlows.forEach(elem => elem.remove());
+
+  const glowContainer = document.createElement('div');
+  glowContainer.className = 'absolute inset-0 rounded-xl overflow-hidden pointer-events-none glow-container';
+  glowContainer.style.zIndex = '-1';
+
+  const glowElement = document.createElement('div');
+  glowElement.id = 'glow';
+  glowElement.className = 'absolute bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-indigo-600/20 opacity-0 blur-3xl';
+  glowElement.style.width = '500px';
+  glowElement.style.height = '500px';
+  glowElement.style.borderRadius = '50%';
+  glowElement.style.transform = 'translate(-50%, -50%)';
+  glowElement.style.transition = 'opacity 150ms ease';
+
+  // glowContainer.appendChild(glowElement); // thats the global one
+  card.style.position = 'relative';
+  card.appendChild(glowContainer);
+  
+  const glowElements = document.querySelectorAll('.element-glow') as NodeListOf<HTMLElement>;
+  
+  glowElements.forEach((element, index) => {
+    const glowMaskElement = document.createElement('div');
+    glowMaskElement.id = `glow-element-${index}`;
+    glowMaskElement.className = 'absolute bg-gradient-to-r from-indigo-600/40 via-purple-600/40 to-indigo-600/40 opacity-0 blur-xl';
+    glowMaskElement.style.width = '200px';
+    glowMaskElement.style.height = '200px';
+    glowMaskElement.style.borderRadius = '50%';
+    glowMaskElement.style.transform = 'translate(-50%, -50%)';
+    glowMaskElement.style.transition = 'opacity 150ms ease';
+    glowMaskElement.style.zIndex = '1'; // dont touch i hate z-index
+
+    element.appendChild(glowMaskElement);
+  });
+
+  function handleMouseMove(e: MouseEvent) {
+    const card = document.getElementById('mainCard') as HTMLElement;
+    if (!card) return;
+    
+    const rect = card.getBoundingClientRect();
+
+    const isNearCard =
+      e.clientX >= rect.left - 100 &&
+      e.clientX <= rect.right + 100 &&
+      e.clientY >= rect.top - 100 &&
+      e.clientY <= rect.bottom + 100;
+
+    const glowElement = document.getElementById('glow');
+    if (glowElement && isNearCard) {
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      glowElement.style.opacity = '1';
+      glowElement.style.left = `${x}px`;
+      glowElement.style.top = `${y}px`;
+    } else if (glowElement) {
+      glowElement.style.opacity = '0';
+    }
+
+    // requery glows
+    const glowElements = document.querySelectorAll('.element-glow') as NodeListOf<HTMLElement>;
+    glowElements.forEach((element, index) => {
+      const parentCard = element.closest('.backdrop-blur-md') as HTMLElement;
+      if (!parentCard) return;
+      
+      const glowMaskElement = document.getElementById(`glow-element-${index}`);
+      if (!glowMaskElement) return;
+      
+      const elementRect = parentCard.getBoundingClientRect();
+      const isNearElement =
+        e.clientX >= elementRect.left - 50 &&
+        e.clientX <= elementRect.right + 50 &&
+        e.clientY >= elementRect.top - 50 &&
+        e.clientY <= elementRect.bottom + 50;
+
+      if (isNearElement) {
+        const x = e.clientX - elementRect.left;
+        const y = e.clientY - elementRect.top;
+
+        glowMaskElement.style.opacity = '1';
+        glowMaskElement.style.left = `${x}px`;
+        glowMaskElement.style.top = `${y}px`;
+      } else {
+        glowMaskElement.style.opacity = '0';
+      }
+    });
+  }
+
+  // now is the time for the listener
+  document.addEventListener('mousemove', handleMouseMove);
+
+  card.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) {
+      const touch = e.touches[0];
+      const rect = card.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+
+      const glowElement = document.getElementById('glow');
+      if (!glowElement) return;
+
+      glowElement.style.opacity = '1';
+      glowElement.style.left = `${x}px`;
+      glowElement.style.top = `${y}px`;
+
+      setTimeout(() => {
+        glowElement.style.opacity = '0';
+      }, 1000);
+    }
+  });
 }

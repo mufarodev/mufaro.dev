@@ -50,9 +50,6 @@ const { title } = Astro.props;
     >
       <span class="text-yellow-300">! Mobile support WIP !</span>
     </div>
-    <div class="fixed bottom-0 right-0 p-4 text-xs text-theme-foreground">
-      <span class="text-theme-foreground">© 2025 mufaroxyz</span>
-    </div>
   </body>
 </html>
 <style is:global>
@@ -74,6 +71,13 @@ const { title } = Astro.props;
   html {
     font-family: "Geist Variable", system-ui, sans-serif;
     background: theme(colors.background);
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
   }
 
   ::selection {
@@ -127,7 +131,7 @@ const { title } = Astro.props;
     overflow-x: hidden;
   }
 
-  a {
+  a.link {
     text-decoration-line: underline;
     text-underline-offset: 0.25rem;
     transition: color 0.1s ease-in-out;
@@ -137,5 +141,32 @@ const { title } = Astro.props;
     }
   }
 
+  .mask-border {
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    padding: 1px;
+    pointer-events: none;
+    overflow: hidden;
+  }
 
+  .element-glow {
+    position: absolute;
+    opacity: 100;
+    z-index: 1;
+  }
 </style>
+
+<script>
+  import { initGlowEffect } from "../utils";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initGlowEffect();
+  });
+
+  document.addEventListener("astro:page-load", () => {
+    initGlowEffect();
+  });
+</script>
