@@ -57,7 +57,7 @@ export function normalizeInputData(data: ActivityTrack[]): Array<NormalizedInput
 export function initGlowEffect() {
   // prevent dupe
   document.removeEventListener('mousemove', handleMouseMove);
-  
+
   const card = document.getElementById('mainCard') as HTMLElement;
   if (!card) return;
 
@@ -83,9 +83,9 @@ export function initGlowEffect() {
   // glowContainer.appendChild(glowElement); // thats the global one
   card.style.position = 'relative';
   card.appendChild(glowContainer);
-  
+
   const glowElements = document.querySelectorAll('.element-glow') as NodeListOf<HTMLElement>;
-  
+
   glowElements.forEach((element, index) => {
     const glowMaskElement = document.createElement('div');
     glowMaskElement.id = `glow-element-${index}`;
@@ -103,7 +103,7 @@ export function initGlowEffect() {
   function handleMouseMove(e: MouseEvent) {
     const card = document.getElementById('mainCard') as HTMLElement;
     if (!card) return;
-    
+
     const rect = card.getBoundingClientRect();
 
     const isNearCard =
@@ -129,10 +129,10 @@ export function initGlowEffect() {
     glowElements.forEach((element, index) => {
       const parentCard = element.closest('.backdrop-blur-md') as HTMLElement;
       if (!parentCard) return;
-      
+
       const glowMaskElement = document.getElementById(`glow-element-${index}`);
       if (!glowMaskElement) return;
-      
+
       const elementRect = parentCard.getBoundingClientRect();
       const isNearElement =
         e.clientX >= elementRect.left - 50 &&
@@ -153,34 +153,13 @@ export function initGlowEffect() {
     });
   }
 
-  // now is the time for the listener
   document.addEventListener('mousemove', handleMouseMove);
-
-  card.addEventListener('touchstart', (e) => {
-    if (e.touches && e.touches[0]) {
-      const touch = e.touches[0];
-      const rect = card.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-
-      const glowElement = document.getElementById('glow');
-      if (!glowElement) return;
-
-      glowElement.style.opacity = '1';
-      glowElement.style.left = `${x}px`;
-      glowElement.style.top = `${y}px`;
-
-      setTimeout(() => {
-        glowElement.style.opacity = '0';
-      }, 1000);
-    }
-  });
 }
 
 
 export function trimToLength(str: string, length: number): string {
   if (str.length > length) {
-      return str.slice(0, length) + "...";
+    return str.slice(0, length) + "...";
   }
   return str;
 }
@@ -188,19 +167,19 @@ export function trimToLength(str: string, length: number): string {
 export function timestampToRelativeTime(timestamp: number): string {
   const now = Date.now();
   const diffMs = now - timestamp;
-  
+
   const seconds = Math.floor(diffMs / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  
+
   if (days > 0) {
-      return days > 1 ? `${days}d` : `${days}d ${hours % 24}h`;
+    return days > 1 ? `${days}d` : `${days}d ${hours % 24}h`;
   } else if (hours > 0) {
-      return hours > 1 ? `${hours}h` : `${hours}h ${minutes % 60}m`;
+    return hours > 1 ? `${hours}h` : `${hours}h ${minutes % 60}m`;
   } else if (minutes > 0) {
-      return `${minutes}m`;
+    return `${minutes}m`;
   } else {
-      return 'now';
+    return 'now';
   }
 }

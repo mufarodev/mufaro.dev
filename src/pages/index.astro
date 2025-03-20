@@ -10,7 +10,12 @@ import MainContent from "../components/ui/main-content.astro";
 
 <Layout title="Mufaro">
   <MainContent>
-    <div id="mainCard" class="relative backdrop-blur-xl bg-black/25 border border-white/10 rounded-2xl overflow-hidden shadow-2xl overflow-y-auto">
+    <div 
+      transition:name="main-card"
+      transition:animate="fade"
+      transition:persist
+      id="mainCard" 
+      class="relative backdrop-blur-xl bg-black/25 border border-white/10 rounded-2xl overflow-hidden shadow-2xl overflow-y-auto">
       
       <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 mix-blend-overlay pointer-events-none opacity-50"></div>
       
