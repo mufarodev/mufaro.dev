@@ -28,14 +28,13 @@ export function OtherActivity({ activity }: { activity: Activity }) {
         <img src={largeImage} alt="status image" className="w-16 h-16 rounded-lg mr-2">
         </img>
         <div className="flex flex-col">
-            <p className="text-sm font-bold">{activity.name}</p>
-            <p className="text-xs text-white/70">{trimToLength(activity.details || "", 55)}</p>
-            <p className="text-xs text-white/70">{trimToLength(activity.state || "", 55)}</p>
-            <p className="text-xs text-indigo-400 font-bold flex items-center gap-2 ">
+            <p className="text-sm font-bold text-theme-foreground dark:text-white">{activity.name}</p>
+            <p className="text-xs text-theme-foreground-secondary dark:text-white/70">{trimToLength(activity.details || "", 55)}</p>
+            <p className="text-xs text-theme-foreground-secondary dark:text-white/70">{trimToLength(activity.state || "", 55)}</p>
+            <p className="text-xs text-theme-foreground-contrast dark:text-indigo-400 font-bold flex items-center gap-2 ">
                 <Clock size={12} strokeWidth={3} />
                 <span>{timestampToRelativeTime(activity.timestamps?.start!)}</span>
             </p>
         </div>
     </div>
 }
-

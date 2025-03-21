@@ -38,14 +38,14 @@ export function SpotifyActivity({ activity }: { activity: LanyardData }) {
         <div className="flex items-center">
             <img src={image} alt="Spotify Album Art" className="w-10 h-10 rounded-lg mr-2" />
             <div className="flex flex-col">
-                <p className="text-sm font-bold">{song}</p>
-                <p className="text-xs text-white/70">{artist}</p>
+                <p className="text-sm font-bold text-theme-foreground dark:text-white">{song}</p>
+                <p className="text-xs text-theme-foreground-secondary dark:text-white/70">{artist}</p>
             </div>
         </div>
-        <div className="w-full bg-white/15 rounded-full h-[6px] mt-2">
-            <div className={`bg-gradient-to-r from-purple-500/20 to-pink-500/20 h-full rounded-full`} style={{ width: `${progress}%` }} />
+        <div className="w-full bg-black/10 dark:bg-white/15 rounded-full h-[6px] mt-2">
+            <div className={`bg-gradient-to-r from-indigo-500/40 to-purple-500/40 dark:from-purple-500/20 dark:to-pink-500/20 h-full rounded-full`} style={{ width: `${progress}%` }} />
         </div>
-        <div className="flex justify-between text-xs text-gray-300 mt-1 font-bold">
+        <div className="flex justify-between text-xs text-theme-foreground-secondary dark:text-gray-300 mt-1 font-bold">
             {timestamps && <p>{currentTime}</p>}
             {timestamps && <p>{formatDuration(timestamps.end - timestamps.start)}</p>}
         </div>

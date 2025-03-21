@@ -1,7 +1,5 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
-
 const svgToDataUri = require("mini-svg-data-uri");
-
 const colors = require("tailwindcss/colors");
 const {
   default: flattenColorPalette,
@@ -10,38 +8,29 @@ const {
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
+  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
+      colors: {
+        theme: {
+          background: {
+            DEFAULT: 'var(--background)',
+            dark: 'var(--background-dark)',
+          },
+          foreground: {
+            DEFAULT: 'var(--foreground)',
+            secondary: 'var(--foreground-secondary)',
+            contrast: 'var(--foreground-contrast)',
+          },
+          card: {
+            DEFAULT: 'var(--card)',
+            dark: 'var(--card-dark)',
+            border: 'var(--card-border)',
+          }
+        },
+      },
       container: {
         center: true,
-      },
-
-      // old
-      // colors: {
-      //   background: "#1e1f21",
-      //   theme: {
-      //     foreground: {
-      //       DEFAULT: "#ded2e8",
-      //       secondary: "#9e89b8",
-      //     },
-      //   },
-      //   text: {
-      //     foreground: "#d4d4d4",
-      //   },
-      // },
-
-      colors: {
-        background: "#131313",
-        theme: {
-          foreground: {
-            DEFAULT: "#ded2e8",
-            secondary: "#9e89b8",
-            contrast: "#7e5bab"
-          },
-        },
-        text: {
-          foreground: "#d4d4d4",
-        },
       },
       animation: {
         pulse: "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -54,6 +43,7 @@ export default {
   },
   plugins: [
     addVariablesForColors,
+    addThemeVariables,
     function ({ matchUtilities, theme }: any) {
       matchUtilities(
         {
@@ -87,5 +77,40 @@ function addVariablesForColors({ addBase, theme }: any) {
 
   addBase({
     ":root": newVars,
+  });
+}
+
+function addThemeVariables({ addBase }: any) {
+  addBase({
+    // Light mode variables (default)
+    ":root": {
+      "--background": "#ffffff",
+      "--background-dark": "#f9fafb",
+      "--foreground": "#111827",
+      "--foreground-secondary": "#374151",
+      "--foreground-contrast": "#6366f1", // indigo for light mode
+      "--card": "rgba(255, 255, 255, 0.8)",
+      "--card-dark": "rgba(249, 250, 251, 0.8)",
+      "--card-border": "rgba(0, 0, 0, 0.1)",
+      // Add gradient colors
+      "--gradient-start": "#6366f1", // indigo
+      "--gradient-mid": "#9333ea",  // purple
+      "--gradient-end": "#ec4899",  // pink
+    },
+    // Dark mode variables
+    ".dark": {
+      "--background": "#000000",
+      "--background-dark": "#0a0a0a",
+      "--foreground": "#ffffff",
+      "--foreground-secondary": "rgba(255, 255, 255, 0.7)",
+      "--foreground-contrast": "#818cf8", // lighter indigo for dark mode
+      "--card": "rgba(0, 0, 0, 0.25)",
+      "--card-dark": "rgba(0, 0, 0, 0.4)",
+      "--card-border": "rgba(255, 255, 255, 0.1)",
+      // Add gradient colors for dark mode
+      "--gradient-start": "#818cf8",  // lighter indigo
+      "--gradient-mid": "#a78bfa",    // lighter purple
+      "--gradient-end": "#f9a8d4",    // lighter pink
+    }
   });
 }

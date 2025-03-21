@@ -1,12 +1,78 @@
 ---
 import Footer from "../components/footer.astro";
-import MainContent from "../components/ui/main-content.astro";
 import Layout from "../layouts/Layout.astro";
+import ProfileHeader from "../components/profile-header.astro";
+import MainContent from "../components/ui/main-content.astro";
+
+const links = [
+  {
+    label: "Kyiro",
+    href: "https://kyi.ro",
+  },
+  {
+    label: "Jesx",
+    href: "https://jesx.dev",
+  },
+  {
+    label: "Nazclaw",
+    href: "https://nazclaw.vercel.app",
+  },
+  {
+    label: "Xazu",
+    href: "https://xazu.pages.dev",
+  }
+];
 ---
 
 <Layout title="Mufaro">
   <MainContent>
-    
+    <div
+      transition:name="main-card"
+      transition:animate="fade"
+      id="mainCard"
+      class="relative backdrop-blur-xl bg-theme-card border border-theme-card-border rounded-2xl overflow-hidden shadow-2xl overflow-y-auto dark:bg-black/25 dark:border-white/10"
+    >
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 mix-blend-overlay pointer-events-none opacity-50"
+      >
+      </div>
+
+      <div
+        class="absolute inset-0 opacity-[0.05] dark:opacity-[0.1] pointer-events-none"
+        style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMSAwIDAgMCAwIDEgMCAwIDAgMCAxIDAgMCAwIDAuNSAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==');"
+      >
+      </div>
+
+      <div
+        class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/20 to-transparent"
+      >
+      </div>
+
+      <ProfileHeader />
+
+      <div class="p-8 space-y-8 relative">
+        <div>
+          <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-theme-foreground dark:text-white">
+            Cool People
+          </h2>
+          <div class="flex gap-4">
+            {
+              links.map((link) => (
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group text-theme-foreground dark:text-white flex items-center gap-2 px-4 py-1.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full transition-all hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/15 relative"
+                >
+                  {link.label}
+                </a>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
     <Footer />
   </MainContent>
 </Layout>

@@ -30,7 +30,7 @@ const socialLinks: SocialLink[] = [
 ---
 
 <div
-  class="flex flex-col md:flex-row items-start md:items-center gap-8 p-8 border-b border-white/10"
+  class="flex flex-col md:flex-row items-start md:items-center gap-8 p-8 border-b border-theme-card-border"
 >
   <div class="relative group">
     <div
@@ -49,7 +49,6 @@ const socialLinks: SocialLink[] = [
       width={128}
       height={128}
       transition:name="profile"
-      transition:name="profile"
       transition:persist
       fetchpriority="high"
     />
@@ -62,11 +61,11 @@ const socialLinks: SocialLink[] = [
   >
     <div>
       <h1
-        class="font-black text-4xl bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-gray-400"
+        class="font-black text-4xl bg-clip-text text-transparent bg-gradient-to-r from-theme-foreground via-theme-foreground to-theme-foreground-secondary dark:from-white dark:via-white dark:to-gray-400"
       >
         Mufaro
       </h1>
-      <p class="font-medium text-gray-300">17yo. software dev | polish</p>
+      <p class="font-medium text-theme-foreground-secondary dark:text-gray-300">17yo. software dev | polish</p>
 
       <div class="flex items-center gap-3 mt-3">
         <div class="flex flex-wrap items-center gap-3 mt-3">
@@ -76,23 +75,23 @@ const socialLinks: SocialLink[] = [
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="group flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full transition-all hover:bg-white/10 hover:border-white/15 relative"
+                class="group flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full transition-all hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/15 relative"
               >
-                <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/20 to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/20 to-transparent"></div>
                 <div class="relative w-5 h-5 flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
                     height="16"
                     fill="currentColor"
-                    class="text-white/80 group-hover:text-white transition-colors"
+                    class="text-theme-foreground-secondary dark:text-white/80 group-hover:text-theme-foreground dark:group-hover:text-white transition-colors"
                     viewBox="0 0 16 16"
                   >
                     <path d={link.icon} />
                   </svg>
                 </div>
-                <span class="text-xs text-white/80 group-hover:text-white transition-colors">
+                <span class="text-xs text-theme-foreground-secondary dark:text-white/80 group-hover:text-theme-foreground dark:group-hover:text-white transition-colors">
                   {link.label}
                 </span>
               </a>

@@ -18,7 +18,7 @@ export function DiscordActivity() {
         }
     }, [loading, status])
 
-    return <div className="text-gray-300 text-sm mt-2">
+    return <div className="text-theme-foreground-secondary dark:text-gray-300 text-sm mt-2">
         {
             (loading && !lanyardData) ? <LoadingIndicator /> :
                 (!loading && !lanyardData) ? <ErrorIndicator /> :
@@ -28,7 +28,7 @@ export function DiscordActivity() {
 }
 
 function LoadingIndicator() {
-    return <div className="animate-spin w-fit h-fit p-0 m-0">
+    return <div className="animate-spin w-fit h-fit p-0 m-0 text-theme-foreground dark:text-white">
         <LoaderCircle size={20} />
     </div>
 }
@@ -45,4 +45,3 @@ export function formatDuration(ms: number): string {
     const seconds = totalSeconds % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
-

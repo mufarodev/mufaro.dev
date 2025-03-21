@@ -13,22 +13,21 @@ import MainContent from "../components/ui/main-content.astro";
     <div 
       transition:name="main-card"
       transition:animate="fade"
-      transition:persist
       id="mainCard" 
-      class="relative backdrop-blur-xl bg-black/25 border border-white/10 rounded-2xl overflow-hidden shadow-2xl overflow-y-auto">
+      class="relative backdrop-blur-xl bg-theme-card border border-theme-card-border rounded-2xl overflow-hidden shadow-2xl overflow-y-auto dark:bg-black/25 dark:border-white/10">
       
-      <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 mix-blend-overlay pointer-events-none opacity-50"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 mix-blend-overlay pointer-events-none opacity-50 dark:opacity-50"></div>
       
-      <div class="absolute inset-0 opacity-[0.1] pointer-events-none" 
+      <div class="absolute inset-0 opacity-[0.05] dark:opacity-[0.1] pointer-events-none" 
         style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMSAwIDAgMCAwIDEgMCAwIDAgMCAxIDAgMCAwIDAuNSAwIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==');">
       </div>
 
-      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/10 to-transparent dark:via-white/20"></div>
       
       <ProfileHeader />
       
       <div class="p-8 space-y-8 relative">
-        <!-- <div class="absolute -top-px left-0 right-0 h-8 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div> -->
+        <!-- <div class="absolute -top-px left-0 right-0 h-8 bg-gradient-to-b from-black/5 dark:hidden to-transparent pointer-events-none"></div> -->
 
         <AboutCard />
         

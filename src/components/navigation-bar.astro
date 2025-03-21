@@ -19,7 +19,7 @@ const currentPath = Astro.url.pathname;
   <div id="nav-wrapper" class="relative flex items-center justify-center">
     <button
       id="scroll-to-top"
-      class="absolute left-0 p-1.5 bg-black/40 backdrop-blur-lg border border-white/10 rounded-full hover:bg-black/50 transition-all opacity-0 scale-0 transform -translate-x-[100%] origin-right"
+      class="absolute left-0 p-1.5 bg-theme-card-dark backdrop-blur-lg border border-theme-card-border rounded-full hover:bg-theme-card transition-all opacity-0 scale-0 transform -translate-x-[100%] origin-right"
       aria-label="Scroll to top"
     >
       <svg
@@ -27,24 +27,29 @@ const currentPath = Astro.url.pathname;
         width="18"
         height="18"
         fill="currentColor"
-        class="text-white/70"
+        class="text-theme-foreground-secondary"
         viewBox="0 0 16 16"
       >
-        <path d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
+        <path
+          d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"
+        ></path>
       </svg>
     </button>
 
-    <div id="nav-container-wrapper" class="relative transition-transform duration-300 transform translate-x-0">
+    <div
+      id="nav-container-wrapper"
+      class="relative transition-transform duration-300 transform translate-x-0"
+    >
       <!-- glow -->
       <div
-        class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-full blur-lg opacity-50"
+        class="absolute inset-0 bg-gradient-to-r from-indigo-500/40 via-purple-500/40 to-pink-500/40 dark:from-indigo-500/20 dark:via-purple-500/20 dark:to-pink-500/20 rounded-full blur-lg dark:opacity-50"
       >
       </div>
 
       <!-- glass -->
       <nav
         id="nav-container"
-        class="relative backdrop-blur-lg bg-black/40 border border-white/10 rounded-full px-1.5 py-1.5 flex items-center shadow-xl transition-all duration-300 ease-out"
+        class="relative backdrop-blur-lg bg-theme-card-dark border border-theme-card-border rounded-full px-1.5 py-1.5 flex items-center shadow-xl transition-all duration-300 ease-out"
       >
         <!-- grain -->
         <div
@@ -55,7 +60,7 @@ const currentPath = Astro.url.pathname;
 
         <div
           id="nav-indicator"
-          class="absolute top-1/2 -translate-y-1/2 h-[calc(100%-10px)] backdrop-blur-sm border-2 border-white/10 rounded-full"
+          class="absolute top-1/2 -translate-y-1/2 h-[calc(100%-10px)] backdrop-blur-sm border-2 border-theme-card-border rounded-full"
         >
           <!-- gradient border -->
           <div
@@ -65,7 +70,7 @@ const currentPath = Astro.url.pathname;
 
           <!-- inner glow -->
           <div
-            class="absolute inset-0 rounded-full shadow-[inset_0_0_8px_rgba(255,255,255,0.1)]"
+            class="absolute inset-0 rounded-full shadow-[inset_0_0_8px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_0_8px_rgba(255,255,255,0.1)] shadow-theme-foreground/10"
           >
           </div>
 
@@ -87,8 +92,8 @@ const currentPath = Astro.url.pathname;
               class={cn(
                 "nav-link relative px-4 rounded-full text-sm font-medium transition-colors duration-300 mx-1",
                 currentPath === route.path
-                  ? "text-white hover:text-white"
-                  : "text-white/70 hover:text-white",
+                  ? "text-theme-foreground hover:text-theme-foreground"
+                  : "text-theme-foreground-secondary hover:text-theme-foreground",
               )}
             >
               <span class="relative z-10">{route.name}</span>
@@ -97,18 +102,33 @@ const currentPath = Astro.url.pathname;
         }
 
         <button
-          class="ml-2 p-1.5 bg-white/5 rounded-full hover:bg-white/10 transition-all hidden md:flex"
+          id="theme-toggle"
+          class="ml-2 p-1.5 bg-theme-card-dark border dark:border-theme-card-border hover:bg-theme-card rounded-full transition-all md:flex z-10"
+          aria-label="Toggle theme"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
             height="18"
             fill="currentColor"
-            class="text-white/70"
+            class="text-theme-foreground-secondary hidden dark:block"
             viewBox="0 0 16 16"
           >
             <path
               d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"
+            ></path>
+          </svg>
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            fill="currentColor"
+            class="text-theme-foreground-secondary block dark:hidden"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"
             ></path>
           </svg>
         </button>
@@ -118,6 +138,8 @@ const currentPath = Astro.url.pathname;
 </div>
 
 <script>
+  import { transitionEnabledOnThisPage } from "astro:transitions/client";
+
   let indicatorState = {
     left: 0,
     width: 0,
@@ -129,9 +151,11 @@ const currentPath = Astro.url.pathname;
     ) || document.querySelector('.nav-link[data-index="0"]')) as HTMLElement;
 
     if (activeLink) {
-      const indicator = document.getElementById("nav-indicator") as HTMLDivElement;
+      const indicator = document.getElementById(
+        "nav-indicator",
+      ) as HTMLDivElement;
       const padding = 2;
-      
+
       const newLeft = activeLink.offsetLeft - padding;
       const newWidth = activeLink.offsetWidth + padding * 2;
 
@@ -143,54 +167,141 @@ const currentPath = Astro.url.pathname;
     }
   }
 
+  // gotta thank https://elysiajs.com/ for inspiration
+  function setupThemeToggle() {
+    const themeToggleBtn = document.getElementById("theme-toggle");
+
+    if (!themeToggleBtn) return;
+
+    themeToggleBtn.addEventListener("click", async () => {
+      if (!document.startViewTransition) {
+        toggleTheme();
+        return;
+      }
+
+      // all this gibberish is required because this theme view transition
+      // conflicted with all the other astro's view transitions
+      // so all the other ones need to be disabled and this one needs to be enabled
+      // for the duration of the theme switch
+      // conclusion: should've used nuxt
+      const style = document.createElement("style");
+      style.id = "view-transitions-style";
+      style.textContent = `
+        ::view-transition-group(root) {
+          animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 10000;
+        }
+        
+        ::view-transition-old(root) {
+          mix-blend-mode: normal;
+          animation: theme-switch-expand 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        ::view-transition-new(root) {
+          -webkit-mask: url('shigure-ui.webp') center / 0 no-repeat;
+          mask: url('shigure-ui.webp') center / 0 no-repeat;
+          -webkit-mask-position: center;
+          mask-position: center;
+          animation: theme-switch-expand 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+      `;
+      document.head.appendChild(style);
+
+      const transitionScope = document.querySelector(
+        "[data-astro-transition-scope]",
+      );
+      const originalStyles = {} as Record<string, string>;
+
+      if (transitionScope) {
+        const computedStyle = window.getComputedStyle(transitionScope);
+        originalStyles.viewTransitionName = computedStyle.viewTransitionName;
+
+        const styleElement = document.createElement("style");
+        styleElement.id = "temp-transition-override";
+        styleElement.textContent =
+          "[data-astro-transition-scope] { view-transition-name: none !important; }";
+        document.head.appendChild(styleElement);
+      }
+
+      const t = document.startViewTransition(() => {
+        toggleTheme();
+      });
+
+      await t.finished;
+
+      style.remove();
+
+      const tempStyle = document.getElementById("temp-transition-override");
+      if (tempStyle) {
+        tempStyle.remove();
+      }
+    });
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDarkMode = html.classList.toggle("dark");
+
+    if (isDarkMode) {
+      localStorage.setItem("theme", "dark");
+      html.classList.add("dark");
+    } else {
+      localStorage.setItem("theme", "light");
+      html.classList.remove("dark");
+    }
+  }
+
   function setupScrollToTop() {
-    const scrollToTopBtn = document.getElementById('scroll-to-top') as HTMLButtonElement;
-    const navContainerWrapper = document.getElementById('nav-container-wrapper') as HTMLDivElement;
-    const mainCard = document.getElementById('mainCard');
-    
+    const scrollToTopBtn = document.getElementById(
+      "scroll-to-top",
+    ) as HTMLButtonElement;
+    const navContainerWrapper = document.getElementById(
+      "nav-container-wrapper",
+    ) as HTMLDivElement;
+    const mainCard = document.getElementById("mainCard");
+
     if (!scrollToTopBtn || !navContainerWrapper) return;
-    
+
     function toggleScrollButton() {
       if (!mainCard) {
         hideScrollButton();
         return;
       }
-      
+
       const mainCardRect = mainCard.getBoundingClientRect();
       const isOutOfView = mainCardRect.bottom < 0;
-      
-      if (isOutOfView)
-        return showScrollButton();
+
+      if (isOutOfView) return showScrollButton();
 
       hideScrollButton();
     }
-    
+
     function showScrollButton() {
-      scrollToTopBtn.classList.remove('opacity-0', 'scale-0');
-      scrollToTopBtn.classList.add('opacity-100', 'scale-100');
-      
-      navContainerWrapper.style.transform = 'translateX(15px)';
+      scrollToTopBtn.classList.remove("opacity-0", "scale-0");
+      scrollToTopBtn.classList.add("opacity-100", "scale-100");
+
+      navContainerWrapper.style.transform = "translateX(15px)";
     }
-    
+
     function hideScrollButton() {
-      scrollToTopBtn.classList.remove('opacity-100', 'scale-100');
-      scrollToTopBtn.classList.add('opacity-0', 'scale-0');
-      
-      navContainerWrapper.style.transform = 'translateX(0)';
+      scrollToTopBtn.classList.remove("opacity-100", "scale-100");
+      scrollToTopBtn.classList.add("opacity-0", "scale-0");
+
+      navContainerWrapper.style.transform = "translateX(0)";
     }
-    
-    if (scrollToTopBtn) 
-      scrollToTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (scrollToTopBtn)
+      scrollToTopBtn.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
-    
-    
-    window.addEventListener('scroll', toggleScrollButton, { passive: true });
-    
+
+    window.addEventListener("scroll", toggleScrollButton, { passive: true });
+
     toggleScrollButton();
   }
 
   window.addEventListener("load", () => {
+    document.documentElement.classList.add("theme-transition");
     positionIndicator();
     setupScrollToTop();
   });
@@ -200,7 +311,7 @@ const currentPath = Astro.url.pathname;
     const indicator = document.getElementById(
       "nav-indicator",
     ) as HTMLDivElement;
-    if (indicator) 
+    if (indicator)
       indicatorState = {
         left: parseFloat(indicator.style.left || "0"),
         width: parseFloat(indicator.style.width || "0"),
@@ -228,8 +339,9 @@ const currentPath = Astro.url.pathname;
       indicator.style.transition = "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
       positionIndicator();
     }
-    
+
     setupScrollToTop();
+    setupThemeToggle();
   });
 
   document.querySelectorAll(".nav-link").forEach((link) => {
@@ -239,7 +351,7 @@ const currentPath = Astro.url.pathname;
         "nav-indicator",
       ) as HTMLDivElement;
       const padding = 2;
-      
+
       const newLeft = target.offsetLeft - padding;
       const newWidth = target.offsetWidth + padding * 2;
 
@@ -298,5 +410,12 @@ const currentPath = Astro.url.pathname;
 
   #scroll-to-top svg {
     transition: transform 0.2s var(--smooth-animation);
+  }
+
+  #theme-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

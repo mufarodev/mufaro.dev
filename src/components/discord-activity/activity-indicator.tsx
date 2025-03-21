@@ -15,7 +15,7 @@ export function ActivityIndicator({ activity }: { activity: LanyardData }) {
                     <OtherActivity activity={noCustomActivity[0]} />
                 }
             </div>
-            : <p>No activity</p>
+            : <p className="text-theme-foreground dark:text-white">No activity</p>
         }
     </div>
 }

@@ -2,7 +2,7 @@
 import "non.geist/mono";
 import "non.geist";
 import "../components/tw.css";
-import { ClientRouter } from "astro:transitions";
+import { ClientRouter, fade } from "astro:transitions";
 import DotBackgroundWrapper from "../components/ui/dot-background-wrapper.astro";
 import NavigationBar from "../components/navigation-bar.astro";
 
@@ -43,47 +43,73 @@ const unsupportedEngine =
     <meta name="theme-color" content="#ded2e8" />
     <meta name="twitter:card" content="summary_large_image" />
     <title>{title}</title>
+
+    <script is:inline>
+      const savedTheme = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+
+      if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    </script>
+
     <ClientRouter />
   </head>
-  <body class="min-h-screen flex flex-col">
-    <NavigationBar transition:animate="fade" />
+  <body
+    class="min-h-screen flex flex-col bg-theme-background text-theme-foreground"
+  >
+    <NavigationBar />
 
     <DotBackgroundWrapper>
       <div
-        class="absolute inset-0 h-full w-full bg-[#0a0a0a] bg-[radial-gradient(#27272a_1px,transparent_1px)] opacity-100 bg-[size:24px_24px]"
+        class="absolute inset-0 h-full w-full bg-theme-background-dark bg-[radial-gradient(#27272a_1px,transparent_1px)] dark:opacity-100 opacity-30 bg-[size:24px_24px]"
       >
       </div>
       <div
-        class="absolute top-0 right-0 h-[35rem] w-[35rem] bg-[#3b00b5] opacity-10 blur-[120px] rounded-full"
+        class="absolute top-0 right-0 h-[35rem] w-[35rem] bg-theme-foreground-contrast dark:opacity-10 opacity-20 blur-[120px] rounded-full"
       >
       </div>
       <div
-        class="absolute bottom-0 left-0 h-[25rem] w-[25rem] bg-[#4f46e5] opacity-10 blur-[120px] rounded-full"
+        class="absolute bottom-0 left-0 h-[25rem] w-[25rem] bg-theme-foreground-contrast dark:opacity-10 opacity-20 blur-[120px] rounded-full"
       >
       </div>
       <div
-        class="absolute top-1/3 left-1/4 h-[15rem] w-[15rem] bg-[#0ea5e9] opacity-10 blur-[100px] rounded-full"
+        class="absolute top-1/3 left-1/4 h-[15rem] w-[15rem] bg-theme-foreground-contrast dark:opacity-10 opacity-20 blur-[100px] rounded-full"
       >
       </div>
       <slot />
     </DotBackgroundWrapper>
-
-    <div
-      class="fixed top-0 left-[50%] -translate-x-[50%] text-base text-yellow-500 font-bold lg:hidden"
-    >
-      <span class="text-yellow-300">! Mobile support WIP !</span>
-    </div>
   </body>
 </html>
+
 <style is:global>
   :root {
     --smooth-animation: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  @keyframes theme-switch-expand {
+      0% {
+          mask-size: 0;
+      }
+      10% {
+          mask-size: 50vmax;
+      }
+      80% {
+          mask-size: 45vmax;
+      }
+      100% {
+          mask-size: 2000vmax;
+      }
+    }
+
   html {
     font-family: "Geist Variable", system-ui, sans-serif;
     overflow-y: scroll;
-    background: theme(colors.background);
+    background: theme(colors.theme.background.DEFAULT);
   }
 
   ::selection {
@@ -99,8 +125,12 @@ const unsupportedEngine =
   }
 
   ::-webkit-scrollbar-thumb {
-    background: theme(colors.background);
-    border-radius: 0.25rem;
+    background: theme(colors.theme.background.DEFAULT / 0.2);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: theme(colors.theme.background.DEFAULT / 0.2);
   }
 
   .geist-mono {
@@ -146,10 +176,6 @@ const unsupportedEngine =
       color: theme(colors.theme.foreground.secondary);
     }
   }
-
-  .transition-preparing {
-    backdrop-filter: none !important;
-  }
 </style>
 
 <script define:vars={{ unsupportedEngine }}>
@@ -161,29 +187,34 @@ const unsupportedEngine =
 </script>
 
 <script>
-  import { initGlowEffect } from "../util";
+  import { initGlowEffect, applyStoredTheme } from "../util";
+
+  applyStoredTheme();
+
+  document.addEventListener("astro:before-preparation", () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    sessionStorage.setItem("current-theme", isDark ? "dark" : "light");
+  });
+
+  document.addEventListener("astro:after-preparation", () => {
+    const currentTheme = sessionStorage.getItem("current-theme");
+    if (currentTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  });
+
+  document.addEventListener("astro:after-swap", () => {
+    applyStoredTheme();
+  });
 
   document.addEventListener("DOMContentLoaded", () => {
     initGlowEffect();
   });
 
   document.addEventListener("astro:page-load", () => {
+    applyStoredTheme();
     initGlowEffect();
-  });
-
-  document.addEventListener("astro:before-preparation", () => {
-    const mainCard = document.getElementById("mainCard");
-    if (mainCard) {
-      mainCard.classList.add("transition-preparing");
-    }
-  });
-
-  document.addEventListener("astro:after-swap", () => {
-    setTimeout(() => {
-      const mainCard = document.getElementById("mainCard");
-      if (mainCard) {
-        mainCard.classList.remove("transition-preparing");
-      }
-    }, 50);
   });
 </script>
