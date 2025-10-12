@@ -16,13 +16,15 @@
     const changeLetterStyle = (letter: string) => {
         const styles = Object.keys(letterStyles) as (keyof typeof letterStyles)[];
         const currentStyle = pickedStyle[letter];
+        if (currentStyle !== "normal") return;
+
         const currentIndex = styles.indexOf(currentStyle);
         const nextIndex = (currentIndex + 1) % styles.length;
         pickedStyle[letter] = styles[nextIndex];
 
         setTimeout(() => {
             pickedStyle[letter] = 'normal';
-        }, 1000);
+        }, 750);
     };
 
     let usernameContainer: HTMLElement | null = null;
