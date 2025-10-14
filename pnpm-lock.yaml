@@ -17,6 +17,15 @@ importers:
       '@fontsource-variable/doto':
         specifier: ^5.2.10
         version: 5.2.10
+      '@fontsource-variable/google-sans-code':
+        specifier: ^5.2.3
+        version: 5.2.3
+      '@fontsource-variable/source-serif-4':
+        specifier: ^5.2.9
+        version: 5.2.9
+      '@fontsource/gloria-hallelujah':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@sveltejs/adapter-cloudflare':
         specifier: ^7.2.3
         version: 7.2.4(@sveltejs/kit@2.46.4(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.39.11)(vite@7.1.9(@types/node@22.18.9)(jiti@2.6.1)(lightningcss@1.30.1)))(svelte@5.39.11)(vite@7.1.9(@types/node@22.18.9)(jiti@2.6.1)(lightningcss@1.30.1)))(wrangler@4.42.2(@cloudflare/workers-types@4.20251008.0))
@@ -524,6 +533,15 @@ packages:
 
   '@fontsource-variable/doto@5.2.10':
     resolution: {integrity: sha512-9wflNv5TCTaLCtm1W+Iv6gyGW0LS6CezDX1CiRy9pvqOWufT9zAhVhsNSPZ4Z+0YKOma/KDxvxmigSMelI4duw==}
+
+  '@fontsource-variable/google-sans-code@5.2.3':
+    resolution: {integrity: sha512-2ZQ8UkMMxz/MXve9PY8o5FjTnRZh94Jn5ZfND5mUDWwVh/t0JDgFaIdPPONyNGzlJOgn1Qlyhs2YEMbv5yQpLQ==}
+
+  '@fontsource-variable/source-serif-4@5.2.9':
+    resolution: {integrity: sha512-PPcxjLFk/fS0WHg79pDM2YNvz61kC+oYZ5cWZZyCS0DHpJncmuYOuiZAsvj4tDxlWPBEvxxcRLQQNmSaRbPkqw==}
+
+  '@fontsource/gloria-hallelujah@5.2.8':
+    resolution: {integrity: sha512-GkIdkqC5eZbUX1jidQtoOdD7JAIq5pU5YzldX6uEcStNMrboXVnH1lafHJNLKrmufxEk7Tq3wg7hmI4kOlcJag==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -2724,6 +2742,12 @@ snapshots:
       levn: 0.4.1
 
   '@fontsource-variable/doto@5.2.10': {}
+
+  '@fontsource-variable/google-sans-code@5.2.3': {}
+
+  '@fontsource-variable/source-serif-4@5.2.9': {}
+
+  '@fontsource/gloria-hallelujah@5.2.8': {}
 
   '@humanfs/core@0.19.1': {}
 
