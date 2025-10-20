@@ -2,10 +2,10 @@
 	import '../app.css';
 	import { ModeWatcher } from 'mode-watcher';
 	import favicon from '$lib/assets/favicon.svg';
-	import '@fontsource-variable/doto/rond.css';
-	import '@fontsource-variable/google-sans-code';
-	import '@fontsource/gloria-hallelujah';
-	import '@fontsource-variable/source-serif-4';
+	import '@fontsource-variable/inter';
+	import '@fontsource-variable/jetbrains-mono';
+	import '@fontsource/caveat';
+	import ProgressiveBlur from '$lib/components/core/progressive-blur.svelte';
 
 	let { children } = $props();
 </script>
@@ -16,6 +16,8 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="mx-auto min-h-svh max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+<ProgressiveBlur />
+
+<div class="mx-auto min-h-svh max-w-4xl px-6 py-8 sm:px-8 lg:px-12">
 	{@render children?.()}
 </div>

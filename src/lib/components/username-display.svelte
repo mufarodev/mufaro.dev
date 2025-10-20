@@ -32,9 +32,13 @@
 </script>
 
 <div class="flex flex-col">
-	<span class="font-serif text-sm text-muted-foreground">Hey, I'm...</span>
+	<span class="text-sm font-medium text-muted-foreground">Hey, I'm...</span>
 	<div class="inline-flex items-center">
-		<div bind:this={usernameContainer} class="relative font-gloria text-3xl font-bold">
+		<div
+			bind:this={usernameContainer}
+			class="relative text-5xl font-black tracking-tight"
+			style="font-family: var(--font-handwriting);"
+		>
 			{#each strings.username.split('') as letter, _}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<!-- do something with this eventaully -->

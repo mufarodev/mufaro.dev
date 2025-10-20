@@ -34,15 +34,10 @@
 	--sidebar-accent-foreground: oklch(0.325 0 0);
 	--sidebar-border: oklch(0.9401 0 0);
 	--sidebar-ring: oklch(0.7731 0 0);
-	--font-sans:
-		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-		'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-		'Segoe UI Symbol', 'Noto Color Emoji';
-	--font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-	--font-mono:
-		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-		monospace;
-	--radius: 0.5rem;
+	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+	--font-handwriting: 'Caveat', cursive;
+	--radius: 1rem;
 	--shadow-x: 0;
 	--shadow-y: 1px;
 	--shadow-blur: 3px;
@@ -62,6 +57,7 @@
 }
 
 .dark {
+	--pg-bg: 17, 17, 17;
 	--background: oklch(0.1776 0 0);
 	--foreground: oklch(0.9491 0 0);
 	--card: oklch(0.2134 0 0);
@@ -94,15 +90,10 @@
 	--sidebar-accent-foreground: oklch(0.9674 0.0013 286.3752);
 	--sidebar-border: oklch(0.2739 0.0055 286.0326);
 	--sidebar-ring: oklch(0.8711 0.0055 286.286);
-	--font-sans:
-		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-		'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-		'Segoe UI Symbol', 'Noto Color Emoji';
-	--font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-	--font-mono:
-		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-		monospace;
-	--radius: 0.5rem;
+	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+	--font-handwriting: 'Caveat', cursive;
+	--radius: 1rem;
 	--shadow-x: 0;
 	--shadow-y: 1px;
 	--shadow-blur: 3px;
@@ -120,6 +111,8 @@
 }
 
 @theme inline {
+	--pg-bg: var(--pg-bg);
+
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
@@ -155,7 +148,7 @@
 
 	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
-	--font-serif: var(--font-serif);
+	--font-handwriting: var(--font-handwriting);
 
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
@@ -173,8 +166,12 @@
 }
 
 @theme {
-	--font-doto: 'Doto Variable', sans-serif;
-	--font-google-sans: 'Google Sans Code Variable', monospace;
-	--font-gloria: 'Gloria Hallelujah', cursive;
-	--font-serif: 'Source Serif 4 Variable', serif;
+	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+	--font-mono: 'JetBrains Mono Variable', monospace;
+	--font-handwriting: 'Caveat', cursive;
+}
+
+body {
+	font-family: var(--font-sans);
+	font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
