@@ -10,8 +10,8 @@
 <div class="container mx-auto max-w-6xl space-y-12 px-4 py-6">
 	<HeroSection />
 	<FeaturedProjects />
-	<TechStack />
+	<!-- <TechStack /> -->
 	<CurrentStatus />
 	<ContactLinks />
-	<CtaSection />
+	<!-- <CtaSection /> -->
 </div>

@@ -77,7 +77,7 @@
 						<div
 							class="inline-flex items-center justify-center rounded-lg bg-primary/10 p-2 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/15"
 						>
-							<HugeiconsIcon icon={activity.icon} size={18} class="text-primary" />
+							<HugeiconsIcon icon={activity.icon} size={18} />
 						</div>
 
 						<div class="space-y-1.5">

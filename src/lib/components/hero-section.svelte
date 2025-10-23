@@ -265,7 +265,7 @@
 			genuinely loves building things for the web. I started teaching myself to code in 2020 and have
 			since focused on getting practical experience building full-stack applications.
 		</p>
-		<p class="text-muted-foreground">
+		<p class="text-foreground">
 			As a strong supporter of <span
 				class="rounded bg-primary/10 px-1.5 py-0.5 font-semibold text-primary"
 				>open-source software</span
@@ -358,7 +358,7 @@
 				<!-- Icons and connecting lines -->
 				<div class="flex items-center justify-between px-12">
 					{#each journeyStages as stage, i}
-						<div class="relative">
+						<div class="relative will-change-transform">
 							<div
 								bind:this={journeyCards[i]}
 								class="group relative z-10 h-12 w-12 rounded-xl bg-card opacity-0 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.03),inset_-1px_-1px_2px_rgba(0,0,0,0.2)] transition-all duration-300 hover:shadow-[inset_2px_2px_4px_rgba(255,255,255,0.04),inset_-2px_-2px_4px_rgba(0,0,0,0.3)]"
@@ -419,7 +419,7 @@
 		</div>
 	</div>
 
-	<div bind:this={heatmapCard} class="relative opacity-0">
+	<!-- <div bind:this={heatmapCard} class="relative opacity-0">
 		<div class="space-y-3">
 			<div class="flex items-baseline gap-2">
 				<h3 class="text-sm font-bold text-foreground">Contribution Activity</h3>
@@ -502,5 +502,5 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 </div>

@@ -93,7 +93,7 @@
 					<div
 						class="inline-flex items-center justify-center rounded-xl bg-primary/10 p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/15"
 					>
-						<HugeiconsIcon icon={category.icon} size={20} class="text-primary" />
+						<HugeiconsIcon icon={category.icon} size={20} />
 					</div>
 
 					<h3 class="text-base font-semibold tracking-tight text-foreground">
