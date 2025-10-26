@@ -75,7 +75,7 @@
 				bind:this={projectCards[i]}
 				onmouseenter={(e) => handleMouseEnter(i, e.currentTarget)}
 				onmouseleave={(e) => handleMouseLeave(i, e.currentTarget)}
-				class="group relative rounded-3xl bg-card p-6 transition-transform duration-300"
+				class="group relative rounded-3xl bg-card p-6 opacity-0 transition-transform duration-300"
 			>
 				<!-- Dashed border that appears on hover -->
 				<div

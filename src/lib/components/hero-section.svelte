@@ -7,8 +7,10 @@
 	import {
 		RocketIcon,
 		BookOpen02Icon,
-		Settings01Icon,
-		CheckmarkCircle02Icon
+		CheckmarkCircle02Icon,
+		Github01Icon,
+		Mail01Icon,
+		TwitterIcon
 	} from '@hugeicons/core-free-icons';
 	import NovaIcon from './icons/nova-icon.svelte';
 
@@ -129,11 +131,84 @@
 	const streak = calculateStreak();
 
 	const facts = [
-		{ label: 'Users Reached', value: '100K+', suffix: 'users' },
-		{ label: 'Years Building', value: '5', suffix: 'years' },
-		{ label: 'Client Satisfaction', value: '100%', suffix: 'happy clients' },
-		{ label: 'Projects Delivered', value: '15+', suffix: 'completed' }
+		{
+			label: 'Users Reached',
+			value: '100K+',
+			numericValue: 100000,
+			suffix: 'users',
+			startPercent: 0.6
+		},
+		{ label: 'Years Building', value: '5', numericValue: 5, suffix: 'years', startPercent: 0 },
+		{
+			label: 'Client Satisfaction',
+			value: '100%',
+			numericValue: 100,
+			suffix: 'happy clients',
+			startPercent: 0.7
+		},
+		{
+			label: 'Projects Delivered',
+			value: '15+',
+			numericValue: 15,
+			suffix: 'completed',
+			startPercent: 0.4
+		}
 	];
+
+	const socials = [
+		{
+			icon: Github01Icon,
+			label: 'GitHub',
+			href: 'https://github.com/mufarodev',
+			display: 'github.com/mufarodev'
+		},
+		{
+			icon: Mail01Icon,
+			label: 'Email',
+			href: 'mailto:contact@mufaro.dev',
+			display: 'contact@mufaro.dev'
+		},
+		{
+			icon: TwitterIcon,
+			label: 'X / Twitter',
+			href: 'https://x.com/mufaro_dev',
+			display: 'x.com/mufaro_dev'
+		}
+	];
+
+	let socialLinks: HTMLElement[] = $state([]);
+	let socialTexts: HTMLElement[] = $state([]);
+	let socialIcons: HTMLElement[] = $state([]);
+
+	function handleSocialHover(index: number, isHovering: boolean) {
+		const text = socialTexts[index];
+		const icon = socialIcons[index];
+		const link = socialLinks[index];
+
+		if (!text || !icon || !link) return;
+
+		if (isHovering) {
+			animate(link, { width: 'auto' }, { type: 'spring', stiffness: 100, damping: 15 });
+			animate(
+				text,
+				{ opacity: [0, 1], filter: ['blur(8px)', 'blur(0px)'] },
+				{ type: 'spring', stiffness: 120, damping: 18 }
+			);
+			animate(icon, { scale: [1, 1.05] }, { type: 'spring', stiffness: 200, damping: 20 });
+		} else {
+			animate(
+				text,
+				{ opacity: [1, 0], filter: ['blur(0px)', 'blur(8px)'] },
+				{ type: 'spring', stiffness: 150, damping: 20 }
+			);
+			animate(icon, { scale: [1.05, 1] }, { type: 'spring', stiffness: 200, damping: 20 });
+			setTimeout(() => {
+				if (link) {
+					animate(link, { width: '36px' }, { type: 'spring', stiffness: 120, damping: 18 });
+				}
+			}, 100);
+		}
+	}
 
 	let currentFactIndex = $state(0);
 	let factContainer: HTMLElement | undefined = $state();
@@ -145,13 +220,76 @@
 	let heatmapCard: HTMLElement | undefined = $state();
 	let factInterval: ReturnType<typeof setInterval> | undefined;
 
+	function formatFactValue(fact: (typeof facts)[0], current: number) {
+		if (fact.value.includes('K')) {
+			return `${Math.floor(current / 1000)}K+`;
+		} else if (fact.value.includes('%')) {
+			return `${current}%`;
+		} else if (fact.value.includes('+')) {
+			return `${current}+`;
+		} else {
+			return current.toString();
+		}
+	}
+
+	let displayValue = $state(
+		formatFactValue(facts[0], Math.floor(facts[0].numericValue * facts[0].startPercent))
+	);
+	let previousValue = $state('');
+
+	function animateCountUp(fact: (typeof facts)[0], skipInitialAnimation = false) {
+		const target = fact.numericValue;
+		const startValue = Math.floor(target * fact.startPercent);
+
+		const counter = { value: startValue };
+
+		if (factValue && !skipInitialAnimation) {
+			animate(
+				factValue,
+				{
+					opacity: 1,
+					filter: 'blur(0px)',
+					transform: 'translateY(0px)'
+				},
+				{
+					duration: 0.6,
+					ease: [0.34, 1.56, 0.64, 1]
+				}
+			);
+			factValue.style.opacity = '0';
+			factValue.style.filter = 'blur(8px)';
+			factValue.style.transform = 'translateY(8px)';
+		}
+
+		animate(
+			counter,
+			{ value: target },
+			{
+				duration: 1.5,
+				ease: [0.33, 1, 0.68, 1],
+				onUpdate: (latest) => {
+					const current = Math.floor(counter.value);
+					previousValue = displayValue;
+					displayValue = formatFactValue(fact, current);
+				},
+				onComplete: () => {
+					displayValue = fact.value;
+				}
+			}
+		);
+	}
+
 	onMount(() => {
 		if (factContainer && factValue && factLabel) {
 			animate(
 				factContainer,
 				{ opacity: [0, 1], transform: ['translateY(10px)', 'translateY(0px)'] },
-				{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+				{ type: 'spring', stiffness: 120, damping: 18 }
 			);
+
+			setTimeout(() => {
+				animateCountUp(facts[0], true);
+			}, 300);
 
 			factInterval = setInterval(() => {
 				const nextIndex = (currentFactIndex + 1) % facts.length;
@@ -162,16 +300,20 @@
 						{
 							opacity: [1, 0],
 							filter: ['blur(0px)', 'blur(8px)'],
-							transform: ['scale(1)', 'scale(0.98)']
+							transform: ['scale(1) translateY(0px)', 'scale(0.95) translateY(-8px)']
 						},
-						{ duration: 0.4, ease: 'easeOut' }
+						{ type: 'spring', stiffness: 180, damping: 22 }
 					);
 				}
 				if (factLabel) {
 					animate(
 						factLabel,
-						{ opacity: [1, 0], filter: ['blur(0px)', 'blur(8px)'] },
-						{ duration: 0.4, ease: 'easeOut' }
+						{
+							opacity: [1, 0],
+							filter: ['blur(0px)', 'blur(8px)'],
+							transform: ['translateY(0px)', 'translateY(-5px)']
+						},
+						{ type: 'spring', stiffness: 180, damping: 22 }
 					);
 				}
 
@@ -180,27 +322,25 @@
 
 					if (factValue && factLabel) {
 						animate(
-							factValue,
+							factLabel,
 							{
 								opacity: [0, 1],
 								filter: ['blur(8px)', 'blur(0px)'],
-								transform: ['scale(0.98)', 'scale(1)']
+								transform: ['translateY(5px)', 'translateY(0px)']
 							},
-							{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }
-						);
-						animate(
-							factLabel,
-							{ opacity: [0, 1], filter: ['blur(8px)', 'blur(0px)'] },
 							{ duration: 0.6, delay: 0.1, ease: [0.34, 1.56, 0.64, 1] }
 						);
+
+						setTimeout(() => {
+							animateCountUp(facts[nextIndex]);
+						}, 300);
 					}
 				}, 400);
-			}, 3000);
+			}, 5000);
 		}
 
 		journeyCards.forEach((card, i) => {
 			if (card) {
-				// Animate card appearing
 				animate(
 					card,
 					{
@@ -231,7 +371,7 @@
 						transform: ['scaleX(0)', 'scaleX(1)'],
 						opacity: [0, 1]
 					},
-					{ duration: 0.4, delay: i * 0.4 + 0.8, ease: [0.22, 1, 0.36, 1] }
+					{ type: 'spring', stiffness: 120, damping: 18, delay: i * 0.4 + 0.8 }
 				);
 			}
 		});
@@ -240,7 +380,7 @@
 			animate(
 				heatmapCard,
 				{ opacity: [0, 1], transform: ['translateY(10px)', 'translateY(0px)'] },
-				{ duration: 0.4, delay: 1, ease: [0.22, 1, 0.36, 1] }
+				{ type: 'spring', stiffness: 120, damping: 18, delay: 1 }
 			);
 		}
 
@@ -253,7 +393,34 @@
 </script>
 
 <div class="space-y-6">
-	<UsernameDisplay />
+	<div class="flex items-start gap-4">
+		<UsernameDisplay />
+
+		<div class="ml-auto flex items-center gap-2">
+			{#each socials as social, i}
+				<a
+					bind:this={socialLinks[i]}
+					href={social.href}
+					target={social.href.startsWith('mailto:') ? undefined : '_blank'}
+					rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+					class="flex w-9 items-center gap-2 overflow-hidden rounded-lg bg-card text-muted-foreground outline-2 outline-border/70 transition-colors will-change-transform hover:bg-primary/5 hover:text-primary hover:outline-primary/30"
+					aria-label={social.label}
+					onmouseenter={() => handleSocialHover(i, true)}
+					onmouseleave={() => handleSocialHover(i, false)}
+				>
+					<div bind:this={socialIcons[i]} class="flex h-9 w-9 shrink-0 items-center justify-center">
+						<HugeiconsIcon icon={social.icon} size={18} />
+					</div>
+					<span
+						bind:this={socialTexts[i]}
+						class="pr-3 text-xs font-medium whitespace-nowrap opacity-0 blur-md"
+					>
+						{social.display}
+					</span>
+				</a>
+			{/each}
+		</div>
+	</div>
 
 	<div class="space-y-4 text-sm leading-relaxed">
 		<p class="text-foreground">
@@ -265,92 +432,94 @@
 			genuinely loves building things for the web. I started teaching myself to code in 2020 and have
 			since focused on getting practical experience building full-stack applications.
 		</p>
-		<p class="text-foreground">
-			As a strong supporter of <span
-				class="rounded bg-primary/10 px-1.5 py-0.5 font-semibold text-primary"
-				>open-source software</span
-			>, I believe that technology should be accessible to everyone. I'm now looking for a role
-			where I can contribute to meaningful projects and continue to grow as a developer.
-		</p>
-	</div>
 
-	<div
-		bind:this={factContainer}
-		class="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-card to-card/50 p-5 transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
-	>
-		<div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
-		<div class="absolute -bottom-12 -left-12 h-48 w-48 rounded-full bg-primary/3 blur-3xl"></div>
-
-		<div class="relative flex items-center justify-between gap-6">
-			<div class="flex items-baseline gap-3">
-				<div
-					bind:this={factValue}
-					class="font-mono text-4xl font-bold tracking-tight text-foreground"
-				>
-					{facts[currentFactIndex].value}
-				</div>
-				<div bind:this={factLabel} class="text-sm font-medium text-muted-foreground">
-					{facts[currentFactIndex].label}
-				</div>
-			</div>
+		<div class="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
+			<p class="flex-1 text-foreground">
+				As a strong supporter of <span
+					class="rounded bg-primary/10 px-1.5 py-0.5 font-semibold text-primary"
+					>open-source software</span
+				>, I believe that technology should be accessible to everyone. I'm now looking for a role
+				where I can contribute to meaningful projects and continue to grow as a developer.
+			</p>
 
 			<div
-				class="flex items-center gap-2.5 rounded-lg border border-border/40 bg-background/60 px-3 py-2 backdrop-blur-sm"
+				bind:this={factContainer}
+				class="group relative shrink-0 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-card to-card/50 p-6 opacity-0 transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 md:w-80"
 			>
-				{#each facts as _, i}
-					<button
-						onclick={() => {
-							if (factValue && factLabel) {
-								animate(
-									factValue,
-									{
-										opacity: [1, 0],
-										filter: ['blur(0px)', 'blur(8px)'],
-										transform: ['scale(1)', 'scale(0.98)']
-									},
-									{ duration: 0.3 }
-								);
-								animate(
-									factLabel,
-									{ opacity: [1, 0], filter: ['blur(0px)', 'blur(8px)'] },
-									{ duration: 0.3 }
-								);
-								setTimeout(() => {
-									currentFactIndex = i;
-									if (factValue && factLabel) {
-										animate(
-											factValue,
-											{
-												opacity: [0, 1],
-												filter: ['blur(8px)', 'blur(0px)'],
-												transform: ['scale(0.98)', 'scale(1)']
-											},
-											{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }
-										);
-										animate(
-											factLabel,
-											{ opacity: [0, 1], filter: ['blur(8px)', 'blur(0px)'] },
-											{ duration: 0.5, delay: 0.08, ease: [0.34, 1.56, 0.64, 1] }
-										);
-									}
-								}, 300);
-							}
-						}}
-						class="group/dot relative h-2 rounded-full transition-all duration-300 {i ===
-						currentFactIndex
-							? 'w-8 bg-primary shadow-lg shadow-primary/40'
-							: 'w-2 bg-muted-foreground/30 hover:scale-125 hover:bg-muted-foreground/60'}"
-						aria-label="Go to fact {i + 1}"
+				<div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
+				<div
+					class="absolute -bottom-12 -left-12 h-48 w-48 rounded-full bg-primary/3 blur-3xl"
+				></div>
+
+				<div class="relative space-y-1">
+					<div
+						bind:this={factValue}
+						class="font-mono text-4xl font-bold tracking-tight text-foreground transition-all will-change-[opacity,transform,filter]"
 					>
-						{#if i === currentFactIndex}
-							<div class="absolute inset-0 rounded-full bg-primary/20 blur-md"></div>
-						{/if}
-					</button>
-				{/each}
+						{displayValue}
+					</div>
+					<div bind:this={factLabel} class="text-sm font-semibold text-foreground/90">
+						{facts[currentFactIndex].label}
+					</div>
+				</div>
+
+				<div class="absolute right-4 bottom-4 flex items-center gap-2">
+					{#each facts as _, i}
+						<button
+							onclick={() => {
+								if (factValue && factLabel) {
+									animate(
+										factValue,
+										{
+											opacity: [1, 0],
+											filter: ['blur(0px)', 'blur(8px)'],
+											transform: ['scale(1) translateY(0px)', 'scale(0.95) translateY(-8px)']
+										},
+										{ type: 'spring', stiffness: 200, damping: 24 }
+									);
+									animate(
+										factLabel,
+										{
+											opacity: [1, 0],
+											filter: ['blur(0px)', 'blur(8px)'],
+											transform: ['translateY(0px)', 'translateY(-5px)']
+										},
+										{ type: 'spring', stiffness: 200, damping: 24 }
+									);
+									setTimeout(() => {
+										currentFactIndex = i;
+										if (factValue && factLabel) {
+											animate(
+												factLabel,
+												{
+													opacity: [0, 1],
+													filter: ['blur(8px)', 'blur(0px)'],
+													transform: ['translateY(5px)', 'translateY(0px)']
+												},
+												{ duration: 0.5, delay: 0.08, ease: [0.34, 1.56, 0.64, 1] }
+											);
+											setTimeout(() => {
+												animateCountUp(facts[i]);
+											}, 300);
+										}
+									}, 300);
+								}
+							}}
+							class="group/dot relative h-2 rounded-full transition-all duration-300 {i ===
+							currentFactIndex
+								? 'w-8 bg-primary shadow-lg shadow-primary/40'
+								: 'w-2 bg-muted-foreground/30 hover:scale-125 hover:bg-muted-foreground/60'}"
+							aria-label="Go to fact {i + 1}"
+						>
+							{#if i === currentFactIndex}
+								<div class="absolute inset-0 rounded-full bg-primary/20 blur-md"></div>
+							{/if}
+						</button>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
-
 	<!-- Journey Timeline -->
 	<div class="relative pt-4 pb-6">
 		<div class="mx-auto max-w-4xl">
