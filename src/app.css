@@ -54,6 +54,13 @@
 	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 	--tracking-normal: 0em;
 	--spacing: 0.25rem;
+	--shadow-neu-base:
+		0px 32px 64px -16px #d2d2d21d, 0px 16px 32px -8px #d2d2d21d, 0px 8px 16px -4px #bbbbbb1c,
+		0px 4px 8px -2px #bbbbbb1c, 0px -8px 16px -1px #5d5c5c29, 0px 2px 4px -1px #8080801c,
+		0px 0px 0px 1px #3232328e, inset 0px 0px 0px 2px #ffffff5d, inset 0px 1px 0px #ffffff69;
+	--shadow-neu-highlight:
+		inset 0 1px 0 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.2),
+		0 4px 16px rgba(0, 0, 0, 0.16);
 }
 
 .dark {
@@ -108,6 +115,13 @@
 	--shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
 	--shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
 	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+	--shadow-neu-base:
+		0px 32px 64px -16px #0000004c, 0px 16px 32px -8px #0000004c, 0px 8px 16px -4px #0000003d,
+		0px 4px 8px -2px #0000003d, 0px -8px 16px -1px #00000029, 0px 2px 4px -1px #0000003d,
+		0px 0px 0px 1px #000000, inset 0px 0px 0px 2px #ffffff14, inset 0px 1px 0px #ffffff33;
+	--shadow-neu-highlight:
+		inset 0 1px 0 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.2),
+		0 4px 16px rgba(0, 0, 0, 0.16);
 }
 
 @theme inline {
@@ -163,6 +177,8 @@
 	--shadow-lg: var(--shadow-lg);
 	--shadow-xl: var(--shadow-xl);
 	--shadow-2xl: var(--shadow-2xl);
+	--shadow-neu-base: var(--shadow-neu-base);
+	--shadow-neu-highlight: var(--shadow-neu-highlight);
 }
 
 @theme {

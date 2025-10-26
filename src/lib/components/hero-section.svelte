@@ -22,7 +22,7 @@
 	}> = [
 		{ label: 'Self-Taught', date: '2020 - Now', icon: BookOpen02Icon },
 		{ label: 'Freelancing', date: '2022 - Now', icon: RocketIcon },
-		{ label: 'Project Nova', date: '2022 - Now', icon: NovaIcon },
+		{ label: 'Project Nova', date: 'Mar/24 - May/25', icon: NovaIcon },
 		{ label: 'Looking for a Role', date: 'Now', icon: CheckmarkCircle02Icon, active: true }
 	];
 
@@ -140,13 +140,6 @@
 		},
 		{ label: 'Years Building', value: '5', numericValue: 5, suffix: 'years', startPercent: 0 },
 		{
-			label: 'Client Satisfaction',
-			value: '100%',
-			numericValue: 100,
-			suffix: 'happy clients',
-			startPercent: 0.7
-		},
-		{
 			label: 'Projects Delivered',
 			value: '15+',
 			numericValue: 15,
@@ -219,7 +212,7 @@
 	let journeyLines: HTMLElement[] = $state([]);
 	let heatmapCard: HTMLElement | undefined = $state();
 	let factInterval: ReturnType<typeof setInterval> | undefined;
-
+	let highlightElements: HTMLElement[] = $state([]);
 	function formatFactValue(fact: (typeof facts)[0], current: number) {
 		if (fact.value.includes('K')) {
 			return `${Math.floor(current / 1000)}K+`;
@@ -392,6 +385,15 @@
 	});
 </script>
 
+{#snippet highlight(text: string, index: number)}
+	<span
+		bind:this={highlightElements[index]}
+		class="relative inline-flex items-center overflow-hidden rounded bg-primary/10 px-1.5 py-0.5 font-semibold text-primary shadow-neu-highlight"
+	>
+		<span class="relative z-10">{text}</span>
+	</span>
+{/snippet}
+
 <div class="space-y-6">
 	<div class="flex items-start gap-4">
 		<UsernameDisplay />
@@ -424,27 +426,22 @@
 
 	<div class="space-y-4 text-sm leading-relaxed">
 		<p class="text-foreground">
-			I'm a <span class="rounded bg-primary/10 px-1.5 py-0.5 font-semibold text-primary"
-				>17-year-old</span
-			>
-			developer from
-			<span class="rounded bg-primary/10 px-1.5 py-0.5 font-semibold text-primary">Poland</span> who
-			genuinely loves building things for the web. I started teaching myself to code in 2020 and have
-			since focused on getting practical experience building full-stack applications.
+			I'm a {@render highlight('17-year-old', 0)} developer from
+			{@render highlight('Poland', 1)} who genuinely loves building things for the web. I started teaching
+			myself to code in 2020 and have since focused on getting practical experience building full-stack
+			applications.
 		</p>
 
 		<div class="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
 			<p class="flex-1 text-foreground">
-				As a strong supporter of <span
-					class="rounded bg-primary/10 px-1.5 py-0.5 font-semibold text-primary"
-					>open-source software</span
-				>, I believe that technology should be accessible to everyone. I'm now looking for a role
-				where I can contribute to meaningful projects and continue to grow as a developer.
+				As a strong supporter of {@render highlight('open-source software', 2)}, I believe that
+				technology should be accessible to everyone. I'm now looking for a role where I can
+				contribute to meaningful projects and continue to grow as a developer.
 			</p>
 
 			<div
 				bind:this={factContainer}
-				class="group relative shrink-0 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-card to-card/50 p-6 opacity-0 transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 md:w-80"
+				class="group relative shrink-0 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-card to-card/50 p-4 opacity-0 transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 md:w-80"
 			>
 				<div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
 				<div
