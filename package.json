@@ -46,6 +46,7 @@
 		"simplify-js": "^1.2.4",
 		"svelte": "^5.39.5",
 		"svelte-check": "^4.3.2",
+		"sveltekit-lanyard": "^0.1.0",
 		"tailwind-merge": "^3.3.1",
 		"tailwind-variants": "^3.1.1",
 		"tailwindcss": "^4.1.13",
@@ -53,11 +54,6 @@
 		"typescript-eslint": "^8.44.1",
 		"vite": "^7.1.7",
 		"vite-plugin-devtools-json": "^1.0.0"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
 	},
 	"dependencies": {
 		"@fontsource-variable/inter": "^5.2.8",
