@@ -39,7 +39,7 @@
 </script>
 
 <div
-	class="group flex flex-col space-y-3 overflow-hidden rounded-xl bg-muted/30 p-4 transition-all duration-300"
+	class="group flex h-full flex-col overflow-hidden rounded-xl bg-muted/30 p-4 transition-all duration-300"
 >
 	{#if !connected}
 		<div class="flex items-center gap-2">
@@ -49,7 +49,7 @@
 			<p class="text-sm text-muted-foreground">Connecting to Discord...</p>
 		</div>
 	{:else if data}
-		<div class="space-y-3">
+		<div class="flex flex-1 flex-col justify-between">
 			<div class="relative z-20 flex items-center justify-between">
 				<div class="flex items-center gap-2">
 					<div class="relative">

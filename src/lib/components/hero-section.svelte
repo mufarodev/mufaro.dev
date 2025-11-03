@@ -411,7 +411,7 @@
 					onmouseleave={() => handleSocialHover(i, false)}
 				>
 					<div bind:this={socialIcons[i]} class="flex h-9 w-9 shrink-0 items-center justify-center">
-						<HugeiconsIcon icon={social.icon} size={18} />
+						<HugeiconsIcon icon={social.icon} size={18} className="fill-current/40" />
 					</div>
 					<span
 						bind:this={socialTexts[i]}

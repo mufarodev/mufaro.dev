@@ -58,7 +58,7 @@
 			</div>
 
 			<div class="grid gap-3 sm:grid-cols-2">
-				<div bind:this={discordCard} class="opacity-0">
+				<div bind:this={discordCard} class="h-40 opacity-0">
 					<DiscordStatus />
 				</div>
 
@@ -69,7 +69,7 @@
 					<div
 						class="inline-flex items-center justify-center rounded-lg bg-primary/10 p-2 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/15"
 					>
-						<HugeiconsIcon icon={Layers01Icon} size={18} />
+						<HugeiconsIcon icon={Layers01Icon} size={18} className="fill-current/30" />
 					</div>
 
 					<div class="space-y-1.5">
