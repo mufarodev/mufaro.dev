@@ -65,42 +65,46 @@
 
 .dark {
 	--pg-bg: 17, 17, 17;
-	--background: oklch(0.1776 0 0);
-	--foreground: oklch(0.9491 0 0);
-	--card: oklch(0.2134 0 0);
-	--card-foreground: oklch(0.9491 0 0);
-	--popover: oklch(0.2134 0 0);
-	--popover-foreground: oklch(0.9491 0 0);
-	--primary: oklch(0.9247 0.0524 66.1732);
-	--primary-foreground: oklch(0.2029 0.024 200.1962);
-	--secondary: oklch(0.3163 0.019 63.6992);
-	--secondary-foreground: oklch(0.9247 0.0524 66.1732);
-	--muted: oklch(0.252 0 0);
-	--muted-foreground: oklch(0.7699 0 0);
-	--accent: oklch(0.285 0 0);
-	--accent-foreground: oklch(0.9491 0 0);
-	--destructive: oklch(0.6271 0.1936 33.339);
-	--destructive-foreground: oklch(1 0 0);
-	--border: oklch(0.2351 0.0115 91.7467);
-	--input: oklch(0.4017 0 0);
-	--ring: oklch(0.9247 0.0524 66.1732);
-	--chart-1: oklch(0.9247 0.0524 66.1732);
-	--chart-2: oklch(0.3163 0.019 63.6992);
-	--chart-3: oklch(0.285 0 0);
-	--chart-4: oklch(0.3481 0.0219 67.0001);
-	--chart-5: oklch(0.9245 0.0533 67.0855);
-	--sidebar: oklch(0.2103 0.0059 285.8852);
-	--sidebar-foreground: oklch(0.9674 0.0013 286.3752);
-	--sidebar-primary: oklch(0.4882 0.2172 264.3763);
-	--sidebar-primary-foreground: oklch(1 0 0);
-	--sidebar-accent: oklch(0.2739 0.0055 286.0326);
-	--sidebar-accent-foreground: oklch(0.9674 0.0013 286.3752);
-	--sidebar-border: oklch(0.2739 0.0055 286.0326);
-	--sidebar-ring: oklch(0.8711 0.0055 286.286);
+	--background: hsl(24 14% 7%);
+	--foreground: hsl(36 30% 92%);
+	--card: hsl(24 12% 9%);
+	--card-foreground: hsl(36 30% 92%);
+	--popover: hsl(24 12% 9%);
+	--popover-foreground: hsl(36 30% 92%);
+	--primary: hsl(34 92% 65%);
+	--primary-foreground: hsl(24 16% 10%);
+	--secondary: hsl(24 12% 9%);
+	--secondary-foreground: hsl(36 30% 92%);
+	--muted: hsl(24 8% 14%);
+	--muted-foreground: hsl(36 16% 72%);
+	--accent: hsl(34 80% 58%);
+	--accent-foreground: hsl(36 30% 92%);
+	--destructive: hsl(0 62% 50%);
+	--destructive-foreground: hsl(0 0% 100%);
+	--border: hsl(24 10% 18%);
+	--input: hsl(24 10% 18%);
+	--ring: hsl(34 85% 60%);
+	--chart-1: hsl(34 92% 65%);
+	--chart-2: hsl(24 12% 9%);
+	--chart-3: hsl(24 8% 14%);
+	--chart-4: hsl(34 80% 58%);
+	--chart-5: hsl(34 85% 60%);
+	--sidebar: hsl(24 12% 9%);
+	--sidebar-foreground: hsl(36 30% 92%);
+	--sidebar-primary: hsl(34 92% 65%);
+	--sidebar-primary-foreground: hsl(24 16% 10%);
+	--sidebar-accent: hsl(24 8% 14%);
+	--sidebar-accent-foreground: hsl(36 30% 92%);
+	--sidebar-border: hsl(24 10% 18%);
+	--sidebar-ring: hsl(34 85% 60%);
 	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
 	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 	--font-handwriting: 'Caveat', cursive;
+	--font-display: 'Instrument Serif', Georgia, serif;
 	--radius: 1rem;
+	--radius-card: 1.125rem;
+	--radius-chip: 0.875rem;
+	--radius-button: 0.75rem;
 	--shadow-x: 0;
 	--shadow-y: 1px;
 	--shadow-blur: 3px;
@@ -115,6 +119,12 @@
 	--shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
 	--shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
 	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+	--shadow-matte-rest: none;
+	--shadow-matte-hover: 0 6px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+	--shadow-matte-active: 0 2px 6px rgba(0, 0, 0, 0.4);
+	--shadow-matte-keylight:
+		inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset -1px 0 0 0 rgba(255, 255, 255, 0.02);
+	--shadow-matte-inner: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 	--shadow-neu-base:
 		0px 32px 64px -16px #0000004c, 0px 16px 32px -8px #0000004c, 0px 8px 16px -4px #0000003d,
 		0px 4px 8px -2px #0000003d, 0px -8px 16px -1px #00000029, 0px 2px 4px -1px #0000003d,
@@ -122,6 +132,9 @@
 	--shadow-neu-highlight:
 		inset 0 1px 0 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.2),
 		0 4px 16px rgba(0, 0, 0, 0.16);
+	--spacing-base: 0.25rem;
+	--grain-opacity-canvas: 0.09;
+	--grain-opacity-card: 0.05;
 }
 
 @theme inline {
@@ -185,9 +198,44 @@
 	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
 	--font-mono: 'JetBrains Mono Variable', monospace;
 	--font-handwriting: 'Caveat', cursive;
+	--font-display: 'Instrument Serif', Georgia, serif;
 }
 
 body {
 	font-family: var(--font-sans);
-	font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+	font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+	font-size: 1.0625rem;
+	line-height: 1.6;
+	letter-spacing: 0.005em;
+}
+
+h1,
+h2 {
+	font-family: var(--font-display);
+	font-weight: 400;
+	letter-spacing: -0.015em;
+}
+
+h1 {
+	font-size: clamp(3rem, 5vw + 1rem, 4rem);
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+}
+
+h2 {
+	font-size: clamp(2rem, 3vw + 1rem, 2.75rem);
+	line-height: 1.1;
+	letter-spacing: -0.015em;
+}
+
+.lead {
+	font-size: clamp(1.125rem, 2vw + 0.5rem, 1.375rem);
+	line-height: 1.5;
+}
+
+.label-text {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-weight: 500;
 }
