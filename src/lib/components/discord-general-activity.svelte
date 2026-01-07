@@ -58,34 +58,32 @@
 	);
 </script>
 
-<div class="space-y-3">
+<div class="relative mt-4 space-y-4">
 	<div
-		class="absolute top-4 right-4 inline-flex items-center justify-center rounded-lg p-2 transition-all duration-300 group-hover:scale-110 {getIconBg(
-			activity.type
-		)}"
+		class="absolute -top-1 -right-1 z-20 inline-flex items-center justify-center rounded-lg bg-white/10 p-2 backdrop-blur-sm transition-all duration-300 group-hover:scale-110"
 	>
-		<HugeiconsIcon icon={getActivityIcon(activity.type)} size={18} />
+		<HugeiconsIcon icon={getActivityIcon(activity.type)} size={16} className="text-white/70" />
 	</div>
 
-	<div class="flex items-start gap-3">
+	<div class="relative z-20 flex items-center gap-3">
 		{#if largeImage}
 			<img
 				src={largeImage}
 				alt={activity.name}
-				class="h-16 w-16 rounded-lg object-cover ring-1 ring-border/50"
+				class="h-18 w-18 shrink-0 rounded-lg object-cover shadow-lg ring-1 ring-white/10"
 			/>
 		{/if}
-		<div class="flex-1 space-y-1">
-			<h3 class="text-sm font-semibold tracking-tight text-foreground">
+		<div class="min-w-0 flex-1 space-y-0.5">
+			<h3 class="truncate text-base font-semibold tracking-tight text-white/95">
 				{activity.name}
 			</h3>
 			{#if activity.details}
-				<p class="text-xs text-foreground/80">
+				<p class="truncate text-sm text-white/70">
 					{activity.details}
 				</p>
 			{/if}
 			{#if activity.state}
-				<p class="text-xs text-muted-foreground">
+				<p class="truncate text-sm text-white/50">
 					{activity.state}
 				</p>
 			{/if}
@@ -93,7 +91,7 @@
 	</div>
 
 	{#if activity.timestamps?.start}
-		<p class="text-[10px] font-medium text-muted-foreground">
+		<p class="relative z-20 text-[10px] font-medium text-white/40">
 			Started {formatDuration(Date.now() - activity.timestamps.start)} ago
 		</p>
 	{/if}

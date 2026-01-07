@@ -8,7 +8,7 @@
 		MusicNote01Icon,
 		EyeIcon
 	} from '@hugeicons/core-free-icons';
-	import { createImageFromBlob, rgbToHex } from '$lib/utils';
+	import { createImageFromBlob, rgbToHex, getContrastColor } from '$lib/utils';
 
 	interface Props {
 		activity: LanyardGeneric.Activity;
@@ -26,6 +26,9 @@
 	let progress = $state(0);
 	let currentTime = $state('0:00');
 	let tonalSpotValue = $state<{ r: number; g: number; b: number }>({ r: 0, g: 0, b: 0 });
+	let contrastColor = $derived(
+		getContrastColor(tonalSpotValue.r, tonalSpotValue.g, tonalSpotValue.b)
+	);
 
 	function calculateProgress(timestamps: { start: number; end: number }): number {
 		const current = Date.now();
@@ -152,7 +155,7 @@
 	);
 </script>
 
-<div class="space-y-3">
+<div class="space-y-4">
 	{#if activity.type === 2 && largeImage}
 		<div class="absolute inset-0 h-full w-full overflow-hidden rounded-xl">
 			<div
@@ -178,8 +181,14 @@
 		<div
 			class="absolute top-3 right-4 z-20 flex items-center justify-center gap-2 rounded-lg px-3 py-2 backdrop-blur-sm transition-all duration-300"
 		>
-			<span class="text-center text-xs">{activity.name}</span>
-			<HugeiconsIcon icon={getActivityIcon(activity.type)} size={14} className="text-xs" />
+			<span class="text-center text-xs {contrastColor === 'black' ? 'text-black' : 'text-white'}"
+				>{activity.name}</span
+			>
+			<HugeiconsIcon
+				icon={getActivityIcon(activity.type)}
+				size={14}
+				className="text-xs {contrastColor === 'black' ? 'text-black' : 'text-white'}"
+			/>
 		</div>
 	{:else}
 		<div
@@ -196,20 +205,24 @@
 			<img
 				src={largeImage}
 				alt={activity.name}
-				class="h-16 w-16 rounded-lg object-cover ring-1 ring-border/50"
+				class="h-18 w-18 rounded-lg object-cover ring-1 ring-border/50"
 			/>
 		{/if}
 		<div class="flex-1 space-y-1">
-			<h3 class="text-sm font-semibold tracking-tight text-foreground">
+			<h3
+				class="text-base font-semibold tracking-tight {contrastColor === 'black'
+					? 'text-black'
+					: 'text-white'}"
+			>
 				{activity.name}
 			</h3>
 			{#if activity.details}
-				<p class="text-xs text-foreground/80">
+				<p class="text-sm {contrastColor === 'black' ? 'text-black/80' : 'text-white/80'}">
 					{activity.details}
 				</p>
 			{/if}
 			{#if activity.state}
-				<p class="text-xs text-muted-foreground">
+				<p class="text-sm {contrastColor === 'black' ? 'text-black/60' : 'text-white/60'}">
 					{activity.state}
 				</p>
 			{/if}
@@ -224,13 +237,21 @@
 					style="width: {progress}%"
 				></div>
 			</div>
-			<div class="flex justify-between text-[10px] font-medium text-muted-foreground">
+			<div
+				class="flex justify-between text-[10px] font-medium {contrastColor === 'black'
+					? 'text-black/60'
+					: 'text-white/60'}"
+			>
 				<span>{currentTime}</span>
 				<span>{formatDuration(activity.timestamps.end - activity.timestamps.start)}</span>
 			</div>
 		</div>
 	{:else if activity.timestamps?.start}
-		<p class="text-[10px] font-medium text-muted-foreground">
+		<p
+			class="text-[10px] font-medium {contrastColor === 'black'
+				? 'text-black/60'
+				: 'text-white/60'}"
+		>
 			Started {formatDuration(Date.now() - activity.timestamps.start)} ago
 		</p>
 	{/if}

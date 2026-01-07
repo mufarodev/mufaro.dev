@@ -4,13 +4,14 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import '@fontsource-variable/inter';
 	import '@fontsource-variable/jetbrains-mono';
+	import '@fontsource/instrument-serif';
 	import '@fontsource/caveat';
 	import ProgressiveBlur from '$lib/components/core/progressive-blur.svelte';
 
 	let { children } = $props();
 </script>
 
-<ModeWatcher />
+<ModeWatcher defaultMode="dark" />
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
@@ -18,6 +19,6 @@
 
 <ProgressiveBlur />
 
-<div class="mx-auto min-h-svh max-w-4xl px-6 py-8 sm:px-8 lg:px-12">
+<div class="min-h-svh min-w-svw">
 	{@render children?.()}
 </div>

@@ -2,13 +2,14 @@
 	import type { LanyardGeneric } from 'sveltekit-lanyard';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { MusicNote01Icon } from '@hugeicons/core-free-icons';
-	import { createImageFromBlob, rgbToHex } from '$lib/utils';
+	import { createImageFromBlob, rgbToHex, getContrastColor } from '$lib/utils';
 
 	interface Props {
 		activity: LanyardGeneric.Activity;
+		onAccentColorChange?: (color: { r: number; g: number; b: number }) => void;
 	}
 
-	let { activity }: Props = $props();
+	let { activity, onAccentColorChange }: Props = $props();
 
 	function formatDuration(milliseconds: number): string {
 		const totalSeconds = Math.floor(milliseconds / 1000);
@@ -105,7 +106,12 @@
 
 		console.log('Average brightness:', avgBrightness, 'Dark image:', isDarkImage);
 
-		let dominant: { r: number; g: number; b: number } = { r: 30, g: 30, b: 30 };
+		let dominant: { r: number; g: number; b: number; brightness: number } = {
+			r: 30,
+			g: 30,
+			b: 30,
+			brightness: 30
+		};
 		let maxCount = 0;
 
 		Object.values(colorMap).forEach((color) => {
@@ -120,21 +126,6 @@
 		}
 
 		return { r: dominant.r, g: dominant.g, b: dominant.b };
-	}
-
-	function getLuminance(r: number, g: number, b: number): number {
-		const [rs, gs, bs] = [r, g, b].map((c) => {
-			c /= 255;
-			return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-		});
-		console.log('RS, GS, BS for luminance:', rs, gs, bs);
-		return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
-	}
-
-	function getContrastColor(r: number, g: number, b: number): string {
-		const luminance = getLuminance(r, g, b);
-		console.log('Luminance:', luminance, `rgb(${r}, ${g}, ${b})`);
-		return luminance > 0.179 ? 'black' : 'white';
 	}
 
 	function toImageUrl(imageKey: string, applicationId: string): string {
@@ -158,6 +149,7 @@
 				.then((color) => {
 					m3ContentColorValue = color;
 					console.log('M3Content color:', color);
+					onAccentColorChange?.(color);
 				})
 				.catch((error) => {
 					console.error('Error fetching or processing image:', error);
@@ -173,16 +165,18 @@
 	);
 </script>
 
-<div class="space-y-3">
+<div class="relative mt-4 space-y-4">
 	{#if largeImage}
-		<div class="absolute inset-0 h-full w-full overflow-hidden rounded-xl">
+		<div
+			class="absolute inset-0 -m-4 h-[calc(100%+2rem)] w-[calc(100%+2rem)] overflow-hidden rounded-2xl"
+		>
 			<div
 				class="pointer-events-none absolute z-10 h-full w-full"
 				style="
 				background: radial-gradient(
 					circle at center,
 					transparent 0%,
-					rgba({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}, 0.9) 40%,
+					rgba({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}, 0.8) 35%,
 					rgb({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}) 100%
 				);
 			"
@@ -190,57 +184,86 @@
 			<img
 				src={largeImage}
 				alt={activity.name}
-				class="center pointer-events-none absolute inset-0 h-full w-full object-cover opacity-60"
+				class="center pointer-events-none absolute inset-0 h-full w-full object-cover opacity-75 blur-[2px]"
 			/>
 		</div>
 	{/if}
 
 	{#if activity.type == 2}
 		<div
-			class="absolute top-3 right-4 z-20 flex items-center justify-center gap-2 rounded-lg px-3 py-2 shadow-neu-highlight backdrop-blur-sm transition-all duration-300"
+			class="absolute -top-1 -right-1 z-20 flex items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 backdrop-blur-md transition-all duration-300 {contrastColor ===
+			'black'
+				? 'border-black/5 bg-black/5'
+				: 'border-white/10 bg-black/30'}"
 		>
-			<span class="text-center text-xs">{activity.name}</span>
-			<HugeiconsIcon icon={MusicNote01Icon} size={14} className="text-xs fill-current/30" />
+			<span
+				class="text-center text-[10px] font-medium {contrastColor === 'black'
+					? 'text-black/80'
+					: 'text-white/80'}">{activity.name}</span
+			>
+			<HugeiconsIcon
+				icon={MusicNote01Icon}
+				size={12}
+				className={contrastColor === 'black' ? 'text-black/60' : 'text-white/60'}
+			/>
 		</div>
 	{/if}
 
-	<div
-		class="relative z-20 space-y-1.5 overflow-hidden rounded-xl p-4 shadow-neu-highlight backdrop-blur-sm transition-colors duration-300"
-	>
-		<div class="flex items-start gap-3">
-			<div class="flex-1 space-y-1">
-				{#if activity.details}
-					<p
-						class="text-sm font-semibold tracking-tight {contrastColor === 'black'
-							? 'text-stone-900/90'
-							: 'text-foreground/90'}"
-					>
-						{activity.details}
-					</p>
-				{/if}
-				{#if activity.state}
-					<p
-						class="text-xs {contrastColor === 'black' ? 'text-stone-900/70' : 'text-foreground/70'}"
-					>
-						{activity.state}
-					</p>
-				{/if}
+	<div class="relative z-20 flex items-center gap-3">
+		{#if largeImage}
+			<img
+				src={largeImage}
+				alt={activity.name}
+				class="h-18 w-18 shrink-0 rounded-lg object-cover shadow-lg ring-1 {contrastColor ===
+				'black'
+					? 'ring-black/10'
+					: 'ring-white/10'}"
+			/>
+		{/if}
+		<div class="min-w-0 flex-1 space-y-0.5">
+			{#if activity.details}
+				<p
+					class="truncate text-base font-semibold tracking-tight {contrastColor === 'black'
+						? 'text-stone-900/90'
+						: 'text-white/95'}"
+				>
+					{activity.details}
+				</p>
+			{/if}
+			{#if activity.state}
+				<p
+					class="truncate text-sm {contrastColor === 'black'
+						? 'text-stone-900/70'
+						: 'text-white/70'}"
+				>
+					{activity.state}
+				</p>
+			{/if}
+		</div>
+	</div>
+
+	{#if activity.timestamps?.start && activity.timestamps?.end}
+		<div class="relative z-20 space-y-1">
+			<div
+				class="h-1 w-full overflow-hidden rounded-full {contrastColor === 'black'
+					? 'bg-black/10'
+					: 'bg-white/20'}"
+			>
+				<div
+					class="h-full rounded-full transition-all duration-300 {contrastColor === 'black'
+						? 'bg-black/70'
+						: 'bg-white/70'}"
+					style="width: {progress}%"
+				></div>
+			</div>
+			<div
+				class="flex justify-between text-[10px] font-medium {contrastColor === 'black'
+					? 'text-black/50'
+					: 'text-white/50'}"
+			>
+				<span>{currentTime}</span>
+				<span>{formatDuration(activity.timestamps.end - activity.timestamps.start)}</span>
 			</div>
 		</div>
-
-		{#if activity.timestamps?.start && activity.timestamps?.end}
-			<div class="space-y-1.5">
-				<div class="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-					<div
-						class="h-full rounded-full bg-linear-to-r from-primary/60 to-primary/40 transition-all duration-300"
-						style="width: {progress}%"
-					></div>
-				</div>
-				<!-- <div class="flex justify-between text-[10px] font-medium text-muted-foreground">
-					<span>{currentTime}</span>
-					<span>{formatDuration(activity.timestamps.end - activity.timestamps.start)}</span>
-				</div> -->
-			</div>
-		{/if}
-	</div>
+	{/if}
 </div>

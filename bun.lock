@@ -7,6 +7,7 @@
         "@fontsource-variable/inter": "^5.2.8",
         "@fontsource-variable/jetbrains-mono": "^5.2.8",
         "@fontsource/caveat": "^5.2.8",
+        "@fontsource/instrument-serif": "^5.2.8",
         "@hugeicons/core-free-icons": "^1.1.0",
         "@lucide/svelte": "^0.548.0",
         "motion": "^12.23.24",
@@ -161,6 +162,8 @@
     "@fontsource/caveat": ["@fontsource/caveat@5.2.8", "", {}, "sha512-9fUUfFE2IQFKbx+xOcaeQxxmh8iJguEb8z+j1PeueO4UUx+XfT4pRm/B04ZDvFA794/iRxY/IibmP8ZKtIf4rw=="],
 
     "@fontsource/gloria-hallelujah": ["@fontsource/gloria-hallelujah@5.2.8", "", {}, "sha512-GkIdkqC5eZbUX1jidQtoOdD7JAIq5pU5YzldX6uEcStNMrboXVnH1lafHJNLKrmufxEk7Tq3wg7hmI4kOlcJag=="],
+
+    "@fontsource/instrument-serif": ["@fontsource/instrument-serif@5.2.8", "", {}, "sha512-s+bkz+syj2rO00Rmq9g0P+PwuLig33DR1xDR8pTWmovH1pUjwnncrFk++q9mmOex8fUQ7oW80gPpPDaw7V1MMw=="],
 
     "@hugeicons/core-free-icons": ["@hugeicons/core-free-icons@1.2.1", "", {}, "sha512-ho0QdGMkgL+kt+QsZocCsKvJou1rfyVQWARrxIhNLi+9tCKayUUtD9jlHgioaRphmskSl84TxrDm9Ae0G4Uu1g=="],
 
