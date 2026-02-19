@@ -98,9 +98,11 @@
 							></div>
 						</div>
 						<span
-							class="text-xs font-medium {textContrastColor === 'black'
-								? 'text-black/70'
-								: 'text-white/70'}"
+							class="text-xs font-medium {data.discord_status === 'dnd'
+								? 'text-white/70'
+								: textContrastColor === 'black'
+									? 'text-black/70'
+									: 'text-white/70'}"
 						>
 							{statusLabels[data.discord_status]}
 						</span>

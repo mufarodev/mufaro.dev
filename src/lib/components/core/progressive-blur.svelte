@@ -16,7 +16,6 @@
 	<div class="blur-filter"></div>
 	<div class="blur-filter"></div>
 	<div class="blur-filter"></div>
-	<div class="gradient"></div>
 </div>
 
 <style>
@@ -25,7 +24,8 @@
 		left: 0;
 		bottom: 0;
 		right: 0;
-		width: 100%;
+		margin: 0 auto;
+		width: 70%;
 		height: 10vh;
 		z-index: 9999;
 		pointer-events: none;
@@ -36,6 +36,7 @@
 		left: 0;
 		bottom: 0;
 		right: 0;
+		width: 70%;
 		margin: 0 auto;
 		height: 10vh;
 	}
@@ -106,6 +107,8 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
+		width: 70%;
+		margin: 0 auto;
 		height: 10vh;
 		background: linear-gradient(transparent, rgba(var(--pg-bg), 1));
 	}

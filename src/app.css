@@ -36,6 +36,7 @@
 	--sidebar-ring: oklch(0.7731 0 0);
 	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
 	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+	--font-serif: 'Instrument Serif', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 	--font-handwriting: 'Caveat', cursive;
 	--radius: 1rem;
 	--shadow-x: 0;
@@ -192,4 +193,21 @@
 body {
 	font-family: var(--font-sans);
 	font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+
+.lenis.lenis-smooth {
+	scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+	overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+	overflow: hidden;
 }

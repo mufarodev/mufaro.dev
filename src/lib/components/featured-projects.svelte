@@ -51,8 +51,26 @@
 		);
 	}
 
+	function handleMouseMove(e: MouseEvent, card: HTMLElement) {
+		const rect = card.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+		
+		const centerX = rect.width / 2;
+		const centerY = rect.height / 2;
+		
+		const rotateX = ((y - centerY) / centerY) * -3; // Subtle tilt
+		const rotateY = ((x - centerX) / centerX) * 3;
+		
+		card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+	}
+
 	function handleMouseLeave(index: number, card: HTMLElement) {
 		hoveredIndex = null;
+		
+		// Reset transform
+		card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+
 		const borders = card.querySelectorAll('.corner-border');
 		animate(
 			borders as unknown as HTMLElement[],
@@ -68,15 +86,22 @@
 		<p class="text-muted-foreground">Some things I've built recently</p>
 	</div>
 
-	<div>
+	<div class="perspective-1000">
 		{#each projects as project, i}
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				bind:this={projectCards[i]}
 				onmouseenter={(e) => handleMouseEnter(i, e.currentTarget)}
 				onmouseleave={(e) => handleMouseLeave(i, e.currentTarget)}
-				class="group relative rounded-3xl bg-card p-6 opacity-0 transition-transform duration-300"
+				onmousemove={(e) => handleMouseMove(e, e.currentTarget)}
+				class="group relative rounded-3xl bg-card p-6 opacity-0 transition-all duration-200 ease-out will-change-transform"
+				style="transform-style: preserve-3d;"
 			>
+				<!-- Technical ID Decal -->
+				<div class="absolute right-6 top-6 font-mono text-[10px] text-white/20 opacity-0 transition-opacity group-hover:opacity-100">
+					PRJ-{String(i + 1).padStart(3, '0')} // {project.tech[0].toUpperCase()}
+				</div>
+
 				<!-- Dashed border that appears on hover -->
 				<div
 					class="corner-border pointer-events-none absolute inset-0 z-10 -m-px rounded-3xl border-4 border-dashed border-white/15 opacity-0"
