@@ -2,7 +2,7 @@
 	import type { LanyardGeneric } from 'sveltekit-lanyard';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { MusicNote01Icon } from '@hugeicons/core-free-icons';
-	import { createImageFromBlob, rgbToHex, getContrastColor } from '$lib/utils';
+	import { rgbToHex, getContrastColor, extractDominantColor } from '$lib/utils';
 
 	interface Props {
 		activity: LanyardGeneric.Activity;
@@ -24,8 +24,6 @@
 	let contrastColor = $derived.by(() => {
 		return getContrastColor(m3ContentColorValue.r, m3ContentColorValue.g, m3ContentColorValue.b);
 	});
-
-	$effect(() => console.log('Contrast color:', contrastColor));
 
 	function calculateProgress(timestamps: { start: number; end: number }): number {
 		const current = Date.now();
@@ -50,82 +48,7 @@
 	async function m3ContentColor(
 		imageBuffer: ArrayBuffer
 	): Promise<{ r: number; g: number; b: number }> {
-		const blob = new Blob([imageBuffer]);
-		const img = await createImageFromBlob(blob);
-
-		const canvas = document.createElement('canvas');
-		canvas.width = img.naturalWidth;
-		canvas.height = img.naturalHeight;
-
-		const ctx = canvas.getContext('2d', { willReadFrequently: true });
-		if (!ctx) return { r: 30, g: 30, b: 30 };
-		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-		const centerX = Math.floor(canvas.width / 2);
-		const centerY = Math.floor(canvas.height / 2);
-		const sampleWidth = Math.floor(canvas.width * 0.7);
-		const sampleHeight = Math.floor(canvas.height * 0.7);
-		const startX = Math.max(0, centerX - Math.floor(sampleWidth / 2));
-		const startY = Math.max(0, centerY - Math.floor(sampleHeight / 2));
-
-		const imageData = ctx.getImageData(startX, startY, sampleWidth, sampleHeight);
-		const data = imageData.data;
-
-		const colorMap: Record<
-			string,
-			{ r: number; g: number; b: number; brightness: number; count: number }
-		> = {};
-
-		let totalBrightness = 0;
-		let validPixels = 0;
-
-		for (let i = 0; i < data.length; i += 12) {
-			const r = data[i];
-			const g = data[i + 1];
-			const b = data[i + 2];
-
-			const brightness = (r + g + b) / 3;
-			totalBrightness += brightness;
-			validPixels++;
-
-			if (brightness < 15 || brightness > 240) continue;
-
-			const rKey = Math.round(r / 20) * 20;
-			const gKey = Math.round(g / 20) * 20;
-			const bKey = Math.round(b / 20) * 20;
-			const key = `${rKey},${gKey},${bKey}`;
-
-			if (!colorMap[key]) {
-				colorMap[key] = { r: rKey, g: gKey, b: bKey, brightness, count: 0 };
-			}
-			colorMap[key].count++;
-		}
-
-		const avgBrightness = totalBrightness / validPixels;
-		const isDarkImage = avgBrightness < 60;
-
-		console.log('Average brightness:', avgBrightness, 'Dark image:', isDarkImage);
-
-		let dominant: { r: number; g: number; b: number; brightness: number } = {
-			r: 30,
-			g: 30,
-			b: 30,
-			brightness: 30
-		};
-		let maxCount = 0;
-
-		Object.values(colorMap).forEach((color) => {
-			if (color.count > maxCount) {
-				maxCount = color.count;
-				dominant = color;
-			}
-		});
-
-		if (maxCount === 0 || (isDarkImage && dominant.brightness > 80)) {
-			return { r: 30, g: 30, b: 30 };
-		}
-
-		return { r: dominant.r, g: dominant.g, b: dominant.b };
+		return extractDominantColor(imageBuffer);
 	}
 
 	function toImageUrl(imageKey: string, applicationId: string): string {
@@ -148,7 +71,6 @@
 				.then((arrayBuffer) => m3ContentColor(arrayBuffer))
 				.then((color) => {
 					m3ContentColorValue = color;
-					console.log('M3Content color:', color);
 					onAccentColorChange?.(color);
 				})
 				.catch((error) => {
@@ -243,7 +165,7 @@
 	</div>
 
 	{#if activity.timestamps?.start && activity.timestamps?.end}
-		<div class="relative z-20 space-y-1">
+		<div class="absolute right-0 -bottom-2 left-0 z-20 !mt-0 space-y-1">
 			<div
 				class="h-1 w-full overflow-hidden rounded-full {contrastColor === 'black'
 					? 'bg-black/10'

@@ -1,12 +1,8 @@
 <script lang="ts">
-	import { useLanyard } from 'sveltekit-lanyard';
 	import { fade } from 'svelte/transition';
+	import { getLanyard } from '$lib/stores/lanyard';
 
-	const userId = '769702535124090904';
-	const lanyard = useLanyard({
-		connectionType: 'ws',
-		subscriptionScope: { subscribe_to_id: userId }
-	});
+	const lanyard = getLanyard();
 
 	const statusColors = {
 		online: 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]',
@@ -15,34 +11,41 @@
 		offline: 'bg-gray-500'
 	};
 
-    const statusLabels = {
+	const statusLabels = {
 		online: 'Online',
 		idle: 'Away',
 		dnd: 'DND',
 		offline: 'Offline'
 	};
 
-    let data = $derived(lanyard.data);
-    let status = $derived(data?.discord_status || 'offline');
-    let activity = $derived(data?.activities?.find(a => a.type !== 4)); // Get non-custom status if any
-    let customStatus = $derived(data?.activities?.find(a => a.type === 4));
+	let data = $derived(lanyard.data);
+	let status = $derived(data?.discord_status || 'offline');
+	let activity = $derived(data?.activities?.find((a) => a.type !== 4)); // Get non-custom status if any
+	let customStatus = $derived(data?.activities?.find((a) => a.type === 4));
 </script>
 
-<div class="flex items-center gap-3 rounded-full bg-white/5 py-2 px-4 backdrop-blur-md border border-white/10 transition-colors hover:bg-white/10">
-    <!-- Status Dot -->
-    <div class="relative flex items-center justify-center">
-        <div class="h-2.5 w-2.5 rounded-full {statusColors[status as keyof typeof statusColors]}"></div>
-    </div>
+<div
+	class="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-md transition-colors hover:bg-white/10"
+>
+	<!-- Status Dot -->
+	<div class="relative flex items-center justify-center">
+		<div class="h-2.5 w-2.5 rounded-full {statusColors[status as keyof typeof statusColors]}"></div>
+	</div>
 
-    <!-- Text Info -->
-    <div class="flex flex-col text-xs leading-none">
-        {#if activity}
-            <span class="font-medium text-white max-w-[120px] truncate">{activity.name}</span>
-            <span class="text-white/50 text-[10px] truncate max-w-[120px]">{activity.details || activity.state || statusLabels[status as keyof typeof statusLabels]}</span>
-        {:else if customStatus}
-             <span class="font-medium text-white max-w-[120px] truncate">{customStatus.state}</span>
-        {:else}
-             <span class="font-medium text-white">{statusLabels[status as keyof typeof statusLabels]}</span>
-        {/if}
-    </div>
+	<!-- Text Info -->
+	<div class="flex flex-col text-xs leading-none">
+		{#if activity}
+			<span class="max-w-[120px] truncate font-medium text-white">{activity.name}</span>
+			<span class="max-w-[120px] truncate text-[10px] text-white/50"
+				>{activity.details ||
+					activity.state ||
+					statusLabels[status as keyof typeof statusLabels]}</span
+			>
+		{:else if customStatus}
+			<span class="max-w-[120px] truncate font-medium text-white">{customStatus.state}</span>
+		{:else}
+			<span class="font-medium text-white">{statusLabels[status as keyof typeof statusLabels]}</span
+			>
+		{/if}
+	</div>
 </div>

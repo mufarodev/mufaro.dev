@@ -20,17 +20,35 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<title>Mufaro</title>
+	<meta
+		name="description"
+		content="18 year old software & reverse engineer from Poland"
+	/>
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Mufaro" />
+	<meta
+		property="og:description"
+		content="18 year old software & reverse engineer from Poland"
+	/>
+	<meta property="og:image" content="/images/embed.webp" />
+	<meta property="og:image:type" content="image/webp" />
+	<meta property="og:image:alt" content="Preview image for Mufaro's website" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Mufaro" />
+	<meta
+		name="twitter:description"
+		content="18 year old software & reverse engineer from Poland"
+	/>
+	<meta name="twitter:image" content="/images/embed.webp" />
 </svelte:head>
 
 <!-- <ProgressiveBlur /> -->
 
-<!-- Base background - near black with subtle noise texture -->
 <div class="fixed inset-0 -z-10 bg-[#050508]">
-	<!-- Very subtle top light falloff -->
 	<div
 		class="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,_rgba(255,255,255,0.03)_0%,_transparent_50%)]"
 	></div>
-	<!-- Noise texture overlay -->
 	<div
 		class="absolute inset-0 opacity-[0.02]"
 		style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27noise%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23noise)%27/%3E%3C/svg%3E');"

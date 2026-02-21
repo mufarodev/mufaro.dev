@@ -79,9 +79,9 @@
 		return Array.from(monthsMap.values());
 	}
 
-	const heatmapData = generateHeatmap();
-	const totalContributions = heatmapData.filter((d) => d.value > 0).length * 3;
-	const monthLabels = getMonthLabels(heatmapData);
+	// const heatmapData = generateHeatmap();
+	// const totalContributions = heatmapData.filter((d) => d.value > 0).length * 3;
+	// const monthLabels = getMonthLabels(heatmapData);
 
 	function getWeeksData(data: Array<{ date: Date; value: number }>) {
 		const weeks = [];
@@ -112,7 +112,7 @@
 		return weeks;
 	}
 
-	const weeksData = getWeeksData(heatmapData);
+	// const weeksData = getWeeksData(heatmapData);
 
 	function calculateStreak() {
 		let currentStreak = 0;
@@ -128,7 +128,7 @@
 		return { current: Math.ceil(currentStreak / 7), max: Math.ceil(maxStreak / 7) };
 	}
 
-	const streak = calculateStreak();
+	// const streak = calculateStreak();
 
 	const facts = [
 		{

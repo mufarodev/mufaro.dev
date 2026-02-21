@@ -31,8 +31,58 @@
 	let canvas: HTMLCanvasElement;
 	let shaderMount: ShaderMount | null = null;
 	let animationSpeed = $derived((speed / 100) * 5);
+	let visibilityListener: (() => void) | null = null;
+	let reducedMotionListener: ((event: MediaQueryListEvent) => void) | null = null;
+	let motionQuery: MediaQueryList | null = null;
 
 	const PatternShapes = { Checks: 0, Stripes: 1, Edge: 2 };
+
+	type PerformanceMode = 'high' | 'balanced' | 'low' | 'paused';
+
+	const PERFORMANCE_CONFIG: Record<
+		PerformanceMode,
+		{
+			renderScale: number;
+			pixelRatioCap: number;
+			frameIntervalMs: number;
+			paused: boolean;
+			maxRenderPixels: number;
+			swirlIterations: number;
+		}
+	> = {
+		high: {
+			renderScale: 0.95,
+			pixelRatioCap: 1.25,
+			frameIntervalMs: 1000 / 60,
+			paused: false,
+			maxRenderPixels: 1_450_000,
+			swirlIterations: 5
+		},
+		balanced: {
+			renderScale: 0.75,
+			pixelRatioCap: 1.0,
+			frameIntervalMs: 1000 / 40,
+			paused: false,
+			maxRenderPixels: 950_000,
+			swirlIterations: 3
+		},
+		low: {
+			renderScale: 0.6,
+			pixelRatioCap: 0.85,
+			frameIntervalMs: 1000 / 28,
+			paused: false,
+			maxRenderPixels: 600_000,
+			swirlIterations: 2
+		},
+		paused: {
+			renderScale: 0.6,
+			pixelRatioCap: 0.85,
+			frameIntervalMs: 1000 / 28,
+			paused: true,
+			maxRenderPixels: 600_000,
+			swirlIterations: 1
+		}
+	};
 
 	function getShaderColorFromString(
 		colorString: string | number[],
@@ -47,7 +97,10 @@
 			return getShaderColorFromString(fallback);
 		}
 
-		let r: number, g: number, b: number, a = 1;
+		let r: number,
+			g: number,
+			b: number,
+			a = 1;
 
 		if (colorString.startsWith('#')) {
 			[r, g, b, a] = hexToRgba(colorString);
@@ -123,7 +176,8 @@
 				if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
 				return p;
 			};
-			const q = lDecimal < 0.5 ? lDecimal * (1 + sDecimal) : lDecimal + sDecimal - lDecimal * sDecimal;
+			const q =
+				lDecimal < 0.5 ? lDecimal * (1 + sDecimal) : lDecimal + sDecimal - lDecimal * sDecimal;
 			const p = 2 * lDecimal - q;
 			const hDecimal = h / 360;
 			r = hue2rgb(p, q, hDecimal + 1 / 3);
@@ -267,9 +321,24 @@ void main() {
 		uniformLocations: Record<string, WebGLUniformLocation | null> = {};
 		fragmentShader: string;
 		rafId: number | null = null;
+		recoveryTimeoutId: number | null = null;
 		lastFrameTime = 0;
+		lastDrawTime = 0;
 		totalAnimationTime = 0;
-		speed = 1;
+		externalSpeed = 1;
+		effectiveSpeed = 1;
+		performanceMode: PerformanceMode = 'high';
+		isPageVisible = true;
+		isReducedMotion = false;
+		renderScale = PERFORMANCE_CONFIG.high.renderScale;
+		pixelRatioCap = PERFORMANCE_CONFIG.high.pixelRatioCap;
+		frameIntervalMs = PERFORMANCE_CONFIG.high.frameIntervalMs;
+		maxRenderPixels = PERFORMANCE_CONFIG.high.maxRenderPixels;
+		fpsSampleFrames = 0;
+		fpsSampleElapsedMs = 0;
+		fpsLowDurationMs = 0;
+		fpsHighDurationMs = 0;
+		fpsCriticalDurationMs = 0;
 		providedUniforms: Record<string, number | number[] | boolean>;
 		hasBeenDisposed = false;
 		resolutionChanged = true;
@@ -296,6 +365,7 @@ void main() {
 
 			this.initWebGL();
 			this.setupResizeObserver();
+			this.setupIntersectionObserver();
 			this.setSpeed(speed);
 		}
 
@@ -370,16 +440,169 @@ void main() {
 			};
 		};
 
+		intersectionObserver: IntersectionObserver | null = null;
+		isVisible = true;
+
+		canAnimate = () => {
+			return (
+				!this.hasBeenDisposed &&
+				this.isVisible &&
+				this.isPageVisible &&
+				!this.isReducedMotion &&
+				!PERFORMANCE_CONFIG[this.performanceMode].paused &&
+				this.externalSpeed !== 0
+			);
+		};
+
+		clearRecoveryTimeout = () => {
+			if (this.recoveryTimeoutId !== null) {
+				window.clearTimeout(this.recoveryTimeoutId);
+				this.recoveryTimeoutId = null;
+			}
+		};
+
+		scheduleRecovery = () => {
+			this.clearRecoveryTimeout();
+			this.recoveryTimeoutId = window.setTimeout(() => {
+				this.recoveryTimeoutId = null;
+				if (!this.hasBeenDisposed && this.performanceMode === 'paused') {
+					this.setPerformanceMode('low');
+				}
+			}, 3000);
+		};
+
+		applyAnimationState = () => {
+			this.effectiveSpeed = this.canAnimate() ? this.externalSpeed : 0;
+
+			if (this.effectiveSpeed !== 0) {
+				if (this.rafId === null) {
+					const now = performance.now();
+					this.lastFrameTime = now;
+					this.lastDrawTime = now;
+					this.rafId = requestAnimationFrame(this.render);
+				}
+				return;
+			}
+
+			if (this.rafId !== null) {
+				cancelAnimationFrame(this.rafId);
+				this.rafId = null;
+			}
+		};
+
+		setPerformanceMode = (mode: PerformanceMode) => {
+			if (this.performanceMode === mode) return;
+			this.performanceMode = mode;
+			const config = PERFORMANCE_CONFIG[mode];
+			this.renderScale = config.renderScale;
+			this.pixelRatioCap = config.pixelRatioCap;
+			this.frameIntervalMs = config.frameIntervalMs;
+			this.maxRenderPixels = config.maxRenderPixels;
+			this.fpsLowDurationMs = 0;
+			this.fpsHighDurationMs = 0;
+			this.fpsCriticalDurationMs = 0;
+			this.providedUniforms.u_swirlIterations = config.swirlIterations;
+			this.updateProvidedUniforms();
+			this.handleResize();
+			this.applyAnimationState();
+
+			if (mode === 'paused') {
+				this.scheduleRecovery();
+			} else {
+				this.clearRecoveryTimeout();
+			}
+		};
+
+		degradePerformance = () => {
+			if (this.performanceMode === 'high') {
+				this.setPerformanceMode('balanced');
+				return;
+			}
+			if (this.performanceMode === 'balanced') {
+				this.setPerformanceMode('low');
+				return;
+			}
+			if (this.performanceMode === 'low') {
+				this.setPerformanceMode('paused');
+			}
+		};
+
+		restorePerformance = () => {
+			if (this.performanceMode === 'low') {
+				this.setPerformanceMode('balanced');
+				return;
+			}
+			if (this.performanceMode === 'balanced') {
+				this.setPerformanceMode('high');
+			}
+		};
+
+		handleFpsSample = (fps: number, elapsedMs: number) => {
+			if (this.performanceMode === 'paused') return;
+
+			if (fps < 22) {
+				this.fpsCriticalDurationMs += elapsedMs;
+			} else {
+				this.fpsCriticalDurationMs = 0;
+			}
+
+			if (this.performanceMode === 'low' && this.fpsCriticalDurationMs >= 2500) {
+				this.setPerformanceMode('paused');
+				return;
+			}
+
+			if (fps < 35) {
+				this.fpsLowDurationMs += elapsedMs;
+				this.fpsHighDurationMs = 0;
+				if (this.fpsLowDurationMs >= 1500) {
+					this.degradePerformance();
+				}
+				return;
+			}
+
+			if (fps > 50) {
+				this.fpsHighDurationMs += elapsedMs;
+				this.fpsLowDurationMs = 0;
+				if (this.fpsHighDurationMs >= 3000) {
+					this.restorePerformance();
+				}
+				return;
+			}
+
+			this.fpsLowDurationMs = 0;
+			this.fpsHighDurationMs = 0;
+		};
+
 		setupResizeObserver = () => {
 			this.resizeObserver = new ResizeObserver(() => this.handleResize());
 			this.resizeObserver.observe(this.canvas);
 			this.handleResize();
 		};
 
+		setupIntersectionObserver = () => {
+			this.intersectionObserver = new IntersectionObserver(
+				(entries) => {
+					const entry = entries[0];
+					this.isVisible = entry?.isIntersecting ?? true;
+					this.applyAnimationState();
+				},
+				{ threshold: 0 }
+			);
+			this.intersectionObserver.observe(this.canvas);
+		};
+
 		handleResize = () => {
-			const pixelRatio = window.devicePixelRatio;
-			const newWidth = this.canvas.clientWidth * pixelRatio;
-			const newHeight = this.canvas.clientHeight * pixelRatio;
+			const pixelRatio =
+				Math.min(window.devicePixelRatio || 1, this.pixelRatioCap) * this.renderScale;
+			let newWidth = Math.max(1, Math.floor(this.canvas.clientWidth * pixelRatio));
+			let newHeight = Math.max(1, Math.floor(this.canvas.clientHeight * pixelRatio));
+
+			const currentPixels = newWidth * newHeight;
+			if (currentPixels > this.maxRenderPixels) {
+				const downscale = Math.sqrt(this.maxRenderPixels / currentPixels);
+				newWidth = Math.max(1, Math.floor(newWidth * downscale));
+				newHeight = Math.max(1, Math.floor(newHeight * downscale));
+			}
 
 			if (this.canvas.width !== newWidth || this.canvas.height !== newHeight) {
 				this.canvas.width = newWidth;
@@ -392,13 +615,36 @@ void main() {
 
 		render = (currentTime: number) => {
 			if (this.hasBeenDisposed) return;
+			this.rafId = null;
+			if (this.effectiveSpeed === 0 || !this.canAnimate()) {
+				return;
+			}
 
-			const dt = currentTime - this.lastFrameTime;
+			if (this.lastFrameTime === 0) {
+				this.lastFrameTime = currentTime;
+			}
+
+			const dt = Math.max(0, currentTime - this.lastFrameTime);
 			this.lastFrameTime = currentTime;
 
-			if (this.speed !== 0) {
-				this.totalAnimationTime += dt * this.speed;
+			this.fpsSampleFrames += 1;
+			this.fpsSampleElapsedMs += dt;
+			if (this.fpsSampleElapsedMs >= 1000) {
+				const fps = (this.fpsSampleFrames * 1000) / this.fpsSampleElapsedMs;
+				this.handleFpsSample(fps, this.fpsSampleElapsedMs);
+				this.fpsSampleFrames = 0;
+				this.fpsSampleElapsedMs = 0;
 			}
+
+			if (this.effectiveSpeed !== 0) {
+				this.totalAnimationTime += dt * this.effectiveSpeed;
+			}
+
+			if (currentTime - this.lastDrawTime < this.frameIntervalMs) {
+				this.requestRender();
+				return;
+			}
+			this.lastDrawTime = currentTime;
 
 			this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 			this.gl.useProgram(this.program);
@@ -411,13 +657,16 @@ void main() {
 					this.gl.canvas.width,
 					this.gl.canvas.height
 				);
-				this.gl.uniform1f(this.uniformLocations.u_pixelRatio!, window.devicePixelRatio);
+				this.gl.uniform1f(
+					this.uniformLocations.u_pixelRatio!,
+					Math.min(window.devicePixelRatio || 1, this.pixelRatioCap) * this.renderScale
+				);
 				this.resolutionChanged = false;
 			}
 
 			this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
-			if (this.speed !== 0) {
+			if (this.effectiveSpeed !== 0) {
 				this.requestRender();
 			} else {
 				this.rafId = null;
@@ -425,10 +674,9 @@ void main() {
 		};
 
 		requestRender = () => {
-			if (this.rafId !== null) {
-				cancelAnimationFrame(this.rafId);
+			if (this.rafId === null) {
+				this.rafId = requestAnimationFrame(this.render);
 			}
-			this.rafId = requestAnimationFrame(this.render);
 		};
 
 		updateProvidedUniforms = () => {
@@ -465,15 +713,18 @@ void main() {
 		};
 
 		setSpeed = (newSpeed = 1) => {
-			this.speed = newSpeed;
-			if (this.rafId === null && newSpeed !== 0) {
-				this.lastFrameTime = performance.now();
-				this.rafId = requestAnimationFrame(this.render);
-			}
-			if (this.rafId !== null && newSpeed === 0) {
-				cancelAnimationFrame(this.rafId);
-				this.rafId = null;
-			}
+			this.externalSpeed = newSpeed;
+			this.applyAnimationState();
+		};
+
+		setPageVisibility = (isVisible: boolean) => {
+			this.isPageVisible = isVisible;
+			this.applyAnimationState();
+		};
+
+		setReducedMotion = (enabled: boolean) => {
+			this.isReducedMotion = enabled;
+			this.applyAnimationState();
 		};
 
 		setUniforms = (newUniforms: Record<string, number | number[] | boolean>) => {
@@ -484,6 +735,7 @@ void main() {
 
 		dispose = () => {
 			this.hasBeenDisposed = true;
+			this.clearRecoveryTimeout();
 			if (this.rafId !== null) {
 				cancelAnimationFrame(this.rafId);
 				this.rafId = null;
@@ -500,6 +752,10 @@ void main() {
 			if (this.resizeObserver) {
 				this.resizeObserver.disconnect();
 				this.resizeObserver = null;
+			}
+			if (this.intersectionObserver) {
+				this.intersectionObserver.disconnect();
+				this.intersectionObserver = null;
 			}
 			this.uniformLocations = {};
 		};
@@ -528,13 +784,47 @@ void main() {
 				canvas,
 				warpFragmentShader,
 				uniforms,
-				undefined,
+				{
+					alpha: true,
+					antialias: false,
+					depth: false,
+					stencil: false,
+					premultipliedAlpha: true,
+					preserveDrawingBuffer: false,
+					desynchronized: true,
+					powerPreference: 'low-power'
+				},
 				animationSpeed,
 				plasmaConfig.offset * 10
 			);
+
+			const updateVisibility = () => shaderMount?.setPageVisibility(!document.hidden);
+			visibilityListener = updateVisibility;
+			document.addEventListener('visibilitychange', updateVisibility, { passive: true });
+			updateVisibility();
+
+			motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+			reducedMotionListener = (event: MediaQueryListEvent) => {
+				shaderMount?.setReducedMotion(event.matches);
+			};
+			motionQuery.addEventListener('change', reducedMotionListener);
+			shaderMount.setReducedMotion(motionQuery.matches);
 		} catch (e) {
 			console.error('Failed to initialize shader:', e);
 		}
+
+		return () => {
+			if (visibilityListener) {
+				document.removeEventListener('visibilitychange', visibilityListener);
+				visibilityListener = null;
+			}
+
+			if (motionQuery && reducedMotionListener) {
+				motionQuery.removeEventListener('change', reducedMotionListener);
+			}
+			reducedMotionListener = null;
+			motionQuery = null;
+		};
 	});
 
 	$effect(() => {

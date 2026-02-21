@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	// Navigation items
 	const navItems = [
 		{ label: 'Home', href: '/' },
-		{ label: 'Experience', href: '/experience' },
-		{ label: 'Projects', href: '/projects' },
-		{ label: 'About', href: '/about' }
+		// { label: 'Experience', href: '/experience' },
+		// { label: 'Projects', href: '/projects' },
+		// { label: 'About', href: '/about' }
 	];
 
 	let currentPath = $derived($page.url.pathname);
@@ -19,11 +18,11 @@
 	}
 </script>
 
-<nav class="flex items-center gap-1">
+<nav class="flex items-center justify-center gap-0.5 sm:gap-1">
 	{#each navItems as item}
 		<a
 			href={item.href}
-			class="group relative px-4 py-2 text-sm font-medium transition-all duration-300"
+			class="group relative px-2.5 py-2 text-xs font-medium transition-all duration-300 sm:px-4 sm:text-sm"
 			class:active={isActive(item.href)}
 		>
 			<span
@@ -40,7 +39,8 @@
 			</span>
 
 			{#if isActive(item.href)}
-				<span class="absolute bottom-0 left-1/2 h-px w-6 -translate-x-1/2 bg-white/60"></span>
+				<span class="absolute bottom-0 left-1/2 h-px w-4 -translate-x-1/2 bg-white/60 sm:w-6"
+				></span>
 			{/if}
 		</a>
 	{/each}

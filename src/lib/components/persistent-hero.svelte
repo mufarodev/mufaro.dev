@@ -15,6 +15,8 @@
 		morphProgress as morphProgressStore
 	} from '$lib/stores/hero-state';
 
+	gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
 	let currentColor = $state({ r: 136, g: 153, b: 170 });
 
 	let discordMorphProgress = $state(0);
@@ -36,9 +38,33 @@
 	const HERO_SCROLL_TARGET = 88;
 	const HERO_ENTER_THRESHOLD = 140;
 	const HERO_RETURN_THRESHOLD = 220;
+	const MOBILE_HERO_SCROLL_TARGET = 68;
+	const MOBILE_HERO_ENTER_THRESHOLD = 72;
+	const MOBILE_HERO_RETURN_THRESHOLD = 96;
+	const MOBILE_BREAKPOINT = 768;
+	const SMALL_BREAKPOINT = 640;
 	const POST_MORPH_SCROLL_LOCK_MS = 120;
 	const RETURN_SCROLL_LOCK_MS = 60;
-	const sectionPositions = [0, HERO_SCROLL_TARGET];
+
+	function isNarrowViewport() {
+		return typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
+	}
+
+	function isSmallViewport() {
+		return typeof window !== 'undefined' && window.innerWidth < SMALL_BREAKPOINT;
+	}
+
+	function getHeroScrollTarget() {
+		return isNarrowViewport() ? MOBILE_HERO_SCROLL_TARGET : HERO_SCROLL_TARGET;
+	}
+
+	function getHeroEnterThreshold() {
+		return isNarrowViewport() ? MOBILE_HERO_ENTER_THRESHOLD : HERO_ENTER_THRESHOLD;
+	}
+
+	function getHeroReturnThreshold() {
+		return isNarrowViewport() ? MOBILE_HERO_RETURN_THRESHOLD : HERO_RETURN_THRESHOLD;
+	}
 
 	let plasmaColor1 = $derived(
 		`rgb(${Math.round(currentColor.r * 0.8)}, ${Math.round(currentColor.g * 0.8)}, ${Math.round(currentColor.b * 0.8)})`
@@ -99,7 +125,6 @@
 			duration: 1.5,
 			ease: 'power2.out',
 			onUpdate: () => {
-				// Update the store so other components can react
 				accentColor.set({
 					r: Math.round(currentColor.r),
 					g: Math.round(currentColor.g),
@@ -131,7 +156,7 @@
 			gsap.killTweensOf(window);
 			morphTl.play();
 			gsap.to(window, {
-				scrollTo: sectionPositions[1],
+				scrollTo: getHeroScrollTarget(),
 				duration: 0.6,
 				ease: 'power2.inOut',
 				onComplete: () => {
@@ -197,12 +222,11 @@
 	});
 
 	onMount(() => {
-		gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 		heroScrollLocked.set(false);
 		heroAnimatingStore.set(false);
 
 		const initialScrollY = window.scrollY;
-		const startMorphed = !isHomePage || initialScrollY > HERO_ENTER_THRESHOLD;
+		const startMorphed = !isHomePage || initialScrollY > getHeroEnterThreshold();
 
 		if (startMorphed) {
 			currentSection = 1;
@@ -222,10 +246,11 @@
 				top: '0px'
 			},
 			{
-				width: () => (window.innerWidth > 1333 ? '1200px' : '90vw'),
-				height: '80px',
-				borderRadius: '50px',
-				top: '24px',
+				width: () =>
+					window.innerWidth > 1333 ? '1200px' : isNarrowViewport() ? 'calc(100vw - 20px)' : '90vw',
+				height: () => (isNarrowViewport() ? '72px' : '80px'),
+				borderRadius: () => (isNarrowViewport() ? '36px' : '50px'),
+				top: () => (isNarrowViewport() ? '12px' : '24px'),
 				ease: 'power2.inOut',
 				duration: 0.6
 			},
@@ -235,16 +260,16 @@
 		morphTl.fromTo(
 			sparkleImage,
 			{
-				width: '800px',
-				left: '-140px',
-				bottom: '360px',
-				y: '0%'
+				width: () => (isSmallViewport() ? '540px' : isNarrowViewport() ? '660px' : '800px'),
+				left: () => (isNarrowViewport() ? '-130px' : '-140px'),
+				bottom: () => (isNarrowViewport() ? '290px' : '360px'),
+				yPercent: 0
 			},
 			{
-				width: '100px',
-				left: '-5px',
-				bottom: '55%',
-				y: '50%',
+				width: () => (isNarrowViewport() ? '72px' : '100px'),
+				left: () => (isNarrowViewport() ? '-10px' : '-5px'),
+				bottom: () => (isNarrowViewport() ? '50%' : '55%'),
+				yPercent: 50,
 				ease: 'power2.inOut',
 				duration: 0.6
 			},
@@ -254,17 +279,28 @@
 		morphTl.fromTo(
 			heroName,
 			{
-				fontSize: '96px',
+				fontSize: () => (isSmallViewport() ? '68px' : isNarrowViewport() ? '80px' : '96px'),
 				left: () =>
-					window.innerWidth >= 1024 ? '96px' : window.innerWidth >= 768 ? '64px' : '32px',
-				bottom: '220px'
+					window.innerWidth >= 1024 ? '96px' : window.innerWidth >= 768 ? '64px' : '20px',
+				bottom: () => (isNarrowViewport() ? '188px' : '220px')
 			},
 			{
-				fontSize: '36px',
-				left: '100px',
-				bottom: '24px',
+				fontSize: () => (isSmallViewport() ? '24px' : isNarrowViewport() ? '30px' : '36px'),
+				left: () => (isNarrowViewport() ? '20px' : '100px'),
+				bottom: () => (isNarrowViewport() ? '20px' : '24px'),
 				ease: 'power2.inOut',
 				duration: 0.6
+			},
+			0
+		);
+
+		morphTl.fromTo(
+			heroName,
+			{ opacity: 1 },
+			{
+				opacity: () => (isSmallViewport() ? 0 : 1),
+				duration: 0.35,
+				ease: 'power2.out'
 			},
 			0
 		);
@@ -279,14 +315,16 @@
 		morphTl.fromTo(
 			discordContainer,
 			{
-				top: '32px',
-				right: '32px',
-				y: '0%'
+				top: () => (isNarrowViewport() ? '20px' : '32px'),
+				right: () => (isNarrowViewport() ? '16px' : '32px'),
+				scale: () => (isNarrowViewport() ? 0.85 : 1),
+				yPercent: 0
 			},
 			{
 				top: '50%',
-				right: '16px',
-				y: '-50%',
+				right: () => (isNarrowViewport() ? '10px' : '16px'),
+				scale: () => (isNarrowViewport() ? 0.8 : 1),
+				yPercent: -50,
 				ease: 'power2.inOut',
 				duration: 0.6
 			},
@@ -320,10 +358,10 @@
 		morphTl.fromTo(
 			navbarContainer,
 			{
-				top: '56px'
+				top: () => (isNarrowViewport() ? '48px' : '56px')
 			},
 			{
-				top: '40px',
+				top: () => (isNarrowViewport() ? '36px' : '40px'),
 				duration: 0.6,
 				ease: 'power2.inOut'
 			},
@@ -350,24 +388,42 @@
 
 			const scrollY = window.scrollY;
 			const direction = e.deltaY > 0 ? 1 : -1;
+			const heroEnterThreshold = getHeroEnterThreshold();
+			const heroReturnThreshold = getHeroReturnThreshold();
 
 			// At hero, scrolling down -> morph to pill
-			if (currentSection === 0 && direction === 1 && scrollY < HERO_ENTER_THRESHOLD) {
+			if (currentSection === 0 && direction === 1 && scrollY < heroEnterThreshold) {
 				e.preventDefault();
 				morphToPill();
 			}
 			// At pill, scrolling up near top -> restore hero
-			else if (currentSection === 1 && direction === -1 && scrollY <= HERO_RETURN_THRESHOLD) {
+			else if (currentSection === 1 && direction === -1 && scrollY <= heroReturnThreshold) {
 				e.preventDefault();
+				morphToHero();
+			}
+		}
+
+		function handleScroll() {
+			if (!isHomePage || isAnimating || Date.now() < wheelUnlockUntil) {
+				return;
+			}
+
+			const scrollY = window.scrollY;
+
+			if (currentSection === 0 && scrollY > getHeroEnterThreshold()) {
+				morphToPill();
+			} else if (currentSection === 1 && scrollY <= 8) {
 				morphToHero();
 			}
 		}
 
 		const wheelListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
 		window.addEventListener('wheel', handleWheel, wheelListenerOptions);
+		window.addEventListener('scroll', handleScroll, { passive: true });
 
 		return () => {
 			window.removeEventListener('wheel', handleWheel, wheelListenerOptions);
+			window.removeEventListener('scroll', handleScroll);
 			clearUnlockTimeout();
 			unlockScrollAfter(0);
 			setAnimating(false);
@@ -397,14 +453,14 @@
 				color3={plasmaColor3}
 				speed={15}
 			/>
-			<div class="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+			<div class="absolute inset-0 bg-black/40"></div>
 		</div>
 
 		<div class="pointer-events-none relative h-full w-full">
 			<div
 				bind:this={sparkleImage}
 				class="pointer-events-none absolute origin-bottom-left"
-				style="width: 800px; left: -140px; bottom: 360px;"
+				style="width: clamp(540px, 70vw, 800px); left: -140px; bottom: clamp(290px, 40vh, 360px);"
 			>
 				<img
 					src="/images/sparkle.webp"
@@ -416,10 +472,10 @@
 
 			<div
 				bind:this={heroTitleGroup}
-				class="absolute bottom-78 left-8 z-10 origin-bottom-left md:left-16 lg:left-24"
+				class="absolute right-5 bottom-64 left-5 z-10 origin-bottom-left sm:right-auto sm:bottom-78 sm:left-8 md:left-16 lg:left-24"
 			>
 				<h1
-					class="font-serif text-6xl leading-[0.9] font-medium tracking-tight text-white/50 md:text-8xl lg:text-9xl"
+					class="font-serif text-5xl leading-[0.9] font-medium tracking-tight text-white/50 sm:text-6xl md:text-8xl lg:text-9xl"
 				>
 					Hello, I'm <br />
 				</h1>
@@ -427,8 +483,8 @@
 
 			<h1
 				bind:this={heroName}
-				class="absolute left-8 z-10 origin-bottom-left font-serif leading-[0.9] font-medium tracking-tight whitespace-nowrap md:left-16 lg:left-24"
-				style="font-size: 96px; bottom: 220px;"
+				class="absolute right-5 left-5 z-10 origin-bottom-left font-serif leading-[0.9] font-medium tracking-tight sm:right-auto sm:left-8 sm:whitespace-nowrap md:left-16 lg:left-24"
+				style="font-size: clamp(68px, 17vw, 96px); bottom: clamp(188px, 27vh, 220px);"
 			>
 				<span
 					class="bg-linear-to-r from-purple-200 via-white to-purple-200 bg-clip-text text-transparent"
@@ -437,10 +493,15 @@
 				</span>
 			</h1>
 
-			<div bind:this={heroDescription} class="absolute bottom-25 left-8 z-10 md:left-16 lg:left-24">
-				<p class="max-w-xl text-lg leading-relaxed text-white/80 md:text-xl lg:max-w-md">
-					I'm an 18 year old from Poland who makes software, plays games and is passionate about
-					learning new things.
+			<div
+				bind:this={heroDescription}
+				class="absolute right-5 bottom-10 left-5 z-10 sm:right-auto sm:bottom-25 sm:left-8 md:left-16 lg:left-24"
+			>
+				<p
+					class="max-w-[92vw] text-base leading-relaxed text-white/80 sm:max-w-xl sm:text-lg md:text-xl lg:max-w-md"
+				>
+					I'm an 18 year old from Poland who makes software, reverse engineers, plays games and is
+					passionate about learning new things.
 				</p>
 			</div>
 
@@ -454,7 +515,7 @@
 
 			<div
 				bind:this={discordContainer}
-				class="pointer-events-auto absolute z-20 origin-top-right"
+				class="pointer-events-auto absolute z-20 hidden origin-top-right sm:block"
 				style="top: 32px; right: 32px;"
 			>
 				<DiscordStatusMorphable
@@ -467,18 +528,10 @@
 
 	<div
 		bind:this={scrollIndicator}
-		class="pointer-events-none absolute bottom-8 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center gap-2"
+		class="pointer-events-none absolute bottom-5 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center gap-2 sm:bottom-8"
 		style="opacity: 0.5;"
 	>
 		<span class="text-xs tracking-widest text-white/60 uppercase">Scroll</span>
 		<div class="h-12 w-px bg-linear-to-b from-transparent via-white/50 to-transparent"></div>
 	</div>
 </div>
-
-<style>
-	@media (max-width: 768px) {
-		h1[style*='font-size'] {
-			font-size: 64px !important;
-		}
-	}
-</style>

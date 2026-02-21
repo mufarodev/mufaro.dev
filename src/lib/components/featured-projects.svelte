@@ -55,20 +55,19 @@
 		const rect = card.getBoundingClientRect();
 		const x = e.clientX - rect.left;
 		const y = e.clientY - rect.top;
-		
+
 		const centerX = rect.width / 2;
 		const centerY = rect.height / 2;
-		
+
 		const rotateX = ((y - centerY) / centerY) * -3; // Subtle tilt
 		const rotateY = ((x - centerX) / centerX) * 3;
-		
+
 		card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
 	}
 
 	function handleMouseLeave(index: number, card: HTMLElement) {
 		hoveredIndex = null;
-		
-		// Reset transform
+
 		card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
 
 		const borders = card.querySelectorAll('.corner-border');
@@ -98,7 +97,9 @@
 				style="transform-style: preserve-3d;"
 			>
 				<!-- Technical ID Decal -->
-				<div class="absolute right-6 top-6 font-mono text-[10px] text-white/20 opacity-0 transition-opacity group-hover:opacity-100">
+				<div
+					class="absolute top-6 right-6 font-mono text-[10px] text-white/20 opacity-0 transition-opacity group-hover:opacity-100"
+				>
 					PRJ-{String(i + 1).padStart(3, '0')} // {project.tech[0].toUpperCase()}
 				</div>
 
@@ -128,6 +129,10 @@
 						<img
 							src={project.image}
 							alt={project.name}
+							width="1280"
+							height="720"
+							loading="lazy"
+							decoding="async"
 							class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 						/>
 					</div>

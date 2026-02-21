@@ -8,7 +8,12 @@
 		MusicNote01Icon,
 		EyeIcon
 	} from '@hugeicons/core-free-icons';
-	import { createImageFromBlob, rgbToHex, getContrastColor } from '$lib/utils';
+	import {
+		createImageFromBlob,
+		rgbToHex,
+		getContrastColor,
+		extractDominantColor
+	} from '$lib/utils';
 
 	interface Props {
 		activity: LanyardGeneric.Activity;
@@ -74,49 +79,7 @@
 	async function tonalSpotColor(
 		imageBuffer: ArrayBuffer
 	): Promise<{ r: number; g: number; b: number }> {
-		const blob = new Blob([imageBuffer]);
-		const img = await createImageFromBlob(blob);
-
-		const canvas = document.createElement('canvas');
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return { r: 100, g: 100, b: 100 };
-		canvas.width = img.width;
-		canvas.height = img.height;
-		ctx.drawImage(img, 0, 0);
-
-		const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-		const dataView = new DataView(imageData.data.buffer);
-		const pixelStep = 4 * 5;
-		const colorMap = new Map<string, number>();
-		let totalPixels = 0;
-
-		for (let i = 0; i < dataView.byteLength; i += pixelStep) {
-			const a = dataView.getUint8(i + 3);
-
-			if (a < 125) continue;
-
-			const qr = Math.round(dataView.getUint8(i) / 10) * 10;
-			const qg = Math.round(dataView.getUint8(i + 1) / 10) * 10;
-			const qb = Math.round(dataView.getUint8(i + 2) / 10) * 10;
-
-			const key = `${qr},${qg},${qb}`;
-			colorMap.set(key, (colorMap.get(key) || 0) + 1);
-			totalPixels++;
-		}
-
-		let maxCount = 0;
-		let topColorKey = '';
-
-		for (const [key, count] of colorMap) {
-			if (count > maxCount) {
-				maxCount = count;
-				topColorKey = key;
-			}
-		}
-
-		const [r, g, b] = topColorKey.split(',').map(Number);
-
-		return { r, g, b };
+		return extractDominantColor(imageBuffer);
 	}
 
 	function toImageUrl(imageKey: string, applicationId: string): string {
@@ -139,7 +102,6 @@
 				.then((arrayBuffer) => tonalSpotColor(arrayBuffer))
 				.then((color) => {
 					tonalSpotValue = color;
-					console.log('Tonal spot color:', color);
 				})
 				.catch((error) => {
 					console.error('Error fetching or processing image:', error);

@@ -3,6 +3,8 @@
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 
+	gsap.registerPlugin(ScrollTrigger);
+
 	interface Props {
 		scrollContainer?: HTMLElement | null;
 	}
@@ -15,8 +17,6 @@
 	const verticalLines = 8;
 
 	onMount(() => {
-		gsap.registerPlugin(ScrollTrigger);
-
 		const hLines = gridContainer.querySelectorAll('.h-line');
 		hLines.forEach((line, i) => {
 			const speed = 0.1 + (i % 3) * 0.15;
@@ -98,7 +98,6 @@
 		></div>
 	{/each}
 
-	<!-- Vertical lines -->
 	{#each Array(verticalLines) as _, i}
 		<div
 			class="v-line absolute top-0 h-[150%] w-px"

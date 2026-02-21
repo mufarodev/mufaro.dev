@@ -9,5 +9,5 @@
 	style="--accent-r: {$accentColor.r}; --accent-g: {$accentColor.g}; --accent-b: {$accentColor.b};"
 >
 	<HomeExperienceSection />
-	<AboutSection />
+	<AboutSection showSocials={true} />
 </div>

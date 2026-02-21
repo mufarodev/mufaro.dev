@@ -1,24 +1,19 @@
 <script lang="ts">
-	import { useLanyard } from 'sveltekit-lanyard';
 	import DiscordActivity from './discord-activity.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Loading03Icon } from '@hugeicons/core-free-icons';
 	import DiscordGeneralActivity from './discord-general-activity.svelte';
 	import DiscordMusicActivity from './discord-music-activity.svelte';
 	import { getContrastColor } from '$lib/utils';
+	import { getLanyard } from '$lib/stores/lanyard';
+
+	const lanyard = getLanyard();
 
 	interface Props {
 		onAccentColorChange?: (color: { r: number; g: number; b: number } | null) => void;
 	}
 
 	let { onAccentColorChange }: Props = $props();
-
-	const userId = '769702535124090904';
-
-	const lanyard = useLanyard({
-		connectionType: 'ws',
-		subscriptionScope: { subscribe_to_id: userId }
-	});
 
 	const statusColors = {
 		online: 'bg-green-500',
@@ -50,9 +45,7 @@
 	}
 
 	let latestActivity = $derived(
-		data?.activities && data.activities.length > 0
-			? data.activities[data.activities.length - 1]
-			: null
+		data?.activities && data.activities.length > 0 ? data.activities[0] : null
 	);
 
 	$effect(() => {

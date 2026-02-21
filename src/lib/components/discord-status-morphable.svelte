@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { useLanyard } from 'sveltekit-lanyard';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Loading03Icon, MusicNote01Icon } from '@hugeicons/core-free-icons';
-	import { createImageFromBlob, getContrastColor } from '$lib/utils';
+	import { getContrastColor, extractDominantColor } from '$lib/utils';
+	import { getLanyard } from '$lib/stores/lanyard';
+
+	const lanyard = getLanyard();
 
 	interface Props {
 		onAccentColorChange?: (color: { r: number; g: number; b: number } | null) => void;
@@ -10,13 +12,6 @@
 	}
 
 	let { onAccentColorChange, morphProgress = 0 }: Props = $props();
-
-	const userId = '769702535124090904';
-
-	const lanyard = useLanyard({
-		connectionType: 'ws',
-		subscriptionScope: { subscribe_to_id: userId }
-	});
 
 	const statusColors = {
 		online: 'bg-green-500',
@@ -84,6 +79,12 @@
 
 	let musicActivity = $derived(latestActivity?.type === 2 ? latestActivity : null);
 
+	const generalActivityLargeImage = $derived(
+		latestActivity && latestActivity.type !== 2 && latestActivity.assets?.large_image
+			? toImageUrl(latestActivity.assets.large_image, latestActivity.application_id)
+			: null
+	);
+
 	$effect(() => {
 		if (!latestActivity || latestActivity.type !== 2) {
 			textContrastColor = 'white';
@@ -113,90 +114,18 @@
 	async function m3ContentColor(
 		imageBuffer: ArrayBuffer
 	): Promise<{ r: number; g: number; b: number }> {
-		const blob = new Blob([imageBuffer]);
-		const img = await createImageFromBlob(blob);
-
-		const canvas = document.createElement('canvas');
-		canvas.width = img.naturalWidth;
-		canvas.height = img.naturalHeight;
-
-		const ctx = canvas.getContext('2d', { willReadFrequently: true });
-		if (!ctx) return { r: 30, g: 30, b: 30 };
-		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-		const centerX = Math.floor(canvas.width / 2);
-		const centerY = Math.floor(canvas.height / 2);
-		const sampleWidth = Math.floor(canvas.width * 0.7);
-		const sampleHeight = Math.floor(canvas.height * 0.7);
-		const startX = Math.max(0, centerX - Math.floor(sampleWidth / 2));
-		const startY = Math.max(0, centerY - Math.floor(sampleHeight / 2));
-
-		const imageData = ctx.getImageData(startX, startY, sampleWidth, sampleHeight);
-		const pixelData = imageData.data;
-
-		const colorMap: Record<
-			string,
-			{ r: number; g: number; b: number; brightness: number; count: number }
-		> = {};
-
-		let totalBrightness = 0;
-		let validPixels = 0;
-
-		for (let i = 0; i < pixelData.length; i += 12) {
-			const r = pixelData[i];
-			const g = pixelData[i + 1];
-			const b = pixelData[i + 2];
-
-			const brightness = (r + g + b) / 3;
-			totalBrightness += brightness;
-			validPixels++;
-
-			if (brightness < 15 || brightness > 240) continue;
-
-			const rKey = Math.round(r / 20) * 20;
-			const gKey = Math.round(g / 20) * 20;
-			const bKey = Math.round(b / 20) * 20;
-			const key = `${rKey},${gKey},${bKey}`;
-
-			if (!colorMap[key]) {
-				colorMap[key] = { r: rKey, g: gKey, b: bKey, brightness, count: 0 };
-			}
-			colorMap[key].count++;
-		}
-
-		const avgBrightness = totalBrightness / validPixels;
-		const isDarkImage = avgBrightness < 60;
-
-		let dominant: { r: number; g: number; b: number; brightness: number } = {
-			r: 30,
-			g: 30,
-			b: 30,
-			brightness: 30
-		};
-		let maxCount = 0;
-
-		Object.values(colorMap).forEach((color) => {
-			if (color.count > maxCount) {
-				maxCount = color.count;
-				dominant = color;
-			}
-		});
-
-		if (maxCount === 0 || (isDarkImage && dominant.brightness > 80)) {
-			return { r: 30, g: 30, b: 30 };
-		}
-
-		return { r: dominant.r, g: dominant.g, b: dominant.b };
+		return extractDominantColor(imageBuffer);
 	}
 
-	function toImageUrl(imageKey: string, applicationId: string): string {
+	function toImageUrl(imageKey: string, applicationId?: string): string {
 		if (imageKey.startsWith('mp:external/')) {
 			return imageKey.replace('mp:external/', 'https://media.discordapp.net/external/');
 		} else if (imageKey.startsWith('spotify:')) {
 			return `https://i.scdn.co/image/${imageKey.replace('spotify:', '')}`;
-		} else {
+		} else if (applicationId) {
 			return `https://cdn.discordapp.com/app-assets/${applicationId}/${imageKey}.png`;
 		}
+		return '';
 	}
 
 	$effect(() => {
@@ -226,6 +155,8 @@
 	let contrastColor = $derived(
 		getContrastColor(m3ContentColorValue.r, m3ContentColorValue.g, m3ContentColorValue.b)
 	);
+
+	let dynamicLargeHeight = $derived(musicActivity ? '180px' : '140px');
 </script>
 
 <div
@@ -235,6 +166,7 @@
 	style:--accent-g={m3ContentColorValue.g}
 	style:--accent-b={m3ContentColorValue.b}
 	style:--progress="{progress}%"
+	style:--dynamic-large-height={dynamicLargeHeight}
 >
 	<div
 		class="morph-border absolute -inset-[1.5px] bg-white/10 backdrop-blur-sm group-hover:bg-white/15"
@@ -384,21 +316,45 @@
 						</div>
 					{/if}
 				{:else if latestActivity}
-					<div class="space-y-1">
-						<p
-							class="text-base font-semibold {textContrastColor === 'black'
-								? 'text-black'
-								: 'text-white'}"
-						>
-							{latestActivity.name}
-						</p>
-						{#if latestActivity.details}
-							<p
-								class="text-sm {textContrastColor === 'black' ? 'text-black/60' : 'text-white/60'}"
-							>
-								{latestActivity.details}
-							</p>
+					<div class="flex items-center gap-3">
+						{#if generalActivityLargeImage}
+							<img
+								src={generalActivityLargeImage}
+								alt={latestActivity.name}
+								class="h-18 w-18 shrink-0 rounded-lg object-cover shadow-lg ring-1 {textContrastColor ===
+								'black'
+									? 'ring-black/10'
+									: 'ring-white/10'}"
+							/>
 						{/if}
+						<div class="min-w-0 flex-1 space-y-0.5">
+							<p
+								class="truncate text-base font-semibold tracking-tight {textContrastColor ===
+								'black'
+									? 'text-stone-900/90'
+									: 'text-white/95'}"
+							>
+								{latestActivity.name}
+							</p>
+							{#if latestActivity.details}
+								<p
+									class="truncate text-sm {textContrastColor === 'black'
+										? 'text-stone-900/70'
+										: 'text-white/70'}"
+								>
+									{latestActivity.details}
+								</p>
+							{/if}
+							{#if latestActivity.state}
+								<p
+									class="truncate text-sm {textContrastColor === 'black'
+										? 'text-stone-900/70'
+										: 'text-white/70'}"
+								>
+									{latestActivity.state}
+								</p>
+							{/if}
+						</div>
 					</div>
 				{:else}
 					<div class="space-y-1">
@@ -417,7 +373,7 @@
 			</div>
 
 			<div class="morph-compact-content absolute inset-0 z-30">
-				<div class="flex h-full items-center gap-2.5 px-3 pb-1">
+				<div class="flex h-full items-center gap-2.5 px-3 {musicActivity ? 'pb-1' : ''}">
 					{#if musicActivity && largeImage}
 						<div class="relative shrink-0">
 							<img
@@ -504,12 +460,27 @@
 	.morph-container {
 		--large-width: 384px;
 		--compact-width: 260px;
-		--large-height: 180px;
+		--large-height: var(--dynamic-large-height, 180px);
 		--compact-height: 48px;
 		--large-radius: 17px;
 		--compact-radius: 24px;
 		--large-padding: 20px;
 		--compact-padding: 8px;
+	}
+
+	@media (max-width: 1024px) {
+		.morph-container {
+			--large-width: 340px;
+			--compact-width: 220px;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.morph-container {
+			--large-width: min(80vw, 320px);
+			--compact-width: min(66vw, 200px);
+			--large-padding: 16px;
+		}
 	}
 
 	.morph-border {
