@@ -7,7 +7,7 @@
 	import { ScrollToPlugin } from 'gsap/dist/ScrollToPlugin';
 	import AnimatedLiquidBackground from './core/animated-liquid-background.svelte';
 	import DiscordStatusMorphable from './discord-status-morphable.svelte';
-	import HeroNavbar from './hero-navbar.svelte';
+	// import HeroNavbar from './hero-navbar.svelte';
 	import {
 		accentColor,
 		heroScrollLocked,
@@ -510,7 +510,7 @@
 				class="pointer-events-auto absolute left-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
 				style="top: 56px;"
 			>
-				<HeroNavbar />
+				<!-- <HeroNavbar /> -->
 			</div>
 
 			<div
