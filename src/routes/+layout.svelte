@@ -1,12 +1,10 @@
 <script lang="ts">
 	import '../app.css';
 	import { ModeWatcher } from 'mode-watcher';
-	import favicon from '$lib/assets/favicon.svg';
 	import '@fontsource-variable/inter';
 	import '@fontsource-variable/jetbrains-mono';
 	import '@fontsource/instrument-serif';
 	import '@fontsource/caveat';
-	import ProgressiveBlur from '$lib/components/core/progressive-blur.svelte';
 	import FilmGrain from '$lib/components/core/film-grain.svelte';
 	import ParallaxGrid from '$lib/components/core/parallax-grid.svelte';
 	import LensDistortion from '$lib/components/core/lens-distortion.svelte';
@@ -19,27 +17,18 @@
 <ModeWatcher defaultMode="dark" />
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
 	<title>Mufaro</title>
-	<meta
-		name="description"
-		content="18 year old software & reverse engineer from Poland"
-	/>
+	<link rel="icon" type="image/x-icon" href="/images/embed.webp" />
+	<meta name="description" content="18 year old software & reverse engineer from Poland" />
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="Mufaro" />
-	<meta
-		property="og:description"
-		content="18 year old software & reverse engineer from Poland"
-	/>
+	<meta property="og:description" content="18 year old software & reverse engineer from Poland" />
 	<meta property="og:image" content="/images/embed.webp" />
 	<meta property="og:image:type" content="image/webp" />
 	<meta property="og:image:alt" content="Preview image for Mufaro's website" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Mufaro" />
-	<meta
-		name="twitter:description"
-		content="18 year old software & reverse engineer from Poland"
-	/>
+	<meta name="twitter:description" content="18 year old software & reverse engineer from Poland" />
 	<meta name="twitter:image" content="/images/embed.webp" />
 </svelte:head>
 
