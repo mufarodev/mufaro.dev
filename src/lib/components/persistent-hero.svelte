@@ -316,14 +316,12 @@
 			discordContainer,
 			{
 				top: () => (isNarrowViewport() ? '20px' : '32px'),
-				right: () => (isNarrowViewport() ? '16px' : '32px'),
-				scale: () => (isNarrowViewport() ? 0.85 : 1),
+				right: () => (isNarrowViewport() ? 'calc(50% - min(80vw, 320px) / 2)' : '32px'),
 				yPercent: 0
 			},
 			{
 				top: '50%',
 				right: () => (isNarrowViewport() ? '10px' : '16px'),
-				scale: () => (isNarrowViewport() ? 0.8 : 1),
 				yPercent: -50,
 				ease: 'power2.inOut',
 				duration: 0.6
@@ -495,10 +493,10 @@
 
 			<div
 				bind:this={heroDescription}
-				class="absolute right-5 bottom-10 left-5 z-10 sm:right-auto sm:bottom-25 sm:left-8 md:left-16 lg:left-24"
+				class="hero-description absolute right-5 left-5 z-10 sm:right-auto sm:left-8 md:left-16 lg:left-24"
 			>
 				<p
-					class="max-w-[92vw] text-base leading-relaxed text-white/80 sm:max-w-xl sm:text-lg md:text-xl lg:max-w-md"
+					class="hero-description-text max-w-[92vw] text-base leading-relaxed break-words text-white/80 sm:max-w-xl sm:text-lg md:text-xl lg:max-w-md"
 				>
 					I'm an 18 year old from Poland who makes software, reverse engineers, plays games and is
 					passionate about learning new things.
@@ -515,8 +513,7 @@
 
 			<div
 				bind:this={discordContainer}
-				class="pointer-events-auto absolute z-20 hidden origin-top-right sm:block"
-				style="top: 32px; right: 32px;"
+				class="discord-container pointer-events-auto absolute z-20 origin-top-right"
 			>
 				<DiscordStatusMorphable
 					onAccentColorChange={handleAccentColorChange}
@@ -535,3 +532,40 @@
 		<div class="h-12 w-px bg-linear-to-b from-transparent via-white/50 to-transparent"></div>
 	</div>
 </div>
+
+<style>
+	.discord-container {
+		top: 32px;
+		right: 32px;
+	}
+
+	.hero-description {
+		bottom: 2.5rem;
+	}
+
+	@media (max-width: 639px) {
+		.hero-description {
+			bottom: max(calc(env(safe-area-inset-bottom) + 3.25rem), 4.25rem);
+		}
+
+		.hero-description-text {
+			font-size: 0.95rem;
+			line-height: 1.6;
+			max-width: min(92vw, 30rem);
+			text-wrap: pretty;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.discord-container {
+			top: 20px;
+			right: calc(50% - min(80vw, 320px) / 2);
+		}
+	}
+
+	@media (min-width: 640px) {
+		.hero-description {
+			bottom: 6.25rem;
+		}
+	}
+</style>
