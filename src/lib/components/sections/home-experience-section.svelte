@@ -3,7 +3,7 @@
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 	import ScrambleText from '$lib/components/core/scramble-text.svelte';
-	import { HugeiconsIcon } from "@hugeicons/svelte"
+	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { GithubIcon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
 
 	gsap.registerPlugin(ScrollTrigger);
@@ -31,7 +31,7 @@
 				'Contributed to a project that reached over 2M+ unique users and was used by major gaming content creators',
 			tags: ['Fortnite', 'Desktop', 'Game Hosting Platform'],
 			image: '/images/nova-website.png',
-			url: 'https://novafn.dev',
+			url: 'https://novafn.dev'
 		},
 		{
 			title: 'Cartesian',
@@ -41,7 +41,7 @@
 				'Built a social meetup app prototype that helps people discover and organize in-person events around shared interests',
 			impact:
 				'A complete hackathon project with AI-assisted discovery and map-based meetup planning. Did not win a prize.',
-			tags: ['Social App', 'AI Search', 'Maps', "Hackathon"],
+			tags: ['Social App', 'AI Search', 'Maps', 'Hackathon'],
 			image: '/images/cartesian.png',
 			githubUrl: 'https://github.com/lythar/Cartesian'
 		},
@@ -54,9 +54,8 @@
 			impact: 'Placed 3rd out of 200+ teams, validating both the product direction and implementation quality!',
 			tags: ['Internal Tools', 'Social', 'Productivity', 'Work'],
 			image: '/images/lythar.png',
-			githubUrl: 'https://github.com/lythar/lythar-frontend',
-		},
-
+			githubUrl: 'https://github.com/lythar/lythar-frontend'
+		}
 	];
 
 	let sectionRef: HTMLElement;
@@ -174,25 +173,15 @@
 		});
 	}
 
-	function updateActiveCard() {
+	function setActiveFromProgress(progress: number) {
 		if (!cards.length) return;
 
-		let closestIndex = 0;
-		let closestDistance = Number.POSITIVE_INFINITY;
-		const viewportCenter = window.innerWidth * 0.5;
+		const maxIndex = cards.length - 1;
+		const nextIndex = Math.max(0, Math.min(maxIndex, Math.round(progress * maxIndex)));
 
-		cards.forEach((card, index) => {
-			const rect = card.getBoundingClientRect();
-			const cardCenter = rect.left + rect.width * 0.5;
-			const distance = Math.abs(cardCenter - viewportCenter);
-
-			if (distance < closestDistance) {
-				closestDistance = distance;
-				closestIndex = index;
-			}
-		});
-
-		activeIndex = closestIndex;
+		if (nextIndex !== activeIndex) {
+			activeIndex = nextIndex;
+		}
 	}
 
 	function setupDesktopTimeline() {
@@ -212,8 +201,15 @@
 			return firstCard.getBoundingClientRect().width + getGap();
 		};
 
-		const getTravelDistance = () => Math.max(0, getStepDistance() * (cards.length - 1));
-		const getTotalDistance = () => getEntryOffset() + getTravelDistance();
+		let travelDistance = 0;
+		let totalDistance = 1;
+
+		const recalculateDistances = () => {
+			travelDistance = Math.max(0, getStepDistance() * (cards.length - 1));
+			totalDistance = Math.max(1, getEntryOffset() + travelDistance);
+		};
+
+		recalculateDistances();
 		const getPinStartOffset = () => Math.round(Math.max(104, window.innerHeight * 0.12));
 
 		gsap.set(trackRef, { x: getEntryOffset() });
@@ -224,26 +220,27 @@
 				trigger: sectionRef,
 				pin: sectionRef,
 				start: () => `top top+=${getPinStartOffset()}`,
-				end: () => `+=${getTotalDistance()}`,
+				end: () => `+=${totalDistance}`,
 				scrub: 0.75,
 				anticipatePin: 1,
 				invalidateOnRefresh: true,
 				onRefreshInit: () => {
+					recalculateDistances();
 					gsap.set(trackRef, { x: getEntryOffset() });
 				},
-				onUpdate: updateActiveCard,
-				onRefresh: updateActiveCard
+				onUpdate: (self) => setActiveFromProgress(self.progress),
+				onRefresh: (self) => setActiveFromProgress(self.progress)
 			}
 		});
 
 		timeline.fromTo(
 			trackRef,
 			{ x: () => getEntryOffset() },
-			{ x: () => -getTravelDistance(), ease: 'none' },
+			{ x: () => -travelDistance, ease: 'none' },
 			0
 		);
 
-		requestAnimationFrame(updateActiveCard);
+		setActiveFromProgress(0);
 	}
 
 	function setupMobileLayout() {
@@ -404,7 +401,7 @@
 											class="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black transition-transform duration-150 active:scale-[0.98] hover:scale-[1.01]"
 										>
 											View Project
-											<HugeiconsIcon icon={ArrowUpRight01Icon} class="fill-current" size="16" />
+											<HugeiconsIcon icon={ArrowUpRight01Icon} className="fill-current" size={16} />
 										</a>
 									{/if}
 									{#if item.githubUrl}
@@ -415,7 +412,7 @@
 											class="flex items-center gap-2 rounded-full px-2 py-2.5 font-sans text-sm font-semibold text-white/70 hover:text-white"
 										>
 											Source Code
-											<HugeiconsIcon icon={GithubIcon} class="fill-current" size={16} />
+											<HugeiconsIcon icon={GithubIcon} className="fill-current" size={16} />
 										</a>
 									{/if}
 								</div>

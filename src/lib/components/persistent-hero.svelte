@@ -3,8 +3,6 @@
 	import { page } from '$app/stores';
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import gsap from 'gsap';
-	import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-	import { ScrollToPlugin } from 'gsap/dist/ScrollToPlugin';
 	import AnimatedLiquidBackground from './core/animated-liquid-background.svelte';
 	import DiscordStatusMorphable from './discord-status-morphable.svelte';
 	// import HeroNavbar from './hero-navbar.svelte';
@@ -12,10 +10,10 @@
 		accentColor,
 		heroScrollLocked,
 		isAnimating as heroAnimatingStore,
-		morphProgress as morphProgressStore
+		morphProgress as morphProgressStore,
+		smoothScroller,
+		type SmoothScroller
 	} from '$lib/stores/hero-state';
-
-	gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 	let currentColor = $state({ r: 136, g: 153, b: 170 });
 
@@ -35,6 +33,7 @@
 	let currentSection = 0;
 	let wheelUnlockUntil = 0;
 	let unlockTimeout: number | null = null;
+	let currentScroller: SmoothScroller | null = null;
 	const HERO_SCROLL_TARGET = 88;
 	const HERO_ENTER_THRESHOLD = 140;
 	const HERO_RETURN_THRESHOLD = 220;
@@ -116,6 +115,20 @@
 		window.dispatchEvent(new CustomEvent('hero:experience-reveal'));
 	}
 
+	function scrollViewportTo(target: number, duration: number, onComplete: () => void) {
+		if (currentScroller) {
+			currentScroller.scrollTo(target, {
+				duration,
+				force: true,
+				onComplete
+			});
+			return;
+		}
+
+		window.scrollTo({ top: target, behavior: duration > 0 ? 'smooth' : 'auto' });
+		onComplete();
+	}
+
 	function handleAccentColorChange(color: { r: number; g: number; b: number } | null) {
 		if (!color) return;
 		gsap.to(currentColor, {
@@ -153,17 +166,11 @@
 			if (isHomePage) {
 				heroScrollLocked.set(true);
 			}
-			gsap.killTweensOf(window);
 			morphTl.play();
-			gsap.to(window, {
-				scrollTo: getHeroScrollTarget(),
-				duration: 0.6,
-				ease: 'power2.inOut',
-				onComplete: () => {
-					setAnimating(false);
-					notifyExperienceReveal();
-					unlockScrollAfter(isHomePage ? POST_MORPH_SCROLL_LOCK_MS : 0);
-				}
+			scrollViewportTo(getHeroScrollTarget(), 0.6, () => {
+				setAnimating(false);
+				notifyExperienceReveal();
+				unlockScrollAfter(isHomePage ? POST_MORPH_SCROLL_LOCK_MS : 0);
 			});
 		}
 	}
@@ -184,16 +191,10 @@
 			if (isHomePage) {
 				heroScrollLocked.set(true);
 			}
-			gsap.killTweensOf(window);
 			morphTl.reverse();
-			gsap.to(window, {
-				scrollTo: 0,
-				duration: 0.6,
-				ease: 'power2.inOut',
-				onComplete: () => {
-					setAnimating(false);
-					unlockScrollAfter(isHomePage ? RETURN_SCROLL_LOCK_MS : 0);
-				}
+			scrollViewportTo(0, 0.6, () => {
+				setAnimating(false);
+				unlockScrollAfter(isHomePage ? RETURN_SCROLL_LOCK_MS : 0);
 			});
 		}
 	}
@@ -224,6 +225,10 @@
 	onMount(() => {
 		heroScrollLocked.set(false);
 		heroAnimatingStore.set(false);
+
+		const unsubscribeScroller = smoothScroller.subscribe((value) => {
+			currentScroller = value;
+		});
 
 		const initialScrollY = window.scrollY;
 		const startMorphed = !isHomePage || initialScrollY > getHeroEnterThreshold();
@@ -401,18 +406,24 @@
 			}
 		}
 
+		let scrollRafId: number | null = null;
 		function handleScroll() {
-			if (!isHomePage || isAnimating || Date.now() < wheelUnlockUntil) {
-				return;
-			}
+			if (scrollRafId !== null) return;
+			scrollRafId = requestAnimationFrame(() => {
+				scrollRafId = null;
 
-			const scrollY = window.scrollY;
+				if (!isHomePage || isAnimating || Date.now() < wheelUnlockUntil) {
+					return;
+				}
 
-			if (currentSection === 0 && scrollY > getHeroEnterThreshold()) {
-				morphToPill();
-			} else if (currentSection === 1 && scrollY <= 8) {
-				morphToHero();
-			}
+				const scrollY = window.scrollY;
+
+				if (currentSection === 0 && scrollY > getHeroEnterThreshold()) {
+					morphToPill();
+				} else if (currentSection === 1 && scrollY <= 8) {
+					morphToHero();
+				}
+			});
 		}
 
 		const wheelListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
@@ -420,12 +431,17 @@
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
 		return () => {
+			unsubscribeScroller();
+			currentScroller = null;
+			if (scrollRafId !== null) {
+				cancelAnimationFrame(scrollRafId);
+				scrollRafId = null;
+			}
 			window.removeEventListener('wheel', handleWheel, wheelListenerOptions);
 			window.removeEventListener('scroll', handleScroll);
 			clearUnlockTimeout();
 			unlockScrollAfter(0);
 			setAnimating(false);
-			ScrollTrigger.getAll().forEach((t) => t.kill());
 		};
 	});
 </script>

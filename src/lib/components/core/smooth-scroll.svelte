@@ -2,14 +2,13 @@
 	import { onMount } from 'svelte';
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-	import { ScrollToPlugin } from 'gsap/dist/ScrollToPlugin';
 	import Lenis from 'lenis';
-	import { heroScrollLocked } from '$lib/stores/hero-state';
+	import { heroScrollLocked, smoothScroller } from '$lib/stores/hero-state';
 
 	onMount(() => {
 		// Register all GSAP plugins once here — this component is mounted in the root
 		// layout so it always runs before any page-level component needs these plugins.
-		gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+		gsap.registerPlugin(ScrollTrigger);
 
 		const lenis = new Lenis({
 			lerp: 0.1,
@@ -37,6 +36,18 @@
 		const updateLenis = (time: number) => lenis.raf(time * 1000);
 		gsap.ticker.add(updateLenis);
 
+		smoothScroller.set({
+			scrollTo: (target, options) => {
+				lenis.scrollTo(target, {
+					duration: options?.duration,
+					immediate: options?.immediate,
+					lock: options?.lock,
+					force: options?.force,
+					onComplete: () => options?.onComplete?.()
+				});
+			}
+		});
+
 		let isLocked = false;
 		const unsubscribe = heroScrollLocked.subscribe((locked: boolean) => {
 			if (locked === isLocked) return;
@@ -51,6 +62,7 @@
 
 		return () => {
 			unsubscribe();
+			smoothScroller.set(null);
 			if (scrollTriggerRafId !== null) {
 				cancelAnimationFrame(scrollTriggerRafId);
 				scrollTriggerRafId = null;

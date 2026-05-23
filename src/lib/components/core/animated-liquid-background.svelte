@@ -38,6 +38,9 @@
 	const PatternShapes = { Checks: 0, Stripes: 1, Edge: 2 };
 
 	type PerformanceMode = 'high' | 'balanced' | 'low' | 'paused';
+	const RESIZE_THROTTLE_MS = 90;
+	const RESIZE_SETTLE_MS = 180;
+	const RESIZE_QUANTUM_PX = 24;
 
 	const PERFORMANCE_CONFIG: Record<
 		PerformanceMode,
@@ -343,6 +346,13 @@ void main() {
 		hasBeenDisposed = false;
 		resolutionChanged = true;
 		resizeObserver: ResizeObserver | null = null;
+		resizeRafId: number | null = null;
+		resizeTimeoutId: number | null = null;
+		resizeSettleTimeoutId: number | null = null;
+		observedCssWidth = 0;
+		observedCssHeight = 0;
+		pendingForceResize = false;
+		lastResizeCommitAt = 0;
 
 		constructor(
 			canvas: HTMLCanvasElement,
@@ -503,7 +513,7 @@ void main() {
 			this.fpsCriticalDurationMs = 0;
 			this.providedUniforms.u_swirlIterations = config.swirlIterations;
 			this.updateProvidedUniforms();
-			this.handleResize();
+			this.handleResize(true);
 			this.applyAnimationState();
 
 			if (mode === 'paused') {
@@ -573,10 +583,68 @@ void main() {
 			this.fpsHighDurationMs = 0;
 		};
 
+		scheduleResize = (force = false) => {
+			if (this.hasBeenDisposed) return;
+
+			if (force) {
+				this.pendingForceResize = true;
+			}
+
+			if (this.resizeRafId !== null) return;
+
+			this.resizeRafId = requestAnimationFrame(() => {
+				this.resizeRafId = null;
+
+				const shouldForce = this.pendingForceResize;
+				this.pendingForceResize = false;
+
+				const elapsed = performance.now() - this.lastResizeCommitAt;
+				if (!shouldForce && elapsed < RESIZE_THROTTLE_MS) {
+					if (this.resizeTimeoutId !== null) {
+						window.clearTimeout(this.resizeTimeoutId);
+					}
+
+					this.resizeTimeoutId = window.setTimeout(() => {
+						this.resizeTimeoutId = null;
+						this.scheduleResize(false);
+					}, RESIZE_THROTTLE_MS - elapsed);
+					return;
+				}
+
+				this.handleResize(shouldForce);
+				this.lastResizeCommitAt = performance.now();
+			});
+		};
+
 		setupResizeObserver = () => {
-			this.resizeObserver = new ResizeObserver(() => this.handleResize());
-			this.resizeObserver.observe(this.canvas);
-			this.handleResize();
+			this.resizeObserver = new ResizeObserver((entries) => {
+				const entry = entries[0];
+				if (entry) {
+					const nextWidth = Math.round(entry.contentRect.width);
+					const nextHeight = Math.round(entry.contentRect.height);
+					if (
+						nextWidth !== this.observedCssWidth ||
+						nextHeight !== this.observedCssHeight
+					) {
+						this.observedCssWidth = nextWidth;
+						this.observedCssHeight = nextHeight;
+					}
+				}
+
+				if (this.resizeSettleTimeoutId !== null) {
+					window.clearTimeout(this.resizeSettleTimeoutId);
+				}
+				this.resizeSettleTimeoutId = window.setTimeout(() => {
+					this.resizeSettleTimeoutId = null;
+					this.scheduleResize(true);
+				}, RESIZE_SETTLE_MS);
+
+				this.scheduleResize(false);
+			});
+
+			const resizeTarget = this.canvas.parentElement ?? this.canvas;
+			this.resizeObserver.observe(resizeTarget);
+			this.handleResize(true);
 		};
 
 		setupIntersectionObserver = () => {
@@ -591,11 +659,25 @@ void main() {
 			this.intersectionObserver.observe(this.canvas);
 		};
 
-		handleResize = () => {
+		handleResize = (force = false) => {
+			const measuredWidth =
+				this.observedCssWidth || Math.round(this.canvas.getBoundingClientRect().width);
+			const measuredHeight =
+				this.observedCssHeight || Math.round(this.canvas.getBoundingClientRect().height);
+
+			if (!measuredWidth || !measuredHeight) return;
+
+			const cssWidth = force
+				? measuredWidth
+				: Math.max(1, Math.round(measuredWidth / RESIZE_QUANTUM_PX) * RESIZE_QUANTUM_PX);
+			const cssHeight = force
+				? measuredHeight
+				: Math.max(1, Math.round(measuredHeight / RESIZE_QUANTUM_PX) * RESIZE_QUANTUM_PX);
+
 			const pixelRatio =
 				Math.min(window.devicePixelRatio || 1, this.pixelRatioCap) * this.renderScale;
-			let newWidth = Math.max(1, Math.floor(this.canvas.clientWidth * pixelRatio));
-			let newHeight = Math.max(1, Math.floor(this.canvas.clientHeight * pixelRatio));
+			let newWidth = Math.max(1, Math.floor(cssWidth * pixelRatio));
+			let newHeight = Math.max(1, Math.floor(cssHeight * pixelRatio));
 
 			const currentPixels = newWidth * newHeight;
 			if (currentPixels > this.maxRenderPixels) {
@@ -609,7 +691,7 @@ void main() {
 				this.canvas.height = newHeight;
 				this.resolutionChanged = true;
 				this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-				this.render(performance.now());
+				this.requestRender();
 			}
 		};
 
@@ -736,6 +818,18 @@ void main() {
 		dispose = () => {
 			this.hasBeenDisposed = true;
 			this.clearRecoveryTimeout();
+			if (this.resizeRafId !== null) {
+				cancelAnimationFrame(this.resizeRafId);
+				this.resizeRafId = null;
+			}
+			if (this.resizeTimeoutId !== null) {
+				window.clearTimeout(this.resizeTimeoutId);
+				this.resizeTimeoutId = null;
+			}
+			if (this.resizeSettleTimeoutId !== null) {
+				window.clearTimeout(this.resizeSettleTimeoutId);
+				this.resizeSettleTimeoutId = null;
+			}
 			if (this.rafId !== null) {
 				cancelAnimationFrame(this.rafId);
 				this.rafId = null;
