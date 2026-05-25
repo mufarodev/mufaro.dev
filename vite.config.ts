@@ -18,9 +18,6 @@ export default defineConfig({
 					if (id.includes('node_modules/animejs')) {
 						return 'vendor-animejs';
 					}
-					if (id.includes('node_modules/lenis')) {
-						return 'vendor-lenis';
-					}
 					if (id.includes('node_modules/@hugeicons') || id.includes('node_modules/@lucide')) {
 						return 'vendor-icons';
 					}

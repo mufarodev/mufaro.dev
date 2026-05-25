@@ -78,11 +78,13 @@
 
 	let elapsedTime = $state('0:00');
 
+	const startTimestamp = $derived(activity.timestamps?.start);
+
 	$effect(() => {
-		if (activity.timestamps?.start) {
+		if (startTimestamp) {
 			const timer = setInterval(() => {
 				const current = Date.now();
-				const elapsed = current - activity.timestamps!.start!;
+				const elapsed = current - startTimestamp;
 				elapsedTime = formatDuration(elapsed);
 			}, 1000);
 

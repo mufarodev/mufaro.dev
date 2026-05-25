@@ -33,6 +33,8 @@
 	let currentSection = 0;
 	let wheelUnlockUntil = 0;
 	let unlockTimeout: number | null = null;
+	let morphToPillTimeout: number | null = null;
+	let morphToHeroTimeout: number | null = null;
 	let currentScroller: SmoothScroller | null = null;
 	const HERO_SCROLL_TARGET = 88;
 	const HERO_ENTER_THRESHOLD = 140;
@@ -152,6 +154,11 @@
 	export function morphToPill(instant = false) {
 		if (!morphTl) return;
 
+		if (morphToPillTimeout !== null) {
+			window.clearTimeout(morphToPillTimeout);
+			morphToPillTimeout = null;
+		}
+
 		if (instant) {
 			morphTl.progress(1);
 			currentSection = 1;
@@ -167,16 +174,34 @@
 				heroScrollLocked.set(true);
 			}
 			morphTl.play();
-			scrollViewportTo(getHeroScrollTarget(), 0.6, () => {
+
+			let completed = false;
+			const handleComplete = () => {
+				if (completed) return;
+				completed = true;
+				if (morphToPillTimeout !== null) {
+					window.clearTimeout(morphToPillTimeout);
+					morphToPillTimeout = null;
+				}
 				setAnimating(false);
 				notifyExperienceReveal();
 				unlockScrollAfter(isHomePage ? POST_MORPH_SCROLL_LOCK_MS : 0);
-			});
+			};
+
+			// Backup timeout (750ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
+			morphToPillTimeout = window.setTimeout(handleComplete, 750);
+
+			scrollViewportTo(getHeroScrollTarget(), 0.6, handleComplete);
 		}
 	}
 
 	export function morphToHero(instant = false) {
 		if (!morphTl) return;
+
+		if (morphToHeroTimeout !== null) {
+			window.clearTimeout(morphToHeroTimeout);
+			morphToHeroTimeout = null;
+		}
 
 		if (instant) {
 			morphTl.progress(0);
@@ -192,10 +217,23 @@
 				heroScrollLocked.set(true);
 			}
 			morphTl.reverse();
-			scrollViewportTo(0, 0.6, () => {
+
+			let completed = false;
+			const handleComplete = () => {
+				if (completed) return;
+				completed = true;
+				if (morphToHeroTimeout !== null) {
+					window.clearTimeout(morphToHeroTimeout);
+					morphToHeroTimeout = null;
+				}
 				setAnimating(false);
 				unlockScrollAfter(isHomePage ? RETURN_SCROLL_LOCK_MS : 0);
-			});
+			};
+
+			// Backup timeout (750ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
+			morphToHeroTimeout = window.setTimeout(handleComplete, 750);
+
+			scrollViewportTo(0, 0.6, handleComplete);
 		}
 	}
 
@@ -436,6 +474,14 @@
 			if (scrollRafId !== null) {
 				cancelAnimationFrame(scrollRafId);
 				scrollRafId = null;
+			}
+			if (morphToPillTimeout !== null) {
+				window.clearTimeout(morphToPillTimeout);
+				morphToPillTimeout = null;
+			}
+			if (morphToHeroTimeout !== null) {
+				window.clearTimeout(morphToHeroTimeout);
+				morphToHeroTimeout = null;
 			}
 			window.removeEventListener('wheel', handleWheel, wheelListenerOptions);
 			window.removeEventListener('scroll', handleScroll);

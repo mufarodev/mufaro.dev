@@ -32,13 +32,16 @@
 		return Math.min(Math.max(Math.round(progressValue), 0), 100);
 	}
 
+	const startTimestamp = $derived(activity.timestamps?.start);
+	const endTimestamp = $derived(activity.timestamps?.end);
+
 	$effect(() => {
-		if (activity.timestamps?.start && activity.timestamps?.end) {
+		if (startTimestamp && endTimestamp) {
 			const timer = setInterval(() => {
 				const current = Date.now();
-				const elapsed = current - activity.timestamps!.start!;
+				const elapsed = current - startTimestamp;
 				currentTime = formatDuration(elapsed);
-				progress = calculateProgress(activity.timestamps as { start: number; end: number });
+				progress = calculateProgress({ start: startTimestamp, end: endTimestamp });
 			}, 1000);
 
 			return () => clearInterval(timer);
@@ -61,11 +64,15 @@
 		}
 	}
 
-	$effect(() => {
-		if (activity.type === 2 && activity.assets?.large_image) {
-			let imageUrl = toImageUrl(activity.assets.large_image, activity.application_id);
+	const largeImage = $derived(
+		activity.assets?.large_image
+			? toImageUrl(activity.assets.large_image, activity.application_id)
+			: null
+	);
 
-			fetch(imageUrl)
+	$effect(() => {
+		if (largeImage) {
+			fetch(largeImage)
 				.then((response) => response.blob())
 				.then((blob) => blob.arrayBuffer())
 				.then((arrayBuffer) => m3ContentColor(arrayBuffer))
@@ -79,12 +86,6 @@
 				});
 		}
 	});
-
-	const largeImage = $derived(
-		activity.assets?.large_image
-			? toImageUrl(activity.assets.large_image, activity.application_id)
-			: null
-	);
 </script>
 
 <div class="relative mt-4 space-y-4">

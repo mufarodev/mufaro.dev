@@ -17,71 +17,73 @@
 	const verticalLines = 8;
 
 	onMount(() => {
-		const hLines = gridContainer.querySelectorAll('.h-line');
-		hLines.forEach((line, i) => {
-			const speed = 0.1 + (i % 3) * 0.15;
-			const direction = i % 2 === 0 ? 1 : -1;
+		const ctx = gsap.context(() => {
+			const hLines = gridContainer.querySelectorAll('.h-line');
+			hLines.forEach((line, i) => {
+				const speed = 0.1 + (i % 3) * 0.15;
+				const direction = i % 2 === 0 ? 1 : -1;
 
-			gsap.to(line, {
-				xPercent: direction * 20,
-				ease: 'none',
-				scrollTrigger: {
-					trigger: scrollContainer || document.body,
-					start: 'top top',
-					end: 'bottom bottom',
-					scrub: speed * 2
-				}
+				gsap.to(line, {
+					xPercent: direction * 20,
+					ease: 'none',
+					scrollTrigger: {
+						trigger: scrollContainer || document.body,
+						start: 'top top',
+						end: 'bottom bottom',
+						scrub: speed * 2
+					}
+				});
 			});
-		});
 
-		const vLines = gridContainer.querySelectorAll('.v-line');
-		vLines.forEach((line, i) => {
-			const speed = 0.05 + (i % 4) * 0.1;
+			const vLines = gridContainer.querySelectorAll('.v-line');
+			vLines.forEach((line, i) => {
+				const speed = 0.05 + (i % 4) * 0.1;
 
-			gsap.to(line, {
-				yPercent: -30 * speed,
-				ease: 'none',
-				scrollTrigger: {
-					trigger: scrollContainer || document.body,
-					start: 'top top',
-					end: 'bottom bottom',
-					scrub: 1
-				}
+				gsap.to(line, {
+					yPercent: -30 * speed,
+					ease: 'none',
+					scrollTrigger: {
+						trigger: scrollContainer || document.body,
+						start: 'top top',
+						end: 'bottom bottom',
+						scrub: 1
+					}
+				});
 			});
-		});
 
-		const corners = gridContainer.querySelectorAll('.corner-bracket');
-		corners.forEach((corner, i) => {
-			gsap.to(corner, {
-				rotation: i % 2 === 0 ? 5 : -5,
-				scale: 1.1,
-				ease: 'none',
-				scrollTrigger: {
-					trigger: scrollContainer || document.body,
-					start: 'top top',
-					end: '50% top',
-					scrub: 1
-				}
+			const corners = gridContainer.querySelectorAll('.corner-bracket');
+			corners.forEach((corner, i) => {
+				gsap.to(corner, {
+					rotation: i % 2 === 0 ? 5 : -5,
+					scale: 1.1,
+					ease: 'none',
+					scrollTrigger: {
+						trigger: scrollContainer || document.body,
+						start: 'top top',
+						end: '50% top',
+						scrub: 1
+					}
+				});
 			});
-		});
 
-		const shapes = gridContainer.querySelectorAll('.geo-shape');
-		shapes.forEach((shape, i) => {
-			gsap.to(shape, {
-				y: -200 - i * 50,
-				rotation: 360 * (i % 2 === 0 ? 1 : -1),
-				ease: 'none',
-				scrollTrigger: {
-					trigger: scrollContainer || document.body,
-					start: 'top top',
-					end: 'bottom bottom',
-					scrub: 0.5 + i * 0.2
-				}
+			const shapes = gridContainer.querySelectorAll('.geo-shape');
+			shapes.forEach((shape, i) => {
+				gsap.to(shape, {
+					y: -200 - i * 50,
+					rotation: 360 * (i % 2 === 0 ? 1 : -1),
+					ease: 'none',
+					scrollTrigger: {
+						trigger: scrollContainer || document.body,
+						start: 'top top',
+						end: 'bottom bottom',
+						scrub: 0.5 + i * 0.2
+					}
+				});
 			});
-		});
+		}, gridContainer);
 
 		return () => {
-			ScrollTrigger.getAll().forEach((t) => t.kill());
+			ctx.revert();
 		};
 	});
 </script>

@@ -93,18 +93,21 @@
 		}
 	});
 
+	const startTimestamp = $derived(musicActivity?.timestamps?.start);
+	const endTimestamp = $derived(musicActivity?.timestamps?.end);
+
 	$effect(() => {
-		if (musicActivity?.timestamps?.start && musicActivity?.timestamps?.end) {
+		if (startTimestamp && endTimestamp) {
 			const current = Date.now();
-			const elapsed = current - musicActivity.timestamps.start;
+			const elapsed = current - startTimestamp;
 			currentTime = formatDuration(elapsed);
-			progress = calculateProgress(musicActivity.timestamps as { start: number; end: number });
+			progress = calculateProgress({ start: startTimestamp, end: endTimestamp });
 
 			const timer = setInterval(() => {
 				const current = Date.now();
-				const elapsed = current - musicActivity.timestamps!.start!;
+				const elapsed = current - startTimestamp;
 				currentTime = formatDuration(elapsed);
-				progress = calculateProgress(musicActivity.timestamps as { start: number; end: number });
+				progress = calculateProgress({ start: startTimestamp, end: endTimestamp });
 			}, 1000);
 
 			return () => clearInterval(timer);
@@ -128,11 +131,15 @@
 		return '';
 	}
 
-	$effect(() => {
-		if (musicActivity?.assets?.large_image) {
-			let imageUrl = toImageUrl(musicActivity.assets.large_image, musicActivity.application_id);
+	const largeImage = $derived(
+		musicActivity?.assets?.large_image
+			? toImageUrl(musicActivity.assets.large_image, musicActivity.application_id)
+			: null
+	);
 
-			fetch(imageUrl)
+	$effect(() => {
+		if (largeImage) {
+			fetch(largeImage)
 				.then((response) => response.blob())
 				.then((blob) => blob.arrayBuffer())
 				.then((arrayBuffer) => m3ContentColor(arrayBuffer))
@@ -145,12 +152,6 @@
 				});
 		}
 	});
-
-	const largeImage = $derived(
-		musicActivity?.assets?.large_image
-			? toImageUrl(musicActivity.assets.large_image, musicActivity.application_id)
-			: null
-	);
 
 	let contrastColor = $derived(
 		getContrastColor(m3ContentColorValue.r, m3ContentColorValue.g, m3ContentColorValue.b)

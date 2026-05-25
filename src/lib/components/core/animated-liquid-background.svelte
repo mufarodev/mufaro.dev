@@ -18,7 +18,7 @@
 	const plasmaConfig = {
 		rotation: 0,
 		proportion: 63,
-		scale: 0.75,
+		scale: 1.2,
 		distortion: 5,
 		swirl: 61,
 		swirlIterations: 5,
@@ -37,55 +37,9 @@
 
 	const PatternShapes = { Checks: 0, Stripes: 1, Edge: 2 };
 
-	type PerformanceMode = 'high' | 'balanced' | 'low' | 'paused';
-	const RESIZE_THROTTLE_MS = 90;
+	const RESIZE_THROTTLE_MS = 0;
 	const RESIZE_SETTLE_MS = 180;
-	const RESIZE_QUANTUM_PX = 24;
-
-	const PERFORMANCE_CONFIG: Record<
-		PerformanceMode,
-		{
-			renderScale: number;
-			pixelRatioCap: number;
-			frameIntervalMs: number;
-			paused: boolean;
-			maxRenderPixels: number;
-			swirlIterations: number;
-		}
-	> = {
-		high: {
-			renderScale: 0.95,
-			pixelRatioCap: 1.25,
-			frameIntervalMs: 1000 / 60,
-			paused: false,
-			maxRenderPixels: 1_450_000,
-			swirlIterations: 5
-		},
-		balanced: {
-			renderScale: 0.75,
-			pixelRatioCap: 1.0,
-			frameIntervalMs: 1000 / 40,
-			paused: false,
-			maxRenderPixels: 950_000,
-			swirlIterations: 3
-		},
-		low: {
-			renderScale: 0.6,
-			pixelRatioCap: 0.85,
-			frameIntervalMs: 1000 / 28,
-			paused: false,
-			maxRenderPixels: 600_000,
-			swirlIterations: 2
-		},
-		paused: {
-			renderScale: 0.6,
-			pixelRatioCap: 0.85,
-			frameIntervalMs: 1000 / 28,
-			paused: true,
-			maxRenderPixels: 600_000,
-			swirlIterations: 1
-		}
-	};
+	const RESIZE_QUANTUM_PX = 1;
 
 	function getShaderColorFromString(
 		colorString: string | number[],
@@ -198,114 +152,96 @@ precision highp float;
 uniform float u_time;
 uniform float u_pixelRatio;
 uniform vec2 u_resolution;
-
 uniform float u_scale;
-uniform float u_rotation;
 uniform vec4 u_color1;
 uniform vec4 u_color2;
-uniform vec4 u_color3;
-uniform float u_proportion;
-uniform float u_softness;
-uniform float u_shape;
-uniform float u_shapeScale;
-uniform float u_distortion;
-uniform float u_swirl;
-uniform float u_swirlIterations;
 
 out vec4 fragColor;
 
-#define PI 3.14159265358979323846
-#define TWO_PI 6.28318530717958647692
-
-vec2 rotate(vec2 uv, float th) {
-  return mat2(cos(th), sin(th), -sin(th), cos(th)) * uv;
+float bQ(float x, float y) {
+    return y * 3.0 + x * 2.0 - x * y * 4.0;
 }
 
-float random(vec2 st) {
-  return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-}
-
-float noise(vec2 st) {
-  vec2 i = floor(st);
-  vec2 f = fract(st);
-  float a = random(i);
-  float b = random(i + vec2(1.0, 0.0));
-  float c = random(i + vec2(0.0, 1.0));
-  float d = random(i + vec2(1.0, 1.0));
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  float x1 = mix(a, b, u.x);
-  float x2 = mix(c, d, u.x);
-  return mix(x1, x2, u.y);
-}
-
-vec4 blend_colors(vec4 c1, vec4 c2, vec4 c3, float mixer, float edgesWidth, float edge_blur) {
-    vec3 color1 = c1.rgb * c1.a;
-    vec3 color2 = c2.rgb * c2.a;
-    vec3 color3 = c3.rgb * c3.a;
-
-    float r1 = smoothstep(.0 + .35 * edgesWidth, .7 - .35 * edgesWidth + .5 * edge_blur, mixer);
-    float r2 = smoothstep(.3 + .35 * edgesWidth, 1. - .35 * edgesWidth + edge_blur, mixer);
-
-    vec3 blended_color_2 = mix(color1, color2, r1);
-    float blended_opacity_2 = mix(c1.a, c2.a, r1);
-
-    vec3 c = mix(blended_color_2, color3, r2);
-    float o = mix(blended_opacity_2, c3.a, r2);
-    return vec4(c, o);
+float getBayer8(vec2 p) {
+    int x = int(p.x + 0.05) % 8;
+    int y = int(p.y + 0.05) % 8;
+    
+    int x_mod2 = x % 2;
+    int y_mod2 = y % 2;
+    
+    int x_mod4_div2 = (x % 4) / 2;
+    int y_mod4_div2 = (y % 4) / 2;
+    
+    int x_div4 = x / 4;
+    int y_div4 = y / 4;
+    
+    float val = (bQ(float(x_mod2), float(y_mod2)) * 16.0 + 
+                 bQ(float(x_mod4_div2), float(y_mod4_div2)) * 4.0 + 
+                 bQ(float(x_div4), float(y_div4))) / 64.0;
+    return val;
 }
 
 void main() {
-    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-    vec2 uv_original = uv;
-
-    float t = .5 * u_time;
-
-    float noise_scale = .0005 + .006 * u_scale;
-
-    uv -= .5;
-    uv *= (noise_scale * u_resolution);
-    uv = rotate(uv, u_rotation * .5 * PI);
-    uv /= u_pixelRatio;
-    uv += .5;
-
-    float n1 = noise(uv * 1. + t);
-    float n2 = noise(uv * 2. - t);
-    float angle = n1 * TWO_PI;
-    uv.x += 4. * u_distortion * n2 * cos(angle);
-    uv.y += 4. * u_distortion * n2 * sin(angle);
-
-    float iterations_number = ceil(clamp(u_swirlIterations, 1., 30.));
-    for (float i = 1.; i <= iterations_number; i++) {
-        uv.x += clamp(u_swirl, 0., 2.) / i * cos(t + i * 1.5 * uv.y);
-        uv.y += clamp(u_swirl, 0., 2.) / i * cos(t + i * 1. * uv.x);
-    }
-
-    float proportion = clamp(u_proportion, 0., 1.);
-
-    float shape = 0.;
-    float mixer = 0.;
-    if (u_shape < .5) {
-      vec2 checks_shape_uv = uv * (.5 + 3.5 * u_shapeScale);
-      shape = .5 + .5 * sin(checks_shape_uv.x) * cos(checks_shape_uv.y);
-      mixer = shape + .48 * sign(proportion - .5) * pow(abs(proportion - .5), .5);
-    } else if (u_shape < 1.5) {
-      vec2 stripes_shape_uv = uv * (.25 + 3. * u_shapeScale);
-      float f = fract(stripes_shape_uv.y);
-      shape = smoothstep(.0, .55, f) * smoothstep(1., .45, f);
-      mixer = shape + .48 * sign(proportion - .5) * pow(abs(proportion - .5), .5);
-    } else {
-      float sh = 1. - uv.y;
-      sh -= .5;
-      sh /= (noise_scale * u_resolution.y);
-      sh += .5;
-      float shape_scaling = .2 * (1. - u_shapeScale);
-      shape = smoothstep(.45 - shape_scaling, .55 + shape_scaling, sh + .3 * (proportion - .5));
-      mixer = shape;
-    }
-
-    vec4 color_mix = blend_colors(u_color1, u_color2, u_color3, mixer, 1. - clamp(u_softness, 0., 1.), .01 + .01 * u_scale);
-
-    fragColor = vec4(color_mix.rgb, color_mix.a);
+    // Aspect ratio correction to preserve shapes instead of stretching them
+    vec2 screenUV = gl_FragCoord.xy / max(u_resolution.x, u_resolution.y);
+    screenUV -= 0.5 * u_resolution.xy / max(u_resolution.x, u_resolution.y);
+    
+    // Zoom in/out using u_scale (0.75 zooms in, making shapes bigger)
+    screenUV *= u_scale;
+    
+    screenUV += 0.5;
+    
+    float t = u_time * 0.4;
+    // freq1 controls blob spatial density — 1.0 only fills ~1/3 cycle across
+    // the screen (one giant blob). 3.0 gives ~1.5 visible cycles (3-4 distinct
+    // blob regions), matching the shaders.com reference look.
+    float freq1 = 3.0;
+    
+    vec2 d1 = vec2(
+        screenUV.x + sin(screenUV.y * (freq1 * 1.7) + t * 0.8) * 0.12 + cos(screenUV.x * (freq1 * 0.9) - t * 0.5) * 0.05,
+        screenUV.y + cos(screenUV.x * (freq1 * 1.3) - t * 0.6) * 0.12 + sin(screenUV.y * (freq1 * 1.1) + t * 0.7) * 0.05
+    );
+    
+    float pattern1 = sin(d1.x * (freq1 * 2.1) + d1.y * (freq1 * 1.8) + t * 0.4);
+    float freq2 = freq1 * 2.1;
+    
+    vec2 d2 = vec2(
+        d1.x + cos(d1.y * (freq2 * 2.7) - t * 0.45) * 0.07 + sin(d1.x * (freq2 * 1.9) + t * 0.6) * 0.04,
+        d1.y + sin(d1.x * (freq2 * 2.3) + t * 0.65) * 0.07 + cos(d1.y * (freq2 * 1.6) - t * 0.4) * 0.04
+    );
+    
+    float pattern2 = cos(d2.x * (freq2 * 1.4) - d2.y * (freq2 * 1.9) + t * 0.35);
+    float freq3 = freq1 * 3.7;
+    
+    vec2 d3 = vec2(
+        d2.x + sin(d2.y * (freq3 * 1.8) + t * 0.85) * 0.04 + cos(d2.x * (freq3 * 1.3) - t * 0.55) * 0.025 + sin((d2.x + d2.y) * (freq3 * 0.7) + t * 0.9) * 0.02,
+        d2.y + cos(d2.x * (freq3 * 1.6) - t * 0.75) * 0.04 + sin(d2.y * (freq3 * 1.1) + t * 0.5) * 0.025 + cos((d2.x + d2.y) * (freq3 * 0.8) - t * 0.95) * 0.02
+    );
+    
+    float pattern3 = sin(d3.x * (freq3 * 1.1) + d3.y * (freq3 * 1.5) - t * 0.55);
+    float combinedPattern = pattern1 * 0.45 + pattern2 * 0.35 + pattern3 * 0.2;
+    
+    float blendBias = (45.0 - 50.0) * 0.006;
+    float blendFactor = smoothstep(0.3, 0.7, combinedPattern * 0.5 + 0.5 + blendBias);
+    
+    vec4 sourceColor = mix(u_color1, u_color2, blendFactor);
+    
+    // Applying Bayer 8x8 Dithering - Scaled by pixel ratio to make the X's large and visible
+    // 2.5 multiplier creates a chunky retro pixel-art aesthetic without looking blurry
+    float u_pixelSize = max(2.0, u_pixelRatio * 2.5); 
+    vec2 pixelCoord = floor(gl_FragCoord.xy / u_pixelSize);
+    float ditherValue = getBayer8(pixelCoord);
+    
+    float luminance = dot(sourceColor.rgb, vec3(0.299, 0.587, 0.114)) * sourceColor.a;
+    float u_spread = 1.0;
+    float u_threshold = 0.5;
+    float ditherResult = step(0.5 + (ditherValue - 0.5) * u_spread, luminance + (u_threshold - 0.5));
+    
+    vec3 source = mix(sourceColor.rgb * 0.3, min(sourceColor.rgb * 1.3, vec3(0.95)), ditherResult);
+    vec3 finalRGB = clamp(sourceColor.rgb / (vec3(1.0) - source), 0.0, 1.0);
+    float finalAlpha = sourceColor.a;
+    
+    fragColor = vec4(finalRGB, finalAlpha);
 }
 `;
 
@@ -324,24 +260,12 @@ void main() {
 		uniformLocations: Record<string, WebGLUniformLocation | null> = {};
 		fragmentShader: string;
 		rafId: number | null = null;
-		recoveryTimeoutId: number | null = null;
 		lastFrameTime = 0;
-		lastDrawTime = 0;
 		totalAnimationTime = 0;
 		externalSpeed = 1;
 		effectiveSpeed = 1;
-		performanceMode: PerformanceMode = 'high';
 		isPageVisible = true;
 		isReducedMotion = false;
-		renderScale = PERFORMANCE_CONFIG.high.renderScale;
-		pixelRatioCap = PERFORMANCE_CONFIG.high.pixelRatioCap;
-		frameIntervalMs = PERFORMANCE_CONFIG.high.frameIntervalMs;
-		maxRenderPixels = PERFORMANCE_CONFIG.high.maxRenderPixels;
-		fpsSampleFrames = 0;
-		fpsSampleElapsedMs = 0;
-		fpsLowDurationMs = 0;
-		fpsHighDurationMs = 0;
-		fpsCriticalDurationMs = 0;
 		providedUniforms: Record<string, number | number[] | boolean>;
 		hasBeenDisposed = false;
 		resolutionChanged = true;
@@ -353,6 +277,11 @@ void main() {
 		observedCssHeight = 0;
 		pendingForceResize = false;
 		lastResizeCommitAt = 0;
+		// High-water-mark resolution used for UV coordinate calculation in the shader.
+		// Only ever grows — never shrinks — so the pattern stays visually stable
+		// while the hero container morphs from full-screen to pill and back.
+		referenceWidth = 0;
+		referenceHeight = 0;
 
 		constructor(
 			canvas: HTMLCanvasElement,
@@ -459,26 +388,8 @@ void main() {
 				this.isVisible &&
 				this.isPageVisible &&
 				!this.isReducedMotion &&
-				!PERFORMANCE_CONFIG[this.performanceMode].paused &&
 				this.externalSpeed !== 0
 			);
-		};
-
-		clearRecoveryTimeout = () => {
-			if (this.recoveryTimeoutId !== null) {
-				window.clearTimeout(this.recoveryTimeoutId);
-				this.recoveryTimeoutId = null;
-			}
-		};
-
-		scheduleRecovery = () => {
-			this.clearRecoveryTimeout();
-			this.recoveryTimeoutId = window.setTimeout(() => {
-				this.recoveryTimeoutId = null;
-				if (!this.hasBeenDisposed && this.performanceMode === 'paused') {
-					this.setPerformanceMode('low');
-				}
-			}, 3000);
 		};
 
 		applyAnimationState = () => {
@@ -488,7 +399,6 @@ void main() {
 				if (this.rafId === null) {
 					const now = performance.now();
 					this.lastFrameTime = now;
-					this.lastDrawTime = now;
 					this.rafId = requestAnimationFrame(this.render);
 				}
 				return;
@@ -498,89 +408,6 @@ void main() {
 				cancelAnimationFrame(this.rafId);
 				this.rafId = null;
 			}
-		};
-
-		setPerformanceMode = (mode: PerformanceMode) => {
-			if (this.performanceMode === mode) return;
-			this.performanceMode = mode;
-			const config = PERFORMANCE_CONFIG[mode];
-			this.renderScale = config.renderScale;
-			this.pixelRatioCap = config.pixelRatioCap;
-			this.frameIntervalMs = config.frameIntervalMs;
-			this.maxRenderPixels = config.maxRenderPixels;
-			this.fpsLowDurationMs = 0;
-			this.fpsHighDurationMs = 0;
-			this.fpsCriticalDurationMs = 0;
-			this.providedUniforms.u_swirlIterations = config.swirlIterations;
-			this.updateProvidedUniforms();
-			this.handleResize(true);
-			this.applyAnimationState();
-
-			if (mode === 'paused') {
-				this.scheduleRecovery();
-			} else {
-				this.clearRecoveryTimeout();
-			}
-		};
-
-		degradePerformance = () => {
-			if (this.performanceMode === 'high') {
-				this.setPerformanceMode('balanced');
-				return;
-			}
-			if (this.performanceMode === 'balanced') {
-				this.setPerformanceMode('low');
-				return;
-			}
-			if (this.performanceMode === 'low') {
-				this.setPerformanceMode('paused');
-			}
-		};
-
-		restorePerformance = () => {
-			if (this.performanceMode === 'low') {
-				this.setPerformanceMode('balanced');
-				return;
-			}
-			if (this.performanceMode === 'balanced') {
-				this.setPerformanceMode('high');
-			}
-		};
-
-		handleFpsSample = (fps: number, elapsedMs: number) => {
-			if (this.performanceMode === 'paused') return;
-
-			if (fps < 22) {
-				this.fpsCriticalDurationMs += elapsedMs;
-			} else {
-				this.fpsCriticalDurationMs = 0;
-			}
-
-			if (this.performanceMode === 'low' && this.fpsCriticalDurationMs >= 2500) {
-				this.setPerformanceMode('paused');
-				return;
-			}
-
-			if (fps < 35) {
-				this.fpsLowDurationMs += elapsedMs;
-				this.fpsHighDurationMs = 0;
-				if (this.fpsLowDurationMs >= 1500) {
-					this.degradePerformance();
-				}
-				return;
-			}
-
-			if (fps > 50) {
-				this.fpsHighDurationMs += elapsedMs;
-				this.fpsLowDurationMs = 0;
-				if (this.fpsHighDurationMs >= 3000) {
-					this.restorePerformance();
-				}
-				return;
-			}
-
-			this.fpsLowDurationMs = 0;
-			this.fpsHighDurationMs = 0;
 		};
 
 		scheduleResize = (force = false) => {
@@ -674,31 +501,44 @@ void main() {
 				? measuredHeight
 				: Math.max(1, Math.round(measuredHeight / RESIZE_QUANTUM_PX) * RESIZE_QUANTUM_PX);
 
-			const pixelRatio =
-				Math.min(window.devicePixelRatio || 1, this.pixelRatioCap) * this.renderScale;
+			const pixelRatio = window.devicePixelRatio || 1;
 			let newWidth = Math.max(1, Math.floor(cssWidth * pixelRatio));
 			let newHeight = Math.max(1, Math.floor(cssHeight * pixelRatio));
-
-			const currentPixels = newWidth * newHeight;
-			if (currentPixels > this.maxRenderPixels) {
-				const downscale = Math.sqrt(this.maxRenderPixels / currentPixels);
-				newWidth = Math.max(1, Math.floor(newWidth * downscale));
-				newHeight = Math.max(1, Math.floor(newHeight * downscale));
-			}
 
 			if (this.canvas.width !== newWidth || this.canvas.height !== newHeight) {
 				this.canvas.width = newWidth;
 				this.canvas.height = newHeight;
-				this.resolutionChanged = true;
 				this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-				this.requestRender();
+
+				// Only update the UV reference resolution when the canvas grows.
+				// During the hero morph the container shrinks, but we keep u_resolution
+				// locked at the full-screen high-water mark so the pattern appears
+				// stable — the shrinking canvas just clips the same fixed pattern
+				// rather than recomputing UVs and causing a visible jump/jitter.
+				if (newWidth > this.referenceWidth || newHeight > this.referenceHeight) {
+					this.referenceWidth = Math.max(this.referenceWidth, newWidth);
+					this.referenceHeight = Math.max(this.referenceHeight, newHeight);
+					this.resolutionChanged = true;
+				}
+
+				// Force synchronous render to prevent flickering when canvas is cleared
+				this.render(performance.now(), true);
 			}
 		};
 
-		render = (currentTime: number) => {
+		render = (currentTime: number, forceDraw = false) => {
 			if (this.hasBeenDisposed) return;
+			
+			// If called manually (e.g. forceDraw), cancel any pending scheduled frames 
+			// to avoid spawning multiple concurrent rAF loops.
+			if (this.rafId !== null && forceDraw) {
+				cancelAnimationFrame(this.rafId);
+			}
 			this.rafId = null;
-			if (this.effectiveSpeed === 0 || !this.canAnimate()) {
+			
+			const canAnimateNow = this.canAnimate() && this.effectiveSpeed !== 0;
+			
+			if (!canAnimateNow && !forceDraw) {
 				return;
 			}
 
@@ -709,24 +549,9 @@ void main() {
 			const dt = Math.max(0, currentTime - this.lastFrameTime);
 			this.lastFrameTime = currentTime;
 
-			this.fpsSampleFrames += 1;
-			this.fpsSampleElapsedMs += dt;
-			if (this.fpsSampleElapsedMs >= 1000) {
-				const fps = (this.fpsSampleFrames * 1000) / this.fpsSampleElapsedMs;
-				this.handleFpsSample(fps, this.fpsSampleElapsedMs);
-				this.fpsSampleFrames = 0;
-				this.fpsSampleElapsedMs = 0;
-			}
-
-			if (this.effectiveSpeed !== 0) {
+			if (canAnimateNow) {
 				this.totalAnimationTime += dt * this.effectiveSpeed;
 			}
-
-			if (currentTime - this.lastDrawTime < this.frameIntervalMs) {
-				this.requestRender();
-				return;
-			}
-			this.lastDrawTime = currentTime;
 
 			this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 			this.gl.useProgram(this.program);
@@ -734,21 +559,23 @@ void main() {
 			this.gl.uniform1f(this.uniformLocations.u_time!, this.totalAnimationTime * 0.001);
 
 			if (this.resolutionChanged) {
+				// Use the stable reference resolution (high-water mark), not the current
+				// canvas size, so the UV mapping doesn't shift during hero morph shrink.
 				this.gl.uniform2f(
 					this.uniformLocations.u_resolution!,
-					this.gl.canvas.width,
-					this.gl.canvas.height
+					this.referenceWidth,
+					this.referenceHeight
 				);
 				this.gl.uniform1f(
 					this.uniformLocations.u_pixelRatio!,
-					Math.min(window.devicePixelRatio || 1, this.pixelRatioCap) * this.renderScale
+					window.devicePixelRatio || 1
 				);
 				this.resolutionChanged = false;
 			}
 
 			this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
-			if (this.effectiveSpeed !== 0) {
+			if (canAnimateNow) {
 				this.requestRender();
 			} else {
 				this.rafId = null;
@@ -791,7 +618,7 @@ void main() {
 			const oneFrameAt120Fps = 1000 / 120;
 			this.totalAnimationTime = newSeed * oneFrameAt120Fps;
 			this.lastFrameTime = performance.now();
-			this.render(performance.now());
+			this.render(performance.now(), true);
 		};
 
 		setSpeed = (newSpeed = 1) => {
@@ -812,12 +639,15 @@ void main() {
 		setUniforms = (newUniforms: Record<string, number | number[] | boolean>) => {
 			this.providedUniforms = { ...this.providedUniforms, ...newUniforms };
 			this.updateProvidedUniforms();
-			this.render(performance.now());
+			if (!this.canAnimate() || this.effectiveSpeed === 0) {
+				this.render(performance.now(), true);
+			} else {
+				this.requestRender();
+			}
 		};
 
 		dispose = () => {
 			this.hasBeenDisposed = true;
-			this.clearRecoveryTimeout();
 			if (this.resizeRafId !== null) {
 				cancelAnimationFrame(this.resizeRafId);
 				this.resizeRafId = null;
@@ -885,7 +715,6 @@ void main() {
 					stencil: false,
 					premultipliedAlpha: true,
 					preserveDrawingBuffer: false,
-					desynchronized: true,
 					powerPreference: 'low-power'
 				},
 				animationSpeed,

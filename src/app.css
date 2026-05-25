@@ -195,19 +195,20 @@ body {
 	font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
-html.lenis,
-html.lenis body {
-	height: auto;
-}
-
-.lenis.lenis-smooth {
-	scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-	overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
+/* ScrollSmoother Core Layout Styles */
+#smooth-wrapper {
 	overflow: hidden;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+#smooth-content {
+	overflow: visible;
+	width: 100%;
+	will-change: transform;
 }

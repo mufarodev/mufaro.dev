@@ -51,6 +51,10 @@
 
 <PersistentHero />
 
-<div class="min-h-svh min-w-svw">
-	{@render children?.()}
+<div id="smooth-wrapper">
+	<div id="smooth-content">
+		<div class="min-h-svh min-w-svw">
+			{@render children?.()}
+		</div>
+	</div>
 </div>
