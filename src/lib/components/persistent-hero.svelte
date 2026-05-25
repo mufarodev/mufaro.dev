@@ -169,7 +169,7 @@
 		} else {
 			setAnimating(true);
 			currentSection = 1;
-			wheelUnlockUntil = Date.now() + 650;
+			wheelUnlockUntil = Date.now() + 850;
 			if (isHomePage) {
 				heroScrollLocked.set(true);
 			}
@@ -188,10 +188,10 @@
 				unlockScrollAfter(isHomePage ? POST_MORPH_SCROLL_LOCK_MS : 0);
 			};
 
-			// Backup timeout (750ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
-			morphToPillTimeout = window.setTimeout(handleComplete, 750);
+			// Backup timeout (950ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
+			morphToPillTimeout = window.setTimeout(handleComplete, 950);
 
-			scrollViewportTo(getHeroScrollTarget(), 0.6, handleComplete);
+			scrollViewportTo(getHeroScrollTarget(), 0.8, handleComplete);
 		}
 	}
 
@@ -212,7 +212,7 @@
 		} else {
 			setAnimating(true);
 			currentSection = 0;
-			wheelUnlockUntil = Date.now() + 450;
+			wheelUnlockUntil = Date.now() + 850;
 			if (isHomePage) {
 				heroScrollLocked.set(true);
 			}
@@ -230,10 +230,10 @@
 				unlockScrollAfter(isHomePage ? RETURN_SCROLL_LOCK_MS : 0);
 			};
 
-			// Backup timeout (750ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
-			morphToHeroTimeout = window.setTimeout(handleComplete, 750);
+			// Backup timeout (950ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
+			morphToHeroTimeout = window.setTimeout(handleComplete, 950);
 
-			scrollViewportTo(0, 0.6, handleComplete);
+			scrollViewportTo(0, 0.8, handleComplete);
 		}
 	}
 
@@ -278,27 +278,39 @@
 			setMorphProgress(0);
 		}
 
-		morphTl = gsap.timeline({ paused: true });
+		const duration = 0.8;
 
-		morphTl.fromTo(
-			headerContainer,
-			{
-				width: '100vw',
-				height: '100vh',
-				borderRadius: '0px',
-				top: '0px'
-			},
-			{
-				width: () =>
-					window.innerWidth > 1333 ? '1200px' : isNarrowViewport() ? 'calc(100vw - 20px)' : '90vw',
-				height: () => (isNarrowViewport() ? '72px' : '80px'),
-				borderRadius: () => (isNarrowViewport() ? '36px' : '50px'),
-				top: () => (isNarrowViewport() ? '12px' : '24px'),
-				ease: 'power2.inOut',
-				duration: 0.6
-			},
-			0
-		);
+		const getTopPosition = (p: number) => {
+			const yStart = isNarrowViewport() ? 8 : 12;
+			const yPeak = window.innerHeight * 0.15;
+			const yFinal = isNarrowViewport() ? 12 : 24;
+
+			const A = (yPeak - yStart - 1.225 * (yFinal - yStart)) / -0.11025;
+			const B = -2.5 * (yFinal - yStart) - 1.175 * A;
+			const C = -1.47 * A - 1.4 * B;
+
+			return A * Math.pow(p, 3) + B * Math.pow(p, 2) + C * p + yStart;
+		};
+
+		const getWidth = (p: number) => {
+			const startWidth = isNarrowViewport() ? window.innerWidth - 16 : window.innerWidth - 24;
+			const endWidth = window.innerWidth > 1333 ? 1200 : isNarrowViewport() ? window.innerWidth - 20 : window.innerWidth * 0.9;
+			return startWidth + (endWidth - startWidth) * p;
+		};
+
+		const getHeight = (p: number) => {
+			const startHeight = isNarrowViewport() ? window.innerHeight - 16 : window.innerHeight - 24;
+			const endHeight = isNarrowViewport() ? 72 : 80;
+			return startHeight + (endHeight - startHeight) * p;
+		};
+
+		const getBorderRadius = (p: number) => {
+			const startRadius = isNarrowViewport() ? 16 : 24;
+			const endRadius = isNarrowViewport() ? 36 : 50;
+			return startRadius + (endRadius - startRadius) * p;
+		};
+
+		morphTl = gsap.timeline({ paused: true });
 
 		morphTl.fromTo(
 			sparkleImage,
@@ -313,8 +325,8 @@
 				left: () => (isNarrowViewport() ? '-10px' : '-5px'),
 				bottom: () => (isNarrowViewport() ? '50%' : '55%'),
 				yPercent: 50,
-				ease: 'power2.inOut',
-				duration: 0.6
+				ease: 'power3.inOut',
+				duration: duration
 			},
 			0
 		);
@@ -331,8 +343,8 @@
 				fontSize: () => (isSmallViewport() ? '24px' : isNarrowViewport() ? '30px' : '36px'),
 				left: () => (isNarrowViewport() ? '20px' : '100px'),
 				bottom: () => (isNarrowViewport() ? '20px' : '24px'),
-				ease: 'power2.inOut',
-				duration: 0.6
+				ease: 'power3.inOut',
+				duration: duration
 			},
 			0
 		);
@@ -343,7 +355,7 @@
 			{
 				opacity: () => (isSmallViewport() ? 0 : 1),
 				duration: 0.35,
-				ease: 'power2.out'
+				ease: 'power3.out'
 			},
 			0
 		);
@@ -351,7 +363,7 @@
 		morphTl.fromTo(
 			[heroTitleGroup, heroDescription],
 			{ opacity: 1, y: 0 },
-			{ opacity: 0, y: -20, duration: 0.4, ease: 'power2.out' },
+			{ opacity: 0, y: -20, duration: 0.4, ease: 'power3.out' },
 			0
 		);
 
@@ -366,8 +378,8 @@
 				top: '50%',
 				right: () => (isNarrowViewport() ? '10px' : '16px'),
 				yPercent: -50,
-				ease: 'power2.inOut',
-				duration: 0.6
+				ease: 'power3.inOut',
+				duration: duration
 			},
 			0
 		);
@@ -376,10 +388,17 @@
 			{ progress: 0 },
 			{
 				progress: 1,
-				duration: 0.6,
-				ease: 'power2.inOut',
+				duration: duration,
+				ease: 'power3.inOut',
 				onUpdate: function () {
-					setMorphProgress(this.targets()[0].progress);
+					const p = this.targets()[0].progress;
+					setMorphProgress(p);
+					if (headerContainer) {
+						headerContainer.style.top = `${getTopPosition(p)}px`;
+						headerContainer.style.width = `${getWidth(p)}px`;
+						headerContainer.style.height = `${getHeight(p)}px`;
+						headerContainer.style.borderRadius = `${getBorderRadius(p)}px`;
+					}
 				}
 			},
 			0
@@ -403,8 +422,8 @@
 			},
 			{
 				top: () => (isNarrowViewport() ? '36px' : '40px'),
-				duration: 0.6,
-				ease: 'power2.inOut'
+				duration: duration,
+				ease: 'power3.inOut'
 			},
 			0
 		);
@@ -504,7 +523,7 @@
 	<div
 		bind:this={headerContainer}
 		class="pointer-events-auto absolute z-50 overflow-hidden bg-[#050507] shadow-2xl"
-		style="width: 100vw; height: 100vh; top: 0; left: 50%; transform: translateX(-50%); border-radius: 0;"
+		style="width: calc(100vw - 24px); height: calc(100vh - 24px); top: 12px; left: 50%; transform: translateX(-50%); border-radius: 24px;"
 	>
 		<div class="pointer-events-none absolute inset-0 opacity-80">
 			<AnimatedLiquidBackground
