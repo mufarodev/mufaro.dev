@@ -37,9 +37,9 @@
 
 	const PatternShapes = { Checks: 0, Stripes: 1, Edge: 2 };
 
-	const RESIZE_THROTTLE_MS = 0;
+	const RESIZE_THROTTLE_MS = 90;
 	const RESIZE_SETTLE_MS = 180;
-	const RESIZE_QUANTUM_PX = 1;
+	const RESIZE_QUANTUM_PX = 24;
 
 	function getShaderColorFromString(
 		colorString: string | number[],
@@ -198,28 +198,21 @@ void main() {
     float freq1 = 3.0;
     
     vec2 d1 = vec2(
-        screenUV.x + sin(screenUV.y * (freq1 * 1.7) + t * 0.8) * 0.12 + cos(screenUV.x * (freq1 * 0.9) - t * 0.5) * 0.05,
-        screenUV.y + cos(screenUV.x * (freq1 * 1.3) - t * 0.6) * 0.12 + sin(screenUV.y * (freq1 * 1.1) + t * 0.7) * 0.05
+        screenUV.x + sin(screenUV.y * (freq1 * 1.5) + t * 0.8) * 0.12,
+        screenUV.y + cos(screenUV.x * (freq1 * 1.5) - t * 0.6) * 0.12
     );
     
     float pattern1 = sin(d1.x * (freq1 * 2.1) + d1.y * (freq1 * 1.8) + t * 0.4);
     float freq2 = freq1 * 2.1;
     
     vec2 d2 = vec2(
-        d1.x + cos(d1.y * (freq2 * 2.7) - t * 0.45) * 0.07 + sin(d1.x * (freq2 * 1.9) + t * 0.6) * 0.04,
-        d1.y + sin(d1.x * (freq2 * 2.3) + t * 0.65) * 0.07 + cos(d1.y * (freq2 * 1.6) - t * 0.4) * 0.04
+        d1.x + cos(d1.y * (freq2 * 2.2) - t * 0.45) * 0.07,
+        d1.y + sin(d1.x * (freq2 * 2.2) + t * 0.6) * 0.07
     );
     
     float pattern2 = cos(d2.x * (freq2 * 1.4) - d2.y * (freq2 * 1.9) + t * 0.35);
-    float freq3 = freq1 * 3.7;
     
-    vec2 d3 = vec2(
-        d2.x + sin(d2.y * (freq3 * 1.8) + t * 0.85) * 0.04 + cos(d2.x * (freq3 * 1.3) - t * 0.55) * 0.025 + sin((d2.x + d2.y) * (freq3 * 0.7) + t * 0.9) * 0.02,
-        d2.y + cos(d2.x * (freq3 * 1.6) - t * 0.75) * 0.04 + sin(d2.y * (freq3 * 1.1) + t * 0.5) * 0.025 + cos((d2.x + d2.y) * (freq3 * 0.8) - t * 0.95) * 0.02
-    );
-    
-    float pattern3 = sin(d3.x * (freq3 * 1.1) + d3.y * (freq3 * 1.5) - t * 0.55);
-    float combinedPattern = pattern1 * 0.45 + pattern2 * 0.35 + pattern3 * 0.2;
+    float combinedPattern = pattern1 * 0.55 + pattern2 * 0.45;
     
     float blendBias = (45.0 - 50.0) * 0.006;
     float blendFactor = smoothstep(0.3, 0.7, combinedPattern * 0.5 + 0.5 + blendBias);
@@ -266,6 +259,7 @@ void main() {
 		effectiveSpeed = 1;
 		isPageVisible = true;
 		isReducedMotion = false;
+		pixelRatio = 1.0;
 		providedUniforms: Record<string, number | number[] | boolean>;
 		hasBeenDisposed = false;
 		resolutionChanged = true;
@@ -469,7 +463,7 @@ void main() {
 				this.scheduleResize(false);
 			});
 
-			const resizeTarget = this.canvas.parentElement ?? this.canvas;
+			const resizeTarget = this.canvas;
 			this.resizeObserver.observe(resizeTarget);
 			this.handleResize(true);
 		};
@@ -487,10 +481,16 @@ void main() {
 		};
 
 		handleResize = (force = false) => {
-			const measuredWidth =
-				this.observedCssWidth || Math.round(this.canvas.getBoundingClientRect().width);
-			const measuredHeight =
-				this.observedCssHeight || Math.round(this.canvas.getBoundingClientRect().height);
+			let measuredWidth = this.observedCssWidth;
+			let measuredHeight = this.observedCssHeight;
+
+			if (!measuredWidth || !measuredHeight) {
+				const rect = this.canvas.getBoundingClientRect();
+				measuredWidth = Math.round(rect.width);
+				measuredHeight = Math.round(rect.height);
+				this.observedCssWidth = measuredWidth;
+				this.observedCssHeight = measuredHeight;
+			}
 
 			if (!measuredWidth || !measuredHeight) return;
 
@@ -501,7 +501,8 @@ void main() {
 				? measuredHeight
 				: Math.max(1, Math.round(measuredHeight / RESIZE_QUANTUM_PX) * RESIZE_QUANTUM_PX);
 
-			const pixelRatio = window.devicePixelRatio || 1;
+			const pixelRatio = Math.min(1.0, window.devicePixelRatio || 1);
+			this.pixelRatio = pixelRatio;
 			let newWidth = Math.max(1, Math.floor(cssWidth * pixelRatio));
 			let newHeight = Math.max(1, Math.floor(cssHeight * pixelRatio));
 
@@ -568,7 +569,7 @@ void main() {
 				);
 				this.gl.uniform1f(
 					this.uniformLocations.u_pixelRatio!,
-					window.devicePixelRatio || 1
+					this.pixelRatio
 				);
 				this.resolutionChanged = false;
 			}
@@ -771,5 +772,7 @@ void main() {
 	});
 </script>
 
-<canvas bind:this={canvas} class="pointer-events-none absolute inset-0 h-full w-full {className}"
+<canvas
+	bind:this={canvas}
+	class="pointer-events-none absolute top-1/2 left-1/2 h-[100vh] w-[100vw] -translate-x-1/2 -translate-y-1/2 max-w-none max-h-none {className}"
 ></canvas>
