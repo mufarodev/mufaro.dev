@@ -157,7 +157,7 @@
 		getContrastColor(m3ContentColorValue.r, m3ContentColorValue.g, m3ContentColorValue.b)
 	);
 
-	let dynamicLargeHeight = $derived(musicActivity ? '232px' : '140px');
+	let dynamicLargeHeight = $derived(musicActivity ? '220px' : '140px');
 </script>
 
 <div
@@ -180,6 +180,21 @@
 					class="center pointer-events-none absolute inset-0 h-full w-full object-cover blur-[2px] brightness-50"
 				/>
 			</div>
+
+			<svg class="pointer-events-none absolute h-0 w-0" aria-hidden="true">
+				<filter id="liquid-waveform" x="-50%" y="-100%" width="200%" height="300%" color-interpolation-filters="sRGB">
+					<feTurbulence type="fractalNoise" baseFrequency="0.008 0.025" numOctaves="2" seed="42" result="noise" />
+					<feDisplacementMap in="SourceGraphic" in2="noise" scale="160" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+					<feGaussianBlur in="displaced" stdDeviation="15" result="mist" />
+				</filter>
+			</svg>
+			
+			<div class="vapor-container absolute inset-x-0 bottom-0 h-[180px] pointer-events-none overflow-hidden rounded-b-md">
+				<div class="liquid-filter-wrapper absolute inset-0 w-full h-full">
+					<div class="liquid-line line-back"></div>
+					<div class="liquid-line line-front"></div>
+				</div>
+			</div>
 		{/if}
 
 		{#if !connected}
@@ -193,7 +208,7 @@
 					Connecting...
 				</p>
 			</div>
-		{:else if data}
+		{:else if data && data.discord_status}
 			<div class="morph-large-content relative z-20 flex h-full flex-col {musicActivity ? '' : 'gap-4'}">
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
@@ -478,6 +493,62 @@
 
 	.morph-compact-content {
 		opacity: calc(max(0, (var(--morph-progress) - 0.4) * 2.5));
+	}
+
+	.vapor-container {
+		mix-blend-mode: plus-lighter;
+		opacity: calc((1 - var(--morph-progress)) * 0.95);
+		z-index: 5;
+		mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+		-webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+	}
+
+	.liquid-filter-wrapper {
+		filter: url(#liquid-waveform);
+		transform: translateZ(0);
+	}
+
+	.liquid-line {
+		position: absolute;
+		width: 300%;
+		height: 120px;
+		bottom: -60px;
+		border-radius: 50%;
+		will-change: transform;
+	}
+
+	.line-back {
+		left: -100%;
+		background: linear-gradient(90deg,
+			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 0%,
+			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 60%, white) 30%,
+			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 70%,
+			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 90%, black) 100%
+		);
+		animation: flow-liquid-back 4s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+		opacity: 0.7;
+	}
+
+	.line-front {
+		left: -50%;
+		background: linear-gradient(90deg,
+			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 80%, black) 0%,
+			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 40%,
+			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 40%, white) 70%,
+			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 100%
+		);
+		animation: flow-liquid-front 3s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+		opacity: 0.85;
+	}
+
+	@keyframes flow-liquid-back {
+		0% { transform: translateX(0) translateY(-10px) scaleY(1); }
+		100% { transform: translateX(35%) translateY(25px) scaleY(1.6); }
+	}
+
+	@keyframes flow-liquid-front {
+		0% { transform: translateX(0) scaleY(1.3) translateY(20px); }
+		100% { transform: translateX(-35%) scaleY(0.7) translateY(-25px); }
 	}
 
 	.sound-wave {
