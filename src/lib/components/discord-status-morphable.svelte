@@ -157,7 +157,7 @@
 		getContrastColor(m3ContentColorValue.r, m3ContentColorValue.g, m3ContentColorValue.b)
 	);
 
-	let dynamicLargeHeight = $derived(musicActivity ? '180px' : '140px');
+	let dynamicLargeHeight = $derived(musicActivity ? '232px' : '140px');
 </script>
 
 <div
@@ -170,29 +170,14 @@
 	style:--dynamic-large-height={dynamicLargeHeight}
 >
 	<div
-		class="morph-border absolute -inset-[1.5px] bg-white/10 backdrop-blur-sm group-hover:bg-white/15"
-	></div>
-
-	<div
 		class="morph-content relative overflow-hidden bg-black/40 backdrop-blur-md group-hover:bg-black/50"
 	>
 		{#if largeImage && musicActivity}
-			<div class="morph-bg-image pointer-events-none absolute inset-0 overflow-hidden">
-				<div
-					class="pointer-events-none absolute z-10 h-full w-full"
-					style="
-						background: radial-gradient(
-							circle at center,
-							transparent 0%,
-							rgba({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}, 0.8) 35%,
-							rgb({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}) 100%
-						);
-					"
-				></div>
+			<div class="morph-bg-image pointer-events-none absolute top-[42px] inset-x-0 bottom-0 overflow-hidden rounded-md">
 				<img
 					src={largeImage}
 					alt={musicActivity.name}
-					class="center pointer-events-none absolute inset-0 h-full w-full object-cover blur-[2px]"
+					class="center pointer-events-none absolute inset-0 h-full w-full object-cover blur-[2px] brightness-50"
 				/>
 			</div>
 		{/if}
@@ -209,23 +194,19 @@
 				</p>
 			</div>
 		{:else if data}
-			<div class="morph-large-content relative z-20 flex flex-col gap-4">
+			<div class="morph-large-content relative z-20 flex h-full flex-col {musicActivity ? '' : 'gap-4'}">
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<div class="relative h-2 w-2">
 							<div class="h-full w-full rounded-full {statusColors[data.discord_status]}"></div>
 							<div
-								class="absolute inset-0 animate-ping rounded-full {statusColors[
+								class="absolute inset-0 rounded-full {statusColors[
 									data.discord_status
 								]} opacity-75"
 							></div>
 						</div>
 						<span
-							class="text-xs font-medium {data.discord_status === 'dnd'
-								? 'text-white/70'
-								: textContrastColor === 'black'
-									? 'text-black/70'
-									: 'text-white/70'}"
+							class="text-xs font-medium text-white/80"
 						>
 							{statusLabels[data.discord_status]}
 						</span>
@@ -233,89 +214,72 @@
 
 					{#if musicActivity}
 						<div
-							class="flex items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 backdrop-blur-md {contrastColor ===
-							'black'
-								? 'border-black/5 bg-black/5'
-								: 'border-white/10 bg-black/30'}"
+							class="flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5"
 						>
 							<span
-								class="text-center text-[10px] font-medium {contrastColor === 'black'
-									? 'text-black/80'
-									: 'text-white/80'}"
+								class="text-center text-xs font-medium text-white/80"
 							>
 								{musicActivity.name}
 							</span>
 							<HugeiconsIcon
 								icon={MusicNote01Icon}
-								size={12}
-								className={contrastColor === 'black' ? 'text-black/60' : 'text-white/60'}
+								size={14}
+								className='text-white/80 fill-current/50'
 							/>
 						</div>
 					{/if}
 				</div>
 
 				{#if musicActivity}
-					<div class="flex items-center gap-3">
-						{#if largeImage}
-							<img
-								src={largeImage}
-								alt={musicActivity.name}
-								class="h-18 w-18 shrink-0 rounded-lg object-cover shadow-lg ring-1 {contrastColor ===
-								'black'
-									? 'ring-black/10'
-									: 'ring-white/10'}"
-							/>
-						{/if}
-						<div class="min-w-0 flex-1 space-y-0.5">
-							{#if musicActivity.details}
+					<div class="flex-1 flex flex-col justify-between pt-10">
+						<div class="flex items-center gap-3">
+							{#if largeImage}
+								<img
+									src={largeImage}
+									alt={musicActivity.name}
+									class="h-18 w-18 shrink-0 rounded-lg object-cover shadow-lg ring-1 {contrastColor ===
+									'black'
+										? 'ring-black/10'
+										: 'ring-white/10'}"
+								/>
+							{/if}
+							<div class="min-w-0 flex-1 space-y-0.5">
 								<p
-									class="truncate text-base font-semibold tracking-tight {contrastColor === 'black'
-										? 'text-stone-900/90'
-										: 'text-white/95'}"
+									class="truncate text-base font-semibold tracking-tight text-white/95"
 								>
 									{musicActivity.details}
 								</p>
-							{/if}
-							{#if musicActivity.state}
 								<p
-									class="truncate text-sm {contrastColor === 'black'
-										? 'text-stone-900/70'
-										: 'text-white/70'}"
+									class="truncate text-sm text-white/70"
 								>
 									{musicActivity.state}
 								</p>
-							{/if}
+							</div>
 						</div>
-					</div>
 
-					{#if musicActivity.timestamps?.start && musicActivity.timestamps?.end}
-						<div class="space-y-1">
-							<div
-								class="h-1 w-full overflow-hidden rounded-full {contrastColor === 'black'
-									? 'bg-black/10'
-									: 'bg-white/20'}"
-							>
+						{#if musicActivity.timestamps?.start && musicActivity.timestamps?.end}
+							<div class="space-y-1">
 								<div
-									class="h-full rounded-full {contrastColor === 'black'
-										? 'bg-black/70'
-										: 'bg-white/70'}"
-									style="width: {progress}%; transition: width 0.3s ease;"
-								></div>
-							</div>
-							<div
-								class="flex justify-between text-[10px] font-medium {contrastColor === 'black'
-									? 'text-black/50'
-									: 'text-white/50'}"
-							>
-								<span>{currentTime}</span>
-								<span
-									>{formatDuration(
-										musicActivity.timestamps.end - musicActivity.timestamps.start
-									)}</span
+									class="h-1 w-full overflow-hidden rounded-full bg-white/20"
 								>
+									<div
+										class="h-full rounded-full bg-white"
+										style="width: {progress}%; transition: width 0.3s ease;"
+									></div>
+								</div>
+								<div
+									class="flex justify-between text-[10px] font-medium text-white/60"
+								>
+									<span>{currentTime}</span>
+									<span
+										>{formatDuration(
+											musicActivity.timestamps.end - musicActivity.timestamps.start
+										)}</span
+									>
+								</div>
 							</div>
-						</div>
-					{/if}
+						{/if}
+					</div>
 				{:else if latestActivity}
 					<div class="flex items-center gap-3">
 						{#if generalActivityLargeImage}
@@ -465,7 +429,7 @@
 		--compact-height: 48px;
 		--large-radius: 17px;
 		--compact-radius: 24px;
-		--large-padding: 20px;
+		--large-padding: 16px;
 		--compact-padding: 8px;
 	}
 
@@ -484,13 +448,6 @@
 		}
 	}
 
-	.morph-border {
-		border-radius: calc(
-			var(--large-radius) + (var(--compact-radius) - var(--large-radius)) * var(--morph-progress) +
-				1px
-		);
-		transition: background-color 0.3s ease;
-	}
 
 	.morph-content {
 		width: calc(
@@ -505,11 +462,14 @@
 		padding: calc(
 			var(--large-padding) + (var(--compact-padding) - var(--large-padding)) * var(--morph-progress)
 		);
+		padding-top: calc((var(--large-padding) + var(--compact-padding)) / 2 - var(--compact-padding) / 2);
 		transition: background-color 0.3s ease;
 	}
 
 	.morph-bg-image {
 		opacity: calc(0.75 * (1 - var(--morph-progress) * 1.5));
+		mask-image: radial-gradient(circle at bottom left, black 0%, transparent 80%);
+		-webkit-mask-image: radial-gradient(circle at bottom left, black 0%, transparent 80%);
 	}
 
 	.morph-large-content {
@@ -520,7 +480,6 @@
 		opacity: calc(max(0, (var(--morph-progress) - 0.4) * 2.5));
 	}
 
-	/* OneUI-style sound wave animation */
 	.sound-wave {
 		animation: sound-wave 0.8s ease-in-out infinite alternate;
 	}
