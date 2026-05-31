@@ -173,7 +173,9 @@
 		class="morph-content relative overflow-hidden bg-black/40 backdrop-blur-md group-hover:bg-black/50"
 	>
 		{#if largeImage && musicActivity}
-			<div class="morph-bg-image pointer-events-none absolute top-[42px] inset-x-0 bottom-0 overflow-hidden rounded-md">
+			<div
+				class="morph-bg-image pointer-events-none absolute inset-x-0 top-[42px] bottom-0 overflow-hidden rounded-md"
+			>
 				<img
 					src={largeImage}
 					alt={musicActivity.name}
@@ -182,15 +184,37 @@
 			</div>
 
 			<svg class="pointer-events-none absolute h-0 w-0" aria-hidden="true">
-				<filter id="liquid-waveform" x="-50%" y="-100%" width="200%" height="300%" color-interpolation-filters="sRGB">
-					<feTurbulence type="fractalNoise" baseFrequency="0.008 0.025" numOctaves="2" seed="42" result="noise" />
-					<feDisplacementMap in="SourceGraphic" in2="noise" scale="160" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+				<filter
+					id="liquid-waveform"
+					x="-50%"
+					y="-100%"
+					width="200%"
+					height="300%"
+					color-interpolation-filters="sRGB"
+				>
+					<feTurbulence
+						type="fractalNoise"
+						baseFrequency="0.008 0.025"
+						numOctaves="2"
+						seed="42"
+						result="noise"
+					/>
+					<feDisplacementMap
+						in="SourceGraphic"
+						in2="noise"
+						scale="160"
+						xChannelSelector="R"
+						yChannelSelector="G"
+						result="displaced"
+					/>
 					<feGaussianBlur in="displaced" stdDeviation="15" result="mist" />
 				</filter>
 			</svg>
-			
-			<div class="vapor-container absolute inset-x-0 bottom-0 h-[180px] pointer-events-none overflow-hidden rounded-b-md">
-				<div class="liquid-filter-wrapper absolute inset-0 w-full h-full">
+
+			<div
+				class="vapor-container pointer-events-none absolute inset-x-0 bottom-0 h-[180px] overflow-hidden rounded-b-md"
+			>
+				<div class="liquid-filter-wrapper absolute inset-0 h-full w-full">
 					<div class="liquid-line line-back"></div>
 					<div class="liquid-line line-front"></div>
 				</div>
@@ -209,44 +233,40 @@
 				</p>
 			</div>
 		{:else if data && data.discord_status}
-			<div class="morph-large-content relative z-20 flex h-full flex-col {musicActivity ? '' : 'gap-4'}">
+			<div
+				class="morph-large-content relative z-20 flex h-full flex-col {musicActivity
+					? ''
+					: 'gap-4'}"
+			>
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<div class="relative h-2 w-2">
 							<div class="h-full w-full rounded-full {statusColors[data.discord_status]}"></div>
 							<div
-								class="absolute inset-0 rounded-full {statusColors[
-									data.discord_status
-								]} opacity-75"
+								class="absolute inset-0 rounded-full {statusColors[data.discord_status]} opacity-75"
 							></div>
 						</div>
-						<span
-							class="text-xs font-medium text-white/80"
-						>
+						<span class="text-xs font-medium text-white/80">
 							{statusLabels[data.discord_status]}
 						</span>
 					</div>
 
 					{#if musicActivity}
-						<div
-							class="flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5"
-						>
-							<span
-								class="text-center text-xs font-medium text-white/80"
-							>
+						<div class="flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5">
+							<span class="text-center text-xs font-medium text-white/80">
 								{musicActivity.name}
 							</span>
 							<HugeiconsIcon
 								icon={MusicNote01Icon}
 								size={14}
-								className='text-white/80 fill-current/50'
+								className="text-white/80 fill-current/50"
 							/>
 						</div>
 					{/if}
 				</div>
 
 				{#if musicActivity}
-					<div class="flex-1 flex flex-col justify-between pt-10">
+					<div class="flex flex-1 flex-col justify-between pt-10">
 						<div class="flex items-center gap-3">
 							{#if largeImage}
 								<img
@@ -259,14 +279,10 @@
 								/>
 							{/if}
 							<div class="min-w-0 flex-1 space-y-0.5">
-								<p
-									class="truncate text-base font-semibold tracking-tight text-white/95"
-								>
+								<p class="truncate text-base font-semibold tracking-tight text-white/95">
 									{musicActivity.details}
 								</p>
-								<p
-									class="truncate text-sm text-white/70"
-								>
+								<p class="truncate text-sm text-white/70">
 									{musicActivity.state}
 								</p>
 							</div>
@@ -274,17 +290,13 @@
 
 						{#if musicActivity.timestamps?.start && musicActivity.timestamps?.end}
 							<div class="space-y-1">
-								<div
-									class="h-1 w-full overflow-hidden rounded-full bg-white/20"
-								>
+								<div class="h-1 w-full overflow-hidden rounded-full bg-white/20">
 									<div
 										class="h-full rounded-full bg-white"
 										style="width: {progress}%; transition: width 0.3s ease;"
 									></div>
 								</div>
-								<div
-									class="flex justify-between text-[10px] font-medium text-white/60"
-								>
+								<div class="flex justify-between text-[10px] font-medium text-white/60">
 									<span>{currentTime}</span>
 									<span
 										>{formatDuration(
@@ -352,7 +364,7 @@
 				{/if}
 			</div>
 
-			<div class="morph-compact-content absolute inset-0 z-30">
+			<div class="morph-compact-content">
 				<div class="flex h-full items-center gap-2.5 px-3 {musicActivity ? 'pb-1' : ''}">
 					{#if musicActivity && largeImage}
 						<div class="relative shrink-0">
@@ -411,7 +423,7 @@
 				</div>
 
 				{#if musicActivity}
-					<div class="absolute right-0 bottom-0 left-0 h-[3px] overflow-hidden">
+					<div class="compact-progress absolute right-0 bottom-0 left-0 h-[3px] overflow-hidden">
 						<div class="absolute inset-0 bg-white/10"></div>
 						<div
 							class="relative h-full"
@@ -463,21 +475,24 @@
 		}
 	}
 
-
 	.morph-content {
-		width: calc(
-			var(--large-width) + (var(--compact-width) - var(--large-width)) * var(--morph-progress)
+		width: var(--large-width);
+		height: var(--large-height);
+		padding: var(--large-padding);
+		padding-top: calc(
+			(var(--large-padding) + var(--compact-padding)) / 2 - var(--compact-padding) / 2
 		);
-		height: calc(
-			var(--large-height) + (var(--compact-height) - var(--large-height)) * var(--morph-progress)
+
+		clip-path: inset(
+			calc((var(--large-height) - var(--compact-height)) / 2 * var(--morph-progress, 0)) 0
+				calc((var(--large-height) - var(--compact-height)) / 2 * var(--morph-progress, 0))
+				calc((var(--large-width) - var(--compact-width)) * var(--morph-progress, 0)) round
+				calc(
+					var(--large-radius) + (var(--compact-radius) - var(--large-radius)) *
+						var(--morph-progress, 0)
+				)
 		);
-		border-radius: calc(
-			var(--large-radius) + (var(--compact-radius) - var(--large-radius)) * var(--morph-progress)
-		);
-		padding: calc(
-			var(--large-padding) + (var(--compact-padding) - var(--large-padding)) * var(--morph-progress)
-		);
-		padding-top: calc((var(--large-padding) + var(--compact-padding)) / 2 - var(--compact-padding) / 2);
+		will-change: clip-path;
 		transition: background-color 0.3s ease;
 	}
 
@@ -492,15 +507,37 @@
 	}
 
 	.morph-compact-content {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		width: var(--compact-width);
+		display: flex;
+		align-items: center;
+		z-index: 30;
 		opacity: calc(max(0, (var(--morph-progress) - 0.4) * 2.5));
+	}
+
+	.compact-progress {
+		bottom: calc((var(--large-height) - var(--compact-height)) / 2);
 	}
 
 	.vapor-container {
 		mix-blend-mode: plus-lighter;
 		opacity: calc((1 - var(--morph-progress)) * 0.95);
 		z-index: 5;
-		mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
-		-webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+		mask-image: linear-gradient(
+			to top,
+			rgba(0, 0, 0, 1) 0%,
+			rgba(0, 0, 0, 0.5) 40%,
+			transparent 100%
+		);
+		-webkit-mask-image: linear-gradient(
+			to top,
+			rgba(0, 0, 0, 1) 0%,
+			rgba(0, 0, 0, 0.5) 40%,
+			transparent 100%
+		);
 	}
 
 	.liquid-filter-wrapper {
@@ -519,7 +556,8 @@
 
 	.line-back {
 		left: -100%;
-		background: linear-gradient(90deg,
+		background: linear-gradient(
+			90deg,
 			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 0%,
 			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 60%, white) 30%,
 			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 70%,
@@ -531,7 +569,8 @@
 
 	.line-front {
 		left: -50%;
-		background: linear-gradient(90deg,
+		background: linear-gradient(
+			90deg,
 			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 80%, black) 0%,
 			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 40%,
 			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 40%, white) 70%,
@@ -542,13 +581,21 @@
 	}
 
 	@keyframes flow-liquid-back {
-		0% { transform: translateX(0) translateY(-10px) scaleY(1); }
-		100% { transform: translateX(35%) translateY(25px) scaleY(1.6); }
+		0% {
+			transform: translateX(0) translateY(-10px) scaleY(1);
+		}
+		100% {
+			transform: translateX(35%) translateY(25px) scaleY(1.6);
+		}
 	}
 
 	@keyframes flow-liquid-front {
-		0% { transform: translateX(0) scaleY(1.3) translateY(20px); }
-		100% { transform: translateX(-35%) scaleY(0.7) translateY(-25px); }
+		0% {
+			transform: translateX(0) scaleY(1.3) translateY(20px);
+		}
+		100% {
+			transform: translateX(-35%) scaleY(0.7) translateY(-25px);
+		}
 	}
 
 	.sound-wave {
