@@ -271,9 +271,6 @@ void main() {
 		observedCssHeight = 0;
 		pendingForceResize = false;
 		lastResizeCommitAt = 0;
-		// High-water-mark resolution used for UV coordinate calculation in the shader.
-		// Only ever grows — never shrinks — so the pattern stays visually stable
-		// while the hero container morphs from full-screen to pill and back.
 		referenceWidth = 0;
 		referenceHeight = 0;
 
@@ -443,10 +440,7 @@ void main() {
 				if (entry) {
 					const nextWidth = Math.round(entry.contentRect.width);
 					const nextHeight = Math.round(entry.contentRect.height);
-					if (
-						nextWidth !== this.observedCssWidth ||
-						nextHeight !== this.observedCssHeight
-					) {
+					if (nextWidth !== this.observedCssWidth || nextHeight !== this.observedCssHeight) {
 						this.observedCssWidth = nextWidth;
 						this.observedCssHeight = nextHeight;
 					}
@@ -522,23 +516,20 @@ void main() {
 					this.resolutionChanged = true;
 				}
 
-				// Force synchronous render to prevent flickering when canvas is cleared
 				this.render(performance.now(), true);
 			}
 		};
 
 		render = (currentTime: number, forceDraw = false) => {
 			if (this.hasBeenDisposed) return;
-			
-			// If called manually (e.g. forceDraw), cancel any pending scheduled frames 
-			// to avoid spawning multiple concurrent rAF loops.
+
 			if (this.rafId !== null && forceDraw) {
 				cancelAnimationFrame(this.rafId);
 			}
 			this.rafId = null;
-			
+
 			const canAnimateNow = this.canAnimate() && this.effectiveSpeed !== 0;
-			
+
 			if (!canAnimateNow && !forceDraw) {
 				return;
 			}
@@ -560,17 +551,12 @@ void main() {
 			this.gl.uniform1f(this.uniformLocations.u_time!, this.totalAnimationTime * 0.001);
 
 			if (this.resolutionChanged) {
-				// Use the stable reference resolution (high-water mark), not the current
-				// canvas size, so the UV mapping doesn't shift during hero morph shrink.
 				this.gl.uniform2f(
 					this.uniformLocations.u_resolution!,
 					this.referenceWidth,
 					this.referenceHeight
 				);
-				this.gl.uniform1f(
-					this.uniformLocations.u_pixelRatio!,
-					this.pixelRatio
-				);
+				this.gl.uniform1f(this.uniformLocations.u_pixelRatio!, this.pixelRatio);
 				this.resolutionChanged = false;
 			}
 
@@ -774,5 +760,5 @@ void main() {
 
 <canvas
 	bind:this={canvas}
-	class="pointer-events-none absolute top-1/2 left-1/2 h-[100vh] w-[100vw] -translate-x-1/2 -translate-y-1/2 max-w-none max-h-none {className}"
+	class="pointer-events-none absolute top-1/2 left-1/2 h-[100vh] max-h-none w-[100vw] max-w-none -translate-x-1/2 -translate-y-1/2 {className}"
 ></canvas>
