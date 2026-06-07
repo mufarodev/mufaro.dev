@@ -194,7 +194,7 @@
 				>
 					<feTurbulence
 						type="fractalNoise"
-						baseFrequency="0.008 0.025"
+						baseFrequency="0.003 0.01"
 						numOctaves="2"
 						seed="42"
 						result="noise"
@@ -202,12 +202,18 @@
 					<feDisplacementMap
 						in="SourceGraphic"
 						in2="noise"
-						scale="160"
+						scale="70"
 						xChannelSelector="R"
 						yChannelSelector="G"
 						result="displaced"
 					/>
-					<feGaussianBlur in="displaced" stdDeviation="15" result="mist" />
+					<feGaussianBlur in="displaced" stdDeviation="24" result="glow" />
+					<feGaussianBlur in="displaced" stdDeviation="6" result="sharp" />
+					<feMerge>
+						<feMergeNode in="glow" />
+						<feMergeNode in="glow" />
+						<feMergeNode in="sharp" />
+					</feMerge>
 				</filter>
 			</svg>
 
@@ -215,8 +221,80 @@
 				class="vapor-container pointer-events-none absolute inset-x-0 bottom-0 h-[180px] overflow-hidden rounded-b-md"
 			>
 				<div class="liquid-filter-wrapper absolute inset-0 h-full w-full">
-					<div class="liquid-line line-back"></div>
-					<div class="liquid-line line-front"></div>
+					<svg
+						class="wave-svg line-back pointer-events-none absolute inset-y-0 h-full w-[300%] select-none"
+						viewBox="0 0 3600 180"
+						preserveAspectRatio="none"
+					>
+						<defs>
+							<linearGradient id="grad-back" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="0%"
+									stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.7)"
+								/>
+								<stop
+									offset="100%"
+									stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0)"
+								/>
+							</linearGradient>
+						</defs>
+						<path
+							fill="url(#grad-back)"
+							stroke="color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 80%, white)"
+							stroke-width="2"
+							d="M 0,140 C 450,90 450,190 900,140 C 1350,90 1350,190 1800,140 C 2250,90 2250,190 2700,140 C 3150,90 3150,190 3600,140 L 3600,180 L 0,180 Z"
+						/>
+					</svg>
+
+					<svg
+						class="wave-svg line-mid pointer-events-none absolute inset-y-0 h-full w-[300%] select-none"
+						viewBox="0 0 3600 180"
+						preserveAspectRatio="none"
+					>
+						<defs>
+							<linearGradient id="grad-mid" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="0%"
+									stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.85)"
+								/>
+								<stop
+									offset="100%"
+									stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0)"
+								/>
+							</linearGradient>
+						</defs>
+						<path
+							fill="url(#grad-mid)"
+							stroke="color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 90%, white)"
+							stroke-width="2.5"
+							d="M 0,145 C 300,105 300,185 600,145 C 900,105 900,185 1200,145 C 1500,105 1500,185 1800,145 C 2100,105 2100,185 2400,145 C 2700,105 2700,185 3000,145 C 3300,105 3300,185 3600,145 L 3600,180 L 0,180 Z"
+						/>
+					</svg>
+
+					<svg
+						class="wave-svg line-front pointer-events-none absolute inset-y-0 h-full w-[300%] select-none"
+						viewBox="0 0 3600 180"
+						preserveAspectRatio="none"
+					>
+						<defs>
+							<linearGradient id="grad-front" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="0%"
+									stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.95)"
+								/>
+								<stop
+									offset="100%"
+									stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0)"
+								/>
+							</linearGradient>
+						</defs>
+						<path
+							fill="url(#grad-front)"
+							stroke="color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 95%, white)"
+							stroke-width="3"
+							d="M 0,150 C 225,120 225,180 450,150 C 675,120 675,180 900,150 C 1125,120 1125,180 1350,150 C 1575,120 1575,180 1800,150 C 2025,120 2025,180 2250,150 C 2475,120 2475,180 2700,150 C 2925,120 2925,180 3150,150 C 3375,120 3375,180 3600,150 L 3600,180 L 0,180 Z"
+						/>
+					</svg>
 				</div>
 			</div>
 		{/if}
@@ -296,7 +374,10 @@
 										style="width: {progress}%; transition: width 0.3s ease;"
 									></div>
 								</div>
-								<div class="flex justify-between text-[10px] font-medium text-white/60">
+								<div
+									class="flex justify-between text-[10px] font-semibold text-white/90"
+									style="text-shadow: 0 1px 2px rgba(0,0,0,0.65);"
+								>
 									<span>{currentTime}</span>
 									<span
 										>{formatDuration(
@@ -524,77 +605,81 @@
 
 	.vapor-container {
 		mix-blend-mode: plus-lighter;
-		opacity: calc((1 - var(--morph-progress)) * 0.95);
+		opacity: calc((1 - var(--morph-progress)) * 0.98);
 		z-index: 5;
 		mask-image: linear-gradient(
 			to top,
 			rgba(0, 0, 0, 1) 0%,
-			rgba(0, 0, 0, 0.5) 40%,
-			transparent 100%
+			rgba(0, 0, 0, 0.85) 35%,
+			transparent 75%
 		);
 		-webkit-mask-image: linear-gradient(
 			to top,
 			rgba(0, 0, 0, 1) 0%,
-			rgba(0, 0, 0, 0.5) 40%,
-			transparent 100%
+			rgba(0, 0, 0, 0.85) 35%,
+			transparent 75%
 		);
 	}
 
 	.liquid-filter-wrapper {
 		filter: url(#liquid-waveform);
 		transform: translateZ(0);
+		position: absolute;
+		inset: 0;
+		height: 100%;
+		width: 100%;
 	}
 
-	.liquid-line {
+	.wave-svg {
 		position: absolute;
+		top: 0;
+		height: 100%;
 		width: 300%;
-		height: 120px;
-		bottom: -60px;
-		border-radius: 50%;
 		will-change: transform;
 	}
 
 	.line-back {
-		left: -100%;
-		background: linear-gradient(
-			90deg,
-			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 0%,
-			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 60%, white) 30%,
-			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 70%,
-			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 90%, black) 100%
-		);
-		animation: flow-liquid-back 4s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
-		opacity: 0.7;
+		left: -200%;
+		animation: flow-wave-back 32s ease-in-out infinite alternate;
+		opacity: 0.65;
+	}
+
+	.line-mid {
+		left: -150%;
+		animation: flow-wave-mid 24s ease-in-out infinite alternate;
+		opacity: 0.8;
 	}
 
 	.line-front {
-		left: -50%;
-		background: linear-gradient(
-			90deg,
-			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 80%, black) 0%,
-			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 40%,
-			color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 40%, white) 70%,
-			rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 100%
-		);
-		animation: flow-liquid-front 3s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
-		opacity: 0.85;
+		left: -100%;
+		animation: flow-wave-front 18s ease-in-out infinite alternate;
+		opacity: 0.95;
 	}
 
-	@keyframes flow-liquid-back {
+	@keyframes flow-wave-back {
 		0% {
-			transform: translateX(0) translateY(-10px) scaleY(1);
+			transform: translateX(0) translateY(12px) scaleY(0.95);
 		}
 		100% {
-			transform: translateX(35%) translateY(25px) scaleY(1.6);
+			transform: translateX(50%) translateY(28px) scaleY(1.15);
 		}
 	}
 
-	@keyframes flow-liquid-front {
+	@keyframes flow-wave-mid {
 		0% {
-			transform: translateX(0) scaleY(1.3) translateY(20px);
+			transform: translateX(0) translateY(15px) scaleY(0.9);
 		}
 		100% {
-			transform: translateX(-35%) scaleY(0.7) translateY(-25px);
+			transform: translateX(-50%) translateY(32px) scaleY(1.1);
+		}
+	}
+
+	@keyframes flow-wave-front {
+		0% {
+			transform: translateX(0) translateY(18px) scaleY(0.85);
+		}
+		100% {
+			transform: translateX(50%) translateY(35px) scaleY(1.05);
 		}
 	}
 
