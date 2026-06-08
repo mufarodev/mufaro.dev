@@ -34,7 +34,7 @@
 	--sidebar-accent-foreground: oklch(0.325 0 0);
 	--sidebar-border: oklch(0.9401 0 0);
 	--sidebar-ring: oklch(0.7731 0 0);
-	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+	--font-sans: 'Google Sans Flex Variable', 'Inter Variable', system-ui, -apple-system, sans-serif;
 	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 	--font-serif: 'Instrument Serif', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 	--font-handwriting: 'Caveat', cursive;
@@ -98,7 +98,7 @@
 	--sidebar-accent-foreground: oklch(0.98 0 0);
 	--sidebar-border: oklch(0.2 0 0);
 	--sidebar-ring: oklch(0.98 0 0);
-	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+	--font-sans: 'Google Sans Flex Variable', 'Inter Variable', system-ui, -apple-system, sans-serif;
 	--font-serif: 'Instrument Serif', Georgia, serif;
 	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 	--font-handwriting: 'Caveat', cursive;
@@ -184,7 +184,7 @@
 }
 
 @theme {
-	--font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+	--font-sans: 'Google Sans Flex Variable', 'Inter Variable', system-ui, -apple-system, sans-serif;
 	--font-serif: 'Instrument Serif', Georgia, serif;
 	--font-mono: 'JetBrains Mono Variable', monospace;
 	--font-handwriting: 'Caveat', cursive;
@@ -195,7 +195,6 @@ body {
 	font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
-/* ScrollSmoother Core Layout Styles */
 #smooth-wrapper {
 	overflow: hidden;
 	position: fixed;

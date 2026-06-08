@@ -294,7 +294,12 @@
 
 		const getWidth = (p: number) => {
 			const startWidth = isNarrowViewport() ? window.innerWidth - 16 : window.innerWidth - 24;
-			const endWidth = window.innerWidth > 1333 ? 1200 : isNarrowViewport() ? window.innerWidth - 20 : window.innerWidth * 0.9;
+			const endWidth =
+				window.innerWidth > 1333
+					? 1200
+					: isNarrowViewport()
+						? window.innerWidth - 20
+						: window.innerWidth * 0.9;
 			return startWidth + (endWidth - startWidth) * p;
 		};
 
@@ -563,13 +568,9 @@
 			<h1
 				bind:this={heroName}
 				class="absolute right-5 left-5 z-10 origin-bottom-left font-serif leading-[0.9] font-medium tracking-tight sm:right-auto sm:left-8 sm:whitespace-nowrap md:left-16 lg:left-24"
-				style="font-size: clamp(68px, 17vw, 96px); bottom: clamp(188px, 27vh, 220px);"
+				style="font-size: clamp(68px, 17vw, 96px); bottom: clamp(188px, 27vh, 220px); color: rgba(255, 255, 255, 0.8); mix-blend-mode: color-dodge; filter: brightness(0.8)"
 			>
-				<span
-					class="bg-linear-to-r from-purple-200 via-white to-purple-200 bg-clip-text text-transparent"
-				>
-					Mufaro
-				</span>
+				Mufaro
 			</h1>
 
 			<div

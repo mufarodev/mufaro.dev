@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { ModeWatcher } from 'mode-watcher';
 	import '@fontsource-variable/inter';
+	import '@fontsource-variable/google-sans-flex';
 	import '@fontsource-variable/jetbrains-mono';
 	import '@fontsource/instrument-serif';
 	import '@fontsource/caveat';
