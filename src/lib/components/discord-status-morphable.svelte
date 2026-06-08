@@ -14,10 +14,10 @@
 	let { onAccentColorChange, morphProgress = 0 }: Props = $props();
 
 	const statusColors = {
-		online: 'bg-green-500',
-		idle: 'bg-yellow-500',
-		dnd: 'bg-red-500',
-		offline: 'bg-gray-500'
+		online: 'bg-[#23a55a]',
+		idle: 'bg-[#f0b232]',
+		dnd: 'bg-[#f23f43]',
+		offline: 'bg-[#80848e]'
 	};
 
 	const statusLabels = {
@@ -169,8 +169,11 @@
 	style:--progress="{progress}%"
 	style:--dynamic-large-height={dynamicLargeHeight}
 >
+	<!-- Background blur layer that perfectly matches the clipped pill shape to prevent blur bleed -->
+	<div class="morph-bg-blur"></div>
+
 	<div
-		class="morph-content relative overflow-hidden bg-black/40 backdrop-blur-md group-hover:bg-black/50"
+		class="morph-content relative overflow-hidden"
 	>
 		{#if largeImage && musicActivity}
 			<div
@@ -446,65 +449,133 @@
 			</div>
 
 			<div class="morph-compact-content">
-				<div class="flex h-full items-center gap-2.5 px-3 {musicActivity ? 'pb-1' : ''}">
-					{#if musicActivity && largeImage}
-						<div class="relative shrink-0">
-							<img
-								src={largeImage}
-								alt={musicActivity.name}
-								class="h-8 w-8 rounded-md object-cover shadow-md"
-							/>
+				{#if musicActivity}
+					<div
+						class="compact-vapor absolute bottom-0 left-0 h-full pointer-events-none overflow-hidden"
+						style="
+							width: {progress}%;
+							transition: width 0.3s ease;
+						"
+					>
+						<div class="h-full w-full" style="mask-image: linear-gradient(to left, transparent 0px, black 32px); -webkit-mask-image: linear-gradient(to left, transparent 0px, black 32px);">
+							<div class="liquid-filter-wrapper absolute inset-y-0 left-0" style="width: var(--compact-width);">
+							<svg
+								class="wave-svg line-back pointer-events-none absolute inset-y-0 h-full w-[300%] select-none"
+								viewBox="0 0 3600 180"
+								preserveAspectRatio="none"
+							>
+								<defs>
+									<linearGradient id="grad-back-compact" x1="0" y1="0" x2="0" y2="1">
+										<stop offset="0%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.9)" />
+										<stop offset="100%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.2)" />
+									</linearGradient>
+								</defs>
+								<path
+									fill="url(#grad-back-compact)"
+									stroke="color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 90%, white)"
+									stroke-width="3"
+									d="M 0,140 C 450,90 450,190 900,140 C 1350,90 1350,190 1800,140 C 2250,90 2250,190 2700,140 C 3150,90 3150,190 3600,140 L 3600,180 L 0,180 Z"
+								/>
+							</svg>
+							<svg
+								class="wave-svg line-mid pointer-events-none absolute inset-y-0 h-full w-[300%] select-none"
+								viewBox="0 0 3600 180"
+								preserveAspectRatio="none"
+							>
+								<defs>
+									<linearGradient id="grad-mid-compact" x1="0" y1="0" x2="0" y2="1">
+										<stop offset="0%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1)" />
+										<stop offset="100%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.3)" />
+									</linearGradient>
+								</defs>
+								<path
+									fill="url(#grad-mid-compact)"
+									stroke="color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 95%, white)"
+									stroke-width="3.5"
+									d="M 0,145 C 300,105 300,185 600,145 C 900,105 900,185 1200,145 C 1500,105 1500,185 1800,145 C 2100,105 2100,185 2400,145 C 2700,105 2700,185 3000,145 C 3300,105 3300,185 3600,145 L 3600,180 L 0,180 Z"
+								/>
+							</svg>
+							<svg
+								class="wave-svg line-front pointer-events-none absolute inset-y-0 h-full w-[300%] select-none"
+								viewBox="0 0 3600 180"
+								preserveAspectRatio="none"
+							>
+								<defs>
+									<linearGradient id="grad-front-compact" x1="0" y1="0" x2="0" y2="1">
+										<stop offset="0%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1)" />
+										<stop offset="100%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.4)" />
+									</linearGradient>
+								</defs>
+								<path
+									fill="url(#grad-front-compact)"
+									stroke="color-mix(in srgb, rgb(var(--accent-r), var(--accent-g), var(--accent-b)) 100%, white)"
+									stroke-width="4"
+									d="M 0,150 C 225,120 225,180 450,150 C 675,120 675,180 900,150 C 1125,120 1125,180 1350,150 C 1575,120 1575,180 1800,150 C 2025,120 2025,180 2250,150 C 2475,120 2475,180 2700,150 C 2925,120 2925,180 3150,150 C 3375,120 3375,180 3600,150 L 3600,180 L 0,180 Z"
+								/>
+							</svg>
+							</div>
 						</div>
-					{:else}
-						<div class="relative flex shrink-0 items-center justify-center">
-							<div class="h-2.5 w-2.5 rounded-full {statusColors[status]}"></div>
+					</div>
+				{/if}
+
+				<div class="relative z-20 flex h-full w-full items-center gap-3 px-3">
+					<!-- Icon / Image -->
+					{#if (musicActivity && largeImage) || (latestActivity && generalActivityLargeImage)}
+						<div class="relative shrink-0 flex items-center justify-center">
+							{#if musicActivity && largeImage}
+								<img
+									src={largeImage}
+									alt={musicActivity.name}
+									class="h-10 w-10 rounded-full object-cover shadow-sm ring-1 ring-black/10"
+								/>
+							{:else if latestActivity && generalActivityLargeImage}
+								<img
+									src={generalActivityLargeImage}
+									alt={latestActivity.name}
+									class="h-10 w-10 rounded-full object-cover shadow-sm ring-1 ring-black/10"
+								/>
+							{/if}
 						</div>
 					{/if}
 
-					<div class="flex min-w-0 flex-1 flex-col text-xs leading-tight">
+					<!-- Details -->
+					<div class="flex min-w-0 flex-1 flex-col justify-center text-sm leading-tight">
 						{#if musicActivity}
-							<span class="truncate font-medium text-white"
-								>{musicActivity.details || musicActivity.name}</span
-							>
-							<span class="truncate text-[10px] text-white/50">{musicActivity.state || ''}</span>
+							<div class="flex items-center gap-1.5 mb-0.5">
+								<span class="truncate font-semibold text-white/95"
+									>{musicActivity.details}</span
+								>
+							</div>
+							<div class="flex items-center gap-1.5 text-xs text-white/70">
+								<span class="truncate">{musicActivity.state}</span>
+								{#if musicActivity.timestamps?.start}
+									<span class="opacity-50">•</span>
+									<span class="font-medium shrink-0">{currentTime}</span>
+								{/if}
+							</div>
 						{:else if latestActivity}
-							<span class="truncate font-medium text-white">{latestActivity.name}</span>
-							<span class="truncate text-[10px] text-white/50">
-								{latestActivity.details ||
-									latestActivity.state ||
+							<span class="truncate font-semibold text-white/95 mb-0.5">{latestActivity.name}</span>
+							<span class="truncate text-xs text-white/70">
+								{[latestActivity.details, latestActivity.state].filter(Boolean).join(' • ') ||
 									statusLabelsCompact[status as keyof typeof statusLabelsCompact]}
 							</span>
 						{:else}
-							<span class="font-medium text-white"
-								>{statusLabelsCompact[status as keyof typeof statusLabelsCompact]}</span
+							<span class="font-semibold text-white/95"
+								>{statusLabels[status as keyof typeof statusLabels]}</span
 							>
 						{/if}
 					</div>
 
-					{#if musicActivity}
-						<div class="mr-1 flex h-5 shrink-0 items-center gap-[3px]">
-							<div
-								class="sound-wave w-[3px] rounded-full"
-								style="background: rgb({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}); animation-delay: 0ms;"
-							></div>
-							<div
-								class="sound-wave w-[3px] rounded-full"
-								style="background: rgb({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}); animation-delay: 150ms;"
-							></div>
-							<div
-								class="sound-wave w-[3px] rounded-full"
-								style="background: rgb({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}); animation-delay: 300ms;"
-							></div>
-							<div
-								class="sound-wave w-[3px] rounded-full"
-								style="background: rgb({m3ContentColorValue.r}, {m3ContentColorValue.g}, {m3ContentColorValue.b}); animation-delay: 450ms;"
-							></div>
-						</div>
-					{/if}
+					<!-- Right Edge Icons -->
+					<div class="flex items-center gap-2.5 shrink-0 pr-1">
+						{#if musicActivity}
+							<HugeiconsIcon icon={MusicNote01Icon} size={16} className="text-white/80" />
+						{/if}
+					</div>
 				</div>
 
 				{#if musicActivity}
-					<div class="compact-progress absolute right-0 bottom-0 left-0 h-[3px] overflow-hidden">
+					<div class="compact-progress">
 						<div class="absolute inset-0 bg-white/10"></div>
 						<div
 							class="relative h-full"
@@ -532,11 +603,11 @@
 <style>
 	.morph-container {
 		--large-width: 384px;
-		--compact-width: 260px;
+		--compact-width: 320px;
 		--large-height: var(--dynamic-large-height, 180px);
-		--compact-height: 48px;
+		--compact-height: 56px;
 		--large-radius: 17px;
-		--compact-radius: 24px;
+		--compact-radius: 28px;
 		--large-padding: 16px;
 		--compact-padding: 8px;
 	}
@@ -544,19 +615,21 @@
 	@media (max-width: 1024px) {
 		.morph-container {
 			--large-width: 340px;
-			--compact-width: 220px;
+			--compact-width: 280px;
 		}
 	}
 
 	@media (max-width: 768px) {
 		.morph-container {
 			--large-width: min(80vw, 320px);
-			--compact-width: min(66vw, 200px);
+			--compact-width: min(70vw, 240px);
 			--large-padding: 16px;
 		}
 	}
 
 	.morph-content {
+		position: relative;
+		z-index: 20;
 		width: var(--large-width);
 		height: var(--large-height);
 		padding: var(--large-padding);
@@ -574,7 +647,28 @@
 				)
 		);
 		will-change: clip-path;
+	}
+
+	.morph-bg-blur {
+		position: absolute;
+		top: calc((var(--large-height) - var(--compact-height)) / 2 * var(--morph-progress, 0));
+		right: 0;
+		bottom: calc((var(--large-height) - var(--compact-height)) / 2 * var(--morph-progress, 0));
+		left: calc((var(--large-width) - var(--compact-width)) * var(--morph-progress, 0));
+		border-radius: calc(
+			var(--large-radius) + (var(--compact-radius) - var(--large-radius)) *
+				var(--morph-progress, 0)
+		);
+		background-color: rgba(0, 0, 0, 0.4);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		pointer-events: none;
 		transition: background-color 0.3s ease;
+		z-index: 10;
+	}
+
+	.group:hover .morph-bg-blur {
+		background-color: rgba(0, 0, 0, 0.5);
 	}
 
 	.morph-bg-image {
@@ -589,8 +683,8 @@
 
 	.morph-compact-content {
 		position: absolute;
-		top: 0;
-		bottom: 0;
+		top: calc((var(--large-height) - var(--compact-height)) / 2);
+		height: var(--compact-height);
 		right: 0;
 		width: var(--compact-width);
 		display: flex;
@@ -600,7 +694,12 @@
 	}
 
 	.compact-progress {
-		bottom: calc((var(--large-height) - var(--compact-height)) / 2);
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 2px;
+		overflow: hidden;
 	}
 
 	.vapor-container {
@@ -618,6 +717,23 @@
 			rgba(0, 0, 0, 1) 0%,
 			rgba(0, 0, 0, 0.85) 35%,
 			transparent 75%
+		);
+	}
+
+	.compact-vapor {
+		mix-blend-mode: screen;
+		z-index: 5;
+		mask-image: linear-gradient(
+			to top,
+			rgba(0, 0, 0, 1) 0%,
+			rgba(0, 0, 0, 0.8) 60%,
+			transparent 100%
+		);
+		-webkit-mask-image: linear-gradient(
+			to top,
+			rgba(0, 0, 0, 1) 0%,
+			rgba(0, 0, 0, 0.8) 60%,
+			transparent 100%
 		);
 	}
 
@@ -683,18 +799,4 @@
 		}
 	}
 
-	.sound-wave {
-		animation: sound-wave 0.8s ease-in-out infinite alternate;
-	}
-
-	@keyframes sound-wave {
-		0% {
-			height: 4px;
-			opacity: 0.5;
-		}
-		100% {
-			height: 16px;
-			opacity: 1;
-		}
-	}
 </style>

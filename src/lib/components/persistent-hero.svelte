@@ -47,6 +47,8 @@
 	const POST_MORPH_SCROLL_LOCK_MS = 120;
 	const RETURN_SCROLL_LOCK_MS = 60;
 
+	let resizeRafId: number | null = null;
+
 	function isNarrowViewport() {
 		return typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
 	}
@@ -315,129 +317,138 @@
 			return startRadius + (endRadius - startRadius) * p;
 		};
 
-		morphTl = gsap.timeline({ paused: true });
+		function buildTimeline(snapProgress = 0) {
+			if (morphTl) {
+				morphTl.kill();
+			}
 
-		morphTl.fromTo(
-			sparkleImage,
-			{
-				width: () => (isSmallViewport() ? '540px' : isNarrowViewport() ? '660px' : '800px'),
-				left: () => (isNarrowViewport() ? '-130px' : '-140px'),
-				bottom: () => (isNarrowViewport() ? '290px' : '360px'),
-				yPercent: 0
-			},
-			{
-				width: () => (isNarrowViewport() ? '72px' : '100px'),
-				left: () => (isNarrowViewport() ? '-10px' : '-5px'),
-				bottom: () => (isNarrowViewport() ? '50%' : '55%'),
-				yPercent: 50,
-				ease: 'power3.inOut',
-				duration: duration
-			},
-			0
-		);
+			morphTl = gsap.timeline({ paused: true });
 
-		morphTl.fromTo(
-			heroName,
-			{
-				fontSize: () => (isSmallViewport() ? '68px' : isNarrowViewport() ? '80px' : '96px'),
-				left: () =>
-					window.innerWidth >= 1024 ? '96px' : window.innerWidth >= 768 ? '64px' : '20px',
-				bottom: () => (isNarrowViewport() ? '188px' : '220px')
-			},
-			{
-				fontSize: () => (isSmallViewport() ? '24px' : isNarrowViewport() ? '30px' : '36px'),
-				left: () => (isNarrowViewport() ? '20px' : '100px'),
-				bottom: () => (isNarrowViewport() ? '20px' : '24px'),
-				ease: 'power3.inOut',
-				duration: duration
-			},
-			0
-		);
+			morphTl.fromTo(
+				sparkleImage,
+				{
+					width: isSmallViewport() ? '540px' : isNarrowViewport() ? '660px' : '800px',
+					left: isNarrowViewport() ? '-130px' : '-140px',
+					bottom: isNarrowViewport() ? '290px' : '360px',
+					yPercent: 0
+				},
+				{
+					width: isNarrowViewport() ? '72px' : '100px',
+					left: isNarrowViewport() ? '-10px' : '-5px',
+					bottom: isNarrowViewport() ? '50%' : '55%',
+					yPercent: 50,
+					ease: 'power3.inOut',
+					duration: duration
+				},
+				0
+			);
 
-		morphTl.fromTo(
-			heroName,
-			{ opacity: 1 },
-			{
-				opacity: () => (isSmallViewport() ? 0 : 1),
-				duration: 0.35,
-				ease: 'power3.out'
-			},
-			0
-		);
+			morphTl.fromTo(
+				heroName,
+				{
+					fontSize: isSmallViewport() ? '68px' : isNarrowViewport() ? '80px' : '96px',
+					left: window.innerWidth >= 1024 ? '96px' : window.innerWidth >= 768 ? '64px' : '20px',
+					bottom: isNarrowViewport() ? '188px' : '220px'
+				},
+				{
+					fontSize: isSmallViewport() ? '24px' : isNarrowViewport() ? '30px' : '36px',
+					left: isNarrowViewport() ? '20px' : '100px',
+					bottom: isNarrowViewport() ? '20px' : '24px',
+					ease: 'power3.inOut',
+					duration: duration
+				},
+				0
+			);
 
-		morphTl.fromTo(
-			[heroTitleGroup, heroDescription],
-			{ opacity: 1, y: 0 },
-			{ opacity: 0, y: -20, duration: 0.4, ease: 'power3.out' },
-			0
-		);
+			morphTl.fromTo(
+				heroName,
+				{ opacity: 1 },
+				{
+					opacity: isSmallViewport() ? 0 : 1,
+					duration: 0.35,
+					ease: 'power3.out'
+				},
+				0
+			);
 
-		morphTl.fromTo(
-			discordContainer,
-			{
-				top: () => (isNarrowViewport() ? '20px' : '32px'),
-				right: () => (isNarrowViewport() ? 'calc(50% - min(80vw, 320px) / 2)' : '32px'),
-				yPercent: 0
-			},
-			{
-				top: '50%',
-				right: () => (isNarrowViewport() ? '10px' : '16px'),
-				yPercent: -50,
-				ease: 'power3.inOut',
-				duration: duration
-			},
-			0
-		);
+			morphTl.fromTo(
+				[heroTitleGroup, heroDescription],
+				{ opacity: 1, y: 0 },
+				{ opacity: 0, y: -20, duration: 0.4, ease: 'power3.out' },
+				0
+			);
 
-		morphTl.to(
-			{ progress: 0 },
-			{
-				progress: 1,
-				duration: duration,
-				ease: 'power3.inOut',
-				onUpdate: function () {
-					const p = this.targets()[0].progress;
-					setMorphProgress(p);
-					if (headerContainer) {
-						headerContainer.style.top = `${getTopPosition(p)}px`;
-						headerContainer.style.width = `${getWidth(p)}px`;
-						headerContainer.style.height = `${getHeight(p)}px`;
-						headerContainer.style.borderRadius = `${getBorderRadius(p)}px`;
+			morphTl.fromTo(
+				discordContainer,
+				{
+					top: isNarrowViewport() ? '20px' : '32px',
+					right: isNarrowViewport() ? 'calc(50% - min(80vw, 320px) / 2)' : '32px',
+					yPercent: 0
+				},
+				{
+					top: '50%',
+					right: isNarrowViewport() ? '10px' : '16px',
+					yPercent: -50,
+					ease: 'power3.inOut',
+					duration: duration
+				},
+				0
+			);
+
+			morphTl.to(
+				{ progress: 0 },
+				{
+					progress: 1,
+					duration: duration,
+					ease: 'power3.inOut',
+					onUpdate: function () {
+						const p = this.targets()[0].progress;
+						setMorphProgress(p);
+						if (headerContainer) {
+							headerContainer.style.top = `${getTopPosition(p)}px`;
+							headerContainer.style.width = `${getWidth(p)}px`;
+							headerContainer.style.height = `${getHeight(p)}px`;
+							headerContainer.style.borderRadius = `${getBorderRadius(p)}px`;
+						}
 					}
-				}
-			},
-			0
-		);
+				},
+				0
+			);
 
-		morphTl.fromTo(
-			scrollIndicator,
-			{ opacity: 0.5 },
-			{ opacity: 0, duration: 0.2, ease: 'none' },
-			0
-		);
+			morphTl.fromTo(
+				scrollIndicator,
+				{ opacity: 0.5 },
+				{ opacity: 0, duration: 0.2, ease: 'none' },
+				0
+			);
 
-		// Navbar: animate from hero top position to pill center
-		// Uses y transform to avoid conflicts with CSS transforms
-		// In hero: top 56px (near top of screen)
-		// In pill: top 40px (center of 80px pill)
-		morphTl.fromTo(
-			navbarContainer,
-			{
-				top: () => (isNarrowViewport() ? '48px' : '56px')
-			},
-			{
-				top: () => (isNarrowViewport() ? '36px' : '40px'),
-				duration: duration,
-				ease: 'power3.inOut'
-			},
-			0
-		);
+			// Navbar: animate from hero top position to pill center
+			// Uses y transform to avoid conflicts with CSS transforms
+			// In hero: top 56px (near top of screen)
+			// In pill: top 40px (center of 80px pill)
+			morphTl.fromTo(
+				navbarContainer,
+				{ top: isNarrowViewport() ? '48px' : '56px' },
+				{
+					top: isNarrowViewport() ? '36px' : '40px',
+					duration: duration,
+					ease: 'power3.inOut'
+				},
+				0
+			);
 
-		// If started morphed, jump to end
-		if (startMorphed) {
-			morphTl.progress(1);
-			setMorphProgress(1);
+			morphTl.progress(snapProgress, true);
+			if (headerContainer) {
+				headerContainer.style.top = `${getTopPosition(snapProgress)}px`;
+				headerContainer.style.width = `${getWidth(snapProgress)}px`;
+				headerContainer.style.height = `${getHeight(snapProgress)}px`;
+				headerContainer.style.borderRadius = `${getBorderRadius(snapProgress)}px`;
+			}
 		}
+
+		const initialProgress = startMorphed ? 1 : 0;
+		buildTimeline(initialProgress);
+		setMorphProgress(initialProgress);
 
 		// Wheel event handler
 		function handleWheel(e: WheelEvent) {
@@ -492,12 +503,31 @@
 		window.addEventListener('wheel', handleWheel, wheelListenerOptions);
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
+		function handleResize() {
+			if (resizeRafId !== null) return;
+			resizeRafId = requestAnimationFrame(() => {
+				resizeRafId = null;
+				if (!morphTl) return;
+
+				const p = morphTl.progress();
+
+				buildTimeline(p);
+			});
+		}
+
+		const resizeObserver = new ResizeObserver(handleResize);
+		resizeObserver.observe(document.documentElement);
+
 		return () => {
 			unsubscribeScroller();
 			currentScroller = null;
 			if (scrollRafId !== null) {
 				cancelAnimationFrame(scrollRafId);
 				scrollRafId = null;
+			}
+			if (resizeRafId !== null) {
+				cancelAnimationFrame(resizeRafId);
+				resizeRafId = null;
 			}
 			if (morphToPillTimeout !== null) {
 				window.clearTimeout(morphToPillTimeout);
@@ -509,6 +539,7 @@
 			}
 			window.removeEventListener('wheel', handleWheel, wheelListenerOptions);
 			window.removeEventListener('scroll', handleScroll);
+			resizeObserver.disconnect();
 			clearUnlockTimeout();
 			unlockScrollAfter(0);
 			setAnimating(false);
@@ -528,7 +559,7 @@
 	<div
 		bind:this={headerContainer}
 		class="pointer-events-auto absolute z-50 overflow-hidden bg-[#050507] shadow-2xl"
-		style="width: calc(100vw - 24px); height: calc(100vh - 24px); top: 12px; left: 50%; transform: translateX(-50%); border-radius: 24px;"
+		style="width: calc(100vw - 16px); height: calc(100vh - 16px); top: 8px; left: 50%; transform: translateX(-50%); border-radius: 16px;"
 	>
 		<div class="pointer-events-none absolute inset-0 opacity-80">
 			<AnimatedLiquidBackground
