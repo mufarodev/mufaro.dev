@@ -51,7 +51,8 @@
 			role: 'Developer (Hackathon Team)',
 			summary:
 				'An internal communication tool for teams with private messaging, channels, Markdown/LaTeX rendering, and file attachments',
-			impact: 'Placed 3rd out of 200+ teams, validating both the product direction and implementation quality!',
+			impact:
+				'Placed 3rd out of 200+ teams, validating both the product direction and implementation quality!',
 			tags: ['Internal Tools', 'Social', 'Productivity', 'Work'],
 			image: '/images/lythar.png',
 			githubUrl: 'https://github.com/lythar/lythar-frontend'
@@ -398,7 +399,7 @@
 											href={item.url}
 											target="_blank"
 											rel="noreferrer"
-											class="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black transition-transform duration-150 active:scale-[0.98] hover:scale-[1.01]"
+											class="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black transition-transform duration-150 hover:scale-[1.01] active:scale-[0.98]"
 										>
 											View Project
 											<HugeiconsIcon icon={ArrowUpRight01Icon} className="fill-current" size={16} />
@@ -437,7 +438,7 @@
 									class="pointer-events-none absolute inset-y-0 left-0 hidden w-[44%] bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/92 to-transparent lg:block"
 								></div> -->
 								<div
-									class="pointer-events-none absolute  hidden h-[100%] w-[100%] bg-[radial-gradient(circle_at_center,_transparent_40%,_#0a0a0a_80%,_#0a0a0a_84%)] opacity-95 lg:block"
+									class="pointer-events-none absolute hidden h-[100%] w-[100%] bg-[radial-gradient(circle_at_center,_transparent_40%,_#0a0a0a_80%,_#0a0a0a_84%)] opacity-95 lg:block"
 								></div>
 								<!-- <div
 									class="pointer-events-none absolute -bottom-[18%] -left-[13%] hidden h-[72%] w-[78%] bg-[radial-gradient(circle_at_bottom_left,_#0a0a0a_12%,_#0a0a0a_55%,_transparent_84%)] opacity-95 lg:block"
@@ -538,4 +539,5 @@
 			{/each}
 		</div>
 	</div>
+	<div class="pt-0 lg:pt-20"></div>
 </section>

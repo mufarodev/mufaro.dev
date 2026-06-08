@@ -57,9 +57,9 @@
 	></div>
 </div>
 
-<ParallaxGrid />
-<LensDistortion />
-<FilmGrain />
+<!-- <ParallaxGrid /> -->
+<!-- <LensDistortion /> -->
+<!-- <FilmGrain /> -->
 <SmoothScroll />
 
 {#if !isMobile}
