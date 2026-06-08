@@ -5,7 +5,7 @@
 </script>
 
 <div
-	class="pointer-events-auto relative z-10 pt-36 md:pt-40"
+	class="pointer-events-auto relative z-10 md:pt-40"
 	style="--accent-r: {$accentColor.r}; --accent-g: {$accentColor.g}; --accent-b: {$accentColor.b};"
 >
 	<HomeExperienceSection />

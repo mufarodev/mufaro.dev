@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import '@fontsource-variable/inter';
 	import '@fontsource-variable/google-sans-flex';
@@ -11,8 +12,21 @@
 	import LensDistortion from '$lib/components/core/lens-distortion.svelte';
 	import SmoothScroll from '$lib/components/core/smooth-scroll.svelte';
 	import PersistentHero from '$lib/components/persistent-hero.svelte';
+	import MobileHero from '$lib/components/mobile-hero.svelte';
 
 	let { children } = $props();
+
+	let isMobile = $state(false);
+
+	onMount(() => {
+		const mq = window.matchMedia('(max-width: 767px)');
+		isMobile = mq.matches;
+		const handler = (e: MediaQueryListEvent) => {
+			isMobile = e.matches;
+		};
+		mq.addEventListener('change', handler);
+		return () => mq.removeEventListener('change', handler);
+	});
 </script>
 
 <ModeWatcher defaultMode="dark" />
@@ -33,8 +47,6 @@
 	<meta name="twitter:image" content="/images/embed.webp" />
 </svelte:head>
 
-<!-- <ProgressiveBlur /> -->
-
 <div class="fixed inset-0 -z-10 bg-[#050508]">
 	<div
 		class="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,_rgba(255,255,255,0.03)_0%,_transparent_50%)]"
@@ -50,10 +62,16 @@
 <FilmGrain />
 <SmoothScroll />
 
-<PersistentHero />
+{#if !isMobile}
+	<PersistentHero />
+{/if}
 
 <div id="smooth-wrapper">
 	<div id="smooth-content">
+		{#if isMobile}
+			<MobileHero />
+		{/if}
+
 		<div class="min-h-svh min-w-svw">
 			{@render children?.()}
 		</div>

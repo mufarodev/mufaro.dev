@@ -450,7 +450,6 @@
 		buildTimeline(initialProgress);
 		setMorphProgress(initialProgress);
 
-		// Wheel event handler
 		function handleWheel(e: WheelEvent) {
 			if (Date.now() < wheelUnlockUntil) {
 				e.preventDefault();
