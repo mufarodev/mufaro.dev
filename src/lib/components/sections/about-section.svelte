@@ -17,13 +17,6 @@
 	let sectionRef: HTMLElement;
 	let titleRef: HTMLElement;
 	let paragraphs: HTMLElement[] = [];
-	let statsRef: HTMLElement;
-
-	const stats = [
-		{ label: 'Years Coding', value: '5+' },
-		{ label: 'Users Reached', value: '100K+' }
-	];
-
 	const socials = [
 		{
 			icon: Github01Icon,
@@ -46,36 +39,6 @@
 	];
 
 	let socialLinks: HTMLElement[] = [];
-	let socialTexts: HTMLElement[] = [];
-	let socialIcons: HTMLElement[] = [];
-
-	function handleSocialHover(index: number, isHovering: boolean) {
-		const text = socialTexts[index];
-		const icon = socialIcons[index];
-		const link = socialLinks[index];
-
-		if (!text || !icon || !link) return;
-
-		if (isHovering) {
-			animate(link, { width: 'auto' }, { type: 'spring', stiffness: 110, damping: 16 });
-			animate(
-				text,
-				{ opacity: [0, 1], filter: ['blur(8px)', 'blur(0px)'] },
-				{ type: 'spring', stiffness: 120, damping: 18 }
-			);
-			animate(icon, { scale: [1, 1.05] }, { type: 'spring', stiffness: 200, damping: 20 });
-		} else {
-			animate(
-				text,
-				{ opacity: [1, 0], filter: ['blur(0px)', 'blur(8px)'] },
-				{ type: 'spring', stiffness: 150, damping: 20 }
-			);
-			animate(icon, { scale: [1.05, 1] }, { type: 'spring', stiffness: 200, damping: 20 });
-			setTimeout(() => {
-				animate(link, { width: '40px' }, { type: 'spring', stiffness: 120, damping: 18 });
-			}, 100);
-		}
-	}
 
 	onMount(() => {
 		const ctx = gsap.context(() => {
@@ -118,64 +81,6 @@
 						scrollTrigger: {
 							trigger: sectionRef,
 							start: 'top 60%',
-							toggleActions: 'play none none reverse'
-						}
-					}
-				);
-			});
-
-			const statItems = statsRef?.querySelectorAll('.stat-item');
-			statItems?.forEach((item, i) => {
-				const valueEl = item.querySelector('.stat-value');
-				const labelEl = item.querySelector('.stat-label');
-				const line = item.querySelector('.stat-line');
-
-				gsap.fromTo(
-					line,
-					{ scaleX: 0 },
-					{
-						scaleX: 1,
-						duration: 0.6,
-						delay: i * 0.1,
-						ease: 'power2.out',
-						scrollTrigger: {
-							trigger: statsRef,
-							start: 'top 80%',
-							toggleActions: 'play none none reverse'
-						}
-					}
-				);
-
-				gsap.fromTo(
-					valueEl,
-					{ opacity: 0, scale: 0.5, y: 20 },
-					{
-						opacity: 1,
-						scale: 1,
-						y: 0,
-						duration: 0.5,
-						delay: 0.2 + i * 0.1,
-						ease: 'back.out(2)',
-						scrollTrigger: {
-							trigger: statsRef,
-							start: 'top 80%',
-							toggleActions: 'play none none reverse'
-						}
-					}
-				);
-
-				gsap.fromTo(
-					labelEl,
-					{ opacity: 0, y: 10 },
-					{
-						opacity: 1,
-						y: 0,
-						duration: 0.4,
-						delay: 0.3 + i * 0.1,
-						ease: 'power2.out',
-						scrollTrigger: {
-							trigger: statsRef,
-							start: 'top 80%',
 							toggleActions: 'play none none reverse'
 						}
 					}
@@ -241,59 +146,31 @@
 				</p>
 			</div>
 
-			<div bind:this={statsRef} class="space-y-8">
-				{#each stats as stat, i}
-					<div class="stat-item relative">
-						<div
-							class="stat-line absolute top-0 right-0 left-0 h-px origin-left bg-gradient-to-r from-white/10 to-transparent"
-						></div>
-						<div class="pt-6">
-							<div
-								class="stat-value font-mono text-4xl font-light tracking-tight text-white md:text-5xl"
-							>
-								{stat.value}
-							</div>
-							<div class="stat-label mt-2 text-sm tracking-wider text-white/40 uppercase">
-								{stat.label}
-							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-		</div>
-
-		{#if showSocials}
-			<div class="mt-12 border-t border-white/10 pt-6">
-				<p class="mb-4 text-xs tracking-[0.2em] text-white/40 uppercase">Find me on</p>
-				<div class="flex flex-wrap items-center gap-2">
-					{#each socials as social, i}
-						<a
+			{#if showSocials}
+				<div class="border-t border-white/10 pt-6 md:border-t-0 md:pt-0">
+					<p class="mb-3 text-sm text-white/50">Find me on</p>
+					<div class="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
+						{#each socials as social, i}
+							<a
 							bind:this={socialLinks[i]}
 							href={social.href}
 							target={social.href.startsWith('mailto:') ? undefined : '_blank'}
 							rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
-							class="flex h-10 w-10 items-center gap-2 overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] text-white/70 transition-colors will-change-transform hover:border-white/30 hover:bg-white/[0.07] hover:text-white"
+							class="flex h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] pr-3 text-white/70 transition-colors will-change-transform hover:border-white/30 hover:bg-white/[0.07] hover:text-white"
 							aria-label={social.label}
-							onmouseenter={() => handleSocialHover(i, true)}
-							onmouseleave={() => handleSocialHover(i, false)}
 						>
-							<div
-								bind:this={socialIcons[i]}
-								class="flex h-10 w-10 shrink-0 items-center justify-center"
-							>
+							<div class="flex h-10 w-10 shrink-0 items-center justify-center">
 								<HugeiconsIcon icon={social.icon} size={18} className="fill-current/60" />
 							</div>
-							<span
-								bind:this={socialTexts[i]}
-								class="pr-3 text-xs font-medium whitespace-nowrap opacity-0 blur-md"
-							>
+							<span class="text-xs font-medium whitespace-nowrap">
 								{social.display}
 							</span>
-						</a>
-					{/each}
+							</a>
+						{/each}
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -302,19 +179,7 @@
 		color: rgb(var(--accent-r, 136), var(--accent-g, 153), var(--accent-b, 170));
 	}
 
-	.about-accent-muted {
-		color: rgba(var(--accent-r, 136), var(--accent-g, 153), var(--accent-b, 170), 0.6);
-	}
-
 	.bg-about-accent {
 		background-color: rgba(var(--accent-r, 136), var(--accent-g, 153), var(--accent-b, 170), 0.14);
-	}
-
-	.about-accent-line {
-		background: linear-gradient(
-			to right,
-			rgba(var(--accent-r, 136), var(--accent-g, 153), var(--accent-b, 170), 0.85),
-			transparent
-		);
 	}
 </style>
