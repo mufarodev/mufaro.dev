@@ -26,6 +26,7 @@
 	let heroDescription: HTMLDivElement;
 	let discordContainer: HTMLDivElement;
 	let scrollIndicator: HTMLDivElement;
+	let heroGapCover: HTMLDivElement;
 	let navbarContainer: HTMLDivElement;
 
 	let morphTl: gsap.core.Timeline;
@@ -422,6 +423,13 @@
 				0
 			);
 
+			morphTl.fromTo(
+				heroGapCover,
+				{ opacity: 1 },
+				{ opacity: 0, duration: 0.2, ease: 'none' },
+				0
+			);
+
 			// Navbar: animate from hero top position to pill center
 			// Uses y transform to avoid conflicts with CSS transforms
 			// In hero: top 56px (near top of screen)
@@ -553,6 +561,11 @@
 	<div
 		class="absolute inset-0 -z-10 transition-colors duration-1000"
 		style="background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba({currentColor.r},{currentColor.g},{currentColor.b},0.06) 0%, transparent 50%);"
+	></div>
+
+	<div
+		bind:this={heroGapCover}
+		class="absolute right-0 bottom-0 left-0 z-30 h-8 bg-[#050507]"
 	></div>
 
 	<div
