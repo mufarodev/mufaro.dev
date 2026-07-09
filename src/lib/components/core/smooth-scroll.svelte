@@ -37,8 +37,9 @@
 		const smoother = ScrollSmoother.create({
 			wrapper: '#smooth-wrapper',
 			content: '#smooth-content',
-			smooth: 1.2, // seconds
-			effects: true // enables native GSAP speed/lag parallax effects
+			smooth: 0.75, // seconds
+			effects: true, // enables native GSAP speed/lag parallax effects
+			normalizeScroll: true
 		});
 
 		// Set up ResizeObserver to handle content size changes (dynamic images, Svelte layout updates, etc.)
