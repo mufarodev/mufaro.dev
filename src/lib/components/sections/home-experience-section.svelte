@@ -399,10 +399,16 @@
 											href={item.url}
 											target="_blank"
 											rel="noreferrer"
-											class="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black transition-transform duration-150 hover:scale-[1.01] active:scale-[0.98]"
+											class="group relative flex items-center gap-2 overflow-hidden rounded-full bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black shadow-xs ring ring-white/80 transition-transform duration-150 hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-[0.98]"
 										>
-											View Project
-											<HugeiconsIcon icon={ArrowUpRight01Icon} className="fill-current" size={16} />
+											<span
+												aria-hidden="true"
+												class="absolute inset-0 rounded-[inherit] bg-linear-to-b from-white to-white/78 shadow-[inset_0_1px_0_0_rgba(255,255,255,1),inset_0_-1px_0_0_rgba(0,0,0,0.22),inset_0_-10px_18px_-14px_rgba(0,0,0,0.55)] group-hover:from-white/92"
+											></span>
+											<span class="relative flex items-center gap-2">
+												View Project
+												<HugeiconsIcon icon={ArrowUpRight01Icon} className="fill-current" size={16} />
+											</span>
 										</a>
 									{/if}
 									{#if item.githubUrl}
