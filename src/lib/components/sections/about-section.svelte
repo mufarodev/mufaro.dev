@@ -147,7 +147,8 @@
 			</div>
 
 			{#if showSocials}
-				<div class="border-t border-white/10 pt-6 md:border-t-0 md:pt-0">
+				<div class="space-y-6 border-t border-white/10 pt-6 md:border-t-0 md:pt-0">
+					<div>
 					<p class="mb-3 text-sm text-white/50">Find me on</p>
 					<div class="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
 						{#each socials as social, i}
@@ -167,6 +168,19 @@
 							</span>
 							</a>
 						{/each}
+					</div>
+					</div>
+
+					<div>
+						<p class="mb-3 text-sm text-white/50">Awesome people</p>
+						<div class="flex flex-wrap gap-2">
+							<a href="/" aria-label="mufaro.dev">
+								<img src="/images/88x31.png" alt="mufaro.dev" width="88" height="31" />
+							</a>
+							<a href="https://melqtx.com/" target="_blank" rel="noopener">
+								<img src="/images/88x31/melqtx.png" alt="melqtx.com" width="88" height="31" />
+							</a>
+						</div>
 					</div>
 				</div>
 			{/if}
