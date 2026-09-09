@@ -34,6 +34,64 @@ const scrollTo = async (y) => {
 	await page.evaluate((top) => window.scrollTo(0, top), y);
 	await settle();
 };
+const settleProjectScroll = async (y) => {
+	await scrollTo(y);
+	await page.waitForFunction(() => {
+		const content = document.querySelector('#smooth-content');
+		return Math.abs(window.scrollY + new DOMMatrix(getComputedStyle(content).transform).m42) < 0.5;
+	});
+};
+const projectState = () =>
+	page.locator('.project-card').evaluateAll((cards) =>
+		cards.map((card) => {
+			const style = getComputedStyle(card);
+			const matrix = new DOMMatrix(style.transform);
+			const bounds = card.getBoundingClientRect();
+			const frame = card.querySelector('.project-frame').getBoundingClientRect();
+			return {
+				y: matrix.m42,
+				rotation: (Math.atan2(matrix.m12, matrix.m11) * 180) / Math.PI,
+				opacity:
+					Number(style.opacity) *
+					Number(getComputedStyle(card.querySelector('.project-surface')).opacity),
+				center: bounds.x + bounds.width / 2,
+				frameAligned: ['x', 'y', 'width', 'height'].every(
+					(key) => Math.abs(bounds[key] - frame[key]) < 1
+				)
+			};
+		})
+	);
+const assertProjectConnections = async () => {
+	const { expected, joins } = await page.evaluate(() => {
+		const cards = Array.from(document.querySelectorAll('.project-card'));
+		const paths = Array.from(document.querySelectorAll('.project-connection'));
+		const center = (element) => {
+			const rect = element.getBoundingClientRect();
+			return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+		};
+		return {
+			expected: (cards.length - 1) * 2,
+			joins: paths.map((path, index) => {
+				const previous = cards[Math.floor(index / 2)].querySelectorAll('.project-corner');
+				const next = cards[Math.floor(index / 2) + 1].querySelectorAll('.project-corner');
+				const start = center(previous[(index % 2) * 2 + 1]);
+				const end = center(next[(index % 2) * 2]);
+				const matrix = path.getScreenCTM();
+				const pathStart = path.getPointAtLength(0).matrixTransform(matrix);
+				const pathEnd = path.getPointAtLength(path.getTotalLength()).matrixTransform(matrix);
+				return {
+					start: Math.hypot(pathStart.x - start.x, pathStart.y - start.y),
+					end: Math.hypot(pathEnd.x - end.x, pathEnd.y - end.y)
+				};
+			})
+		};
+	});
+	assert.equal(joins.length, expected, 'Every adjacent pair has connected top and bottom borders');
+	assert.ok(
+		joins.every(({ start, end }) => start < 1 && end < 1),
+		`Connections meet the moving corner junctions: ${JSON.stringify(joins)}`
+	);
+};
 
 try {
 	await page.goto(url);
@@ -204,6 +262,86 @@ try {
 	assert.equal(await position(), 1200, 'Reload preserves the restored position');
 	assert.equal(await headerHeight(), 80);
 
+	await settleProjectScroll(1200);
+	const stops = (await projectState()).map(({ center }) => 1200 + center - 720);
+	const midpoint = (stops[0] + stops[1]) / 2;
+	await settleProjectScroll(stops[0]);
+	const firstProject = await projectState();
+	assert.ok(firstProject[0].y < 1 && firstProject[0].opacity > 0.99, 'The current card is raised');
+	assert.ok(firstProject[1].y > 40, 'The next card waits below the current card');
+	assert.ok(firstProject[2].y > firstProject[1].y, 'More distant cards sit further down');
+	await assertProjectConnections();
+
+	await settleProjectScroll(midpoint);
+	const betweenProjects = await projectState();
+	assert.ok(betweenProjects[0].y > firstProject[0].y + 10, 'The previous card lowers as it leaves');
+	assert.ok(betweenProjects[1].y < firstProject[1].y - 10, 'The next card rises as it approaches');
+	assert.ok(
+		betweenProjects[0].rotation < 0 && betweenProjects[1].rotation > 0,
+		'Outgoing and incoming cards tilt toward the current project'
+	);
+	assert.ok(
+		betweenProjects.every(({ frameAligned }) => frameAligned),
+		'Frames follow translated, rotated cards'
+	);
+	await assertProjectConnections();
+
+	await settleProjectScroll(midpoint + 4);
+	const justAfterMidpoint = await projectState();
+	assert.ok(
+		justAfterMidpoint.every((card, index) => Math.abs(card.y - betweenProjects[index].y) < 3),
+		'Changing the nearest card must not snap the card positions'
+	);
+	for (const index of [1, 2]) {
+		await settleProjectScroll(stops[index]);
+		const current = (await projectState())[index];
+		assert.ok(
+			current.y < 1 && Math.abs(current.rotation) < 0.02 && current.opacity > 0.99,
+			'Each project settles level at the center of the viewport'
+		);
+		await assertProjectConnections();
+	}
+	await settleProjectScroll(midpoint);
+	const reversedProjects = await projectState();
+	assert.ok(
+		reversedProjects.every((card, index) => Math.abs(card.y - betweenProjects[index].y) < 0.5),
+		'Reversing the scroll retraces the same card positions'
+	);
+	await assertProjectConnections();
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await settle();
+	await page.setViewportSize({ width: 2560, height: 1440 });
+	await settleProjectScroll(1);
+	const wideProject = (await projectState())[0];
+	assert.ok(
+		wideProject.y < 1 && wideProject.opacity > 0.99 && Math.abs(wideProject.center - 1280) < 2,
+		'The first project starts centered and raised on wide screens'
+	);
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await settleProjectScroll(midpoint);
+	const resizedProjects = await projectState();
+	assert.ok(
+		resizedProjects.every(
+			(card, index) => Math.abs(card.y - betweenProjects[index].y) < 0.5 && card.frameAligned
+		),
+		'Resizing tilted cards must preserve their scroll geometry'
+	);
+	await assertProjectConnections();
+	await page.locator('.project-card').first().locator('a').focus();
+	await page.keyboard.press('Tab');
+	await settle();
+	assert.ok(
+		Math.abs((await projectState())[1].center - 720) < 2,
+		'Tab brings the focused project into view'
+	);
+	await page.keyboard.press('Shift+Tab');
+	await settle();
+	assert.ok(
+		Math.abs((await projectState())[0].center - 720) < 2,
+		'Shift+Tab returns to the previous project'
+	);
+	await page.evaluate(() => document.activeElement.blur());
+
 	await page.setViewportSize({ width: 1280, height: 800 });
 	await scrollTo(0);
 	await waitForHeader(776);
@@ -211,6 +349,11 @@ try {
 	await page.emulateMedia({ reducedMotion: 'reduce' });
 	await scrollTo(200);
 	assert.equal(await headerHeight(), 80, 'Reduced motion skips the timed morph');
+	assert.ok(
+		(await projectState()).every(({ y, rotation }) => y === 0 && rotation === 0),
+		'Reduced motion removes the card lift and rotation'
+	);
+	await assertProjectConnections();
 
 	await page.setViewportSize({ width: 390, height: 844 });
 	await scrollTo(0);
@@ -218,6 +361,12 @@ try {
 	await scrollTo(900);
 	assert.equal((await page.locator('.mobile-pill-anchor').boundingBox()).y, 12);
 	assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 390);
+	assert.ok(
+		(await projectState()).every(
+			({ y, rotation, opacity }) => y === 0 && rotation === 0 && opacity === 1
+		),
+		'Mobile cards return to a fully visible vertical list'
+	);
 	const touchPage = await browser.newPage({
 		viewport: { width: 1024, height: 900 },
 		isMobile: true,
@@ -256,7 +405,7 @@ try {
 	await touchPage.close();
 	assert.deepEqual(errors, [], 'No browser runtime errors');
 	console.log(
-		'Scroll checks passed: stationary content during main morph, early handoff, horizontal movement from first input, return, reversal, smoothing, touch, keyboard, navigation, resize'
+		'Scroll checks passed: hero handoff, horizontal entry, card lift, rotation, connected borders, reversal, smoothing, touch, keyboard, navigation, resize, reduced motion, mobile layout'
 	);
 } finally {
 	await browser.close();

@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-	import ScrambleText from '$lib/components/core/scramble-text.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { GithubIcon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
 
@@ -63,12 +62,14 @@
 	let railRef: HTMLDivElement;
 	let trackRef: HTMLDivElement;
 	let cards: HTMLElement[] = $state([]);
-	let activeIndex = $state(0);
+	let connectionPaths: SVGPathElement[] = $state([]);
+	let outerGuides: SVGPathElement;
 
 	let timeline: gsap.core.Timeline | null = null;
 	let introRevealTl: gsap.core.Timeline | null = null;
 	let introFallbackTrigger: ScrollTrigger | null = null;
 	let mediaQuery: MediaQueryList | null = null;
+	let motionQuery: MediaQueryList | null = null;
 	let removeHeroRevealListener: (() => void) | null = null;
 	let waitsForHeroReveal = false;
 
@@ -84,8 +85,11 @@
 		const safeLeftPadding = Number.isFinite(leftPadding) ? leftPadding : 0;
 		const safeRightPadding = Number.isFinite(rightPadding) ? rightPadding : 0;
 		const railWidth = railRef.clientWidth;
-		const cardWidth = firstCard.getBoundingClientRect().width;
-		const preferredOffset = Math.round(railWidth * 0.18);
+		const cardWidth = firstCard.offsetWidth;
+		const preferredOffset = Math.max(
+			Math.round(railWidth * 0.18),
+			(railWidth - cardWidth) / 2 - safeLeftPadding
+		);
 		const maxOffset = railWidth - cardWidth - safeLeftPadding - safeRightPadding;
 
 		return Math.max(0, Math.min(preferredOffset, maxOffset));
@@ -135,7 +139,7 @@
 	}
 
 	function setupIntroReveal() {
-		if (!sectionRef || mediaQuery?.matches) return;
+		if (!sectionRef || mediaQuery?.matches || motionQuery?.matches) return;
 
 		waitsForHeroReveal = window.scrollY < 24;
 
@@ -174,17 +178,6 @@
 		});
 	}
 
-	function setActiveFromProgress(progress: number) {
-		if (!cards.length) return;
-
-		const maxIndex = cards.length - 1;
-		const nextIndex = Math.max(0, Math.min(maxIndex, Math.round(progress * maxIndex)));
-
-		if (nextIndex !== activeIndex) {
-			activeIndex = nextIndex;
-		}
-	}
-
 	function setupDesktopTimeline() {
 		if (!sectionRef || !railRef || !trackRef || cards.length === 0) return;
 
@@ -196,31 +189,107 @@
 		removeHeroRevealListener?.();
 		gsap.set([sectionRef, ...cards], { clearProps: 'opacity,visibility,transform' });
 
-		const getGap = () => {
-			const styles = window.getComputedStyle(trackRef);
-			const value = styles.columnGap || styles.gap || '0';
-			const gap = Number.parseFloat(value);
-			return Number.isFinite(gap) ? gap : 0;
-		};
-
-		const getStepDistance = () => {
-			const firstCard = cards[0];
-			if (!firstCard) return 0;
-
-			return firstCard.getBoundingClientRect().width + getGap();
-		};
-
+		let stepDistance = 1;
+		let entryOffset = 0;
+		let centerOffset = 0;
+		let cardDrop = 0;
 		let travelDistance = 0;
 		let totalDistance = 1;
+		const guideLength = 32;
+		let cardBounds: { x: number; y: number; width: number; height: number }[] = [];
+		const surfaces = cards.map((card) => card.firstElementChild as HTMLElement);
 
 		const recalculateDistances = () => {
-			travelDistance = Math.max(0, getStepDistance() * (cards.length - 1));
-			totalDistance = Math.max(1, getEntryOffset() + travelDistance);
+			const firstCard = cards[0];
+			// Layout measurements stay stable while the cards rotate and scale.
+			stepDistance = cards[1] ? cards[1].offsetLeft - firstCard.offsetLeft : firstCard.offsetWidth;
+			entryOffset = getEntryOffset();
+			centerOffset = railRef.clientWidth / 2 - firstCard.offsetLeft - firstCard.offsetWidth / 2;
+			cardDrop = Math.min(90, railRef.clientHeight * 0.14);
+			travelDistance = stepDistance * (cards.length - 1) - centerOffset;
+			totalDistance = Math.max(1, entryOffset + travelDistance);
+			cardBounds = cards.map((card) => {
+				const style = window.getComputedStyle(card);
+				return {
+					x: card.offsetLeft,
+					y: card.offsetTop,
+					width: Number.parseFloat(style.width),
+					height: Number.parseFloat(style.height)
+				};
+			});
+		};
+
+		const updateCards = (progress: number) => {
+			const current = Math.max(
+				0,
+				Math.min(
+					cards.length - 1,
+					(progress * totalDistance - entryOffset + centerOffset) / stepDistance
+				)
+			);
+
+			const frames = cards.map((card, index) => {
+				const distance = Math.max(-1.5, Math.min(1.5, index - current));
+				const proximity = Math.min(1, Math.abs(distance));
+				const y = motionQuery?.matches ? 0 : distance * distance * cardDrop;
+				const rotation = motionQuery?.matches ? 0 : distance * 3;
+				const scale = motionQuery?.matches ? 1 : 1 - proximity * 0.025;
+				// The same arc lifts incoming cards and lowers outgoing cards in either scroll direction.
+				card.style.transform = motionQuery?.matches
+					? 'none'
+					: `translate3d(0, ${y}px, 0) rotate(${rotation}deg) scale(${scale})`;
+				surfaces[index].style.opacity = String(1 - proximity * 0.55);
+
+				// SVG connections share the track's coordinates; no layout reads are needed while scrolling.
+				const bounds = cardBounds[index];
+				const cosine = Math.cos((rotation * Math.PI) / 180);
+				const sine = Math.sin((rotation * Math.PI) / 180);
+				const corner = (x: number, yOffset: number) => ({
+					x: bounds.x + bounds.width / 2 + (x * cosine - yOffset * sine) * scale,
+					y: bounds.y + bounds.height / 2 + y + (x * sine + yOffset * cosine) * scale
+				});
+				return {
+					cosine,
+					sine,
+					corners: [
+						corner(-bounds.width / 2, -bounds.height / 2),
+						corner(bounds.width / 2, -bounds.height / 2),
+						corner(-bounds.width / 2, bounds.height / 2),
+						corner(bounds.width / 2, bounds.height / 2)
+					]
+				};
+			});
+
+			frames.slice(1).forEach((next, index) => {
+				const previous = frames[index];
+				for (const edge of [0, 1]) {
+					const start = previous.corners[edge * 2 + 1];
+					const end = next.corners[edge * 2];
+					const handle = (end.x - start.x) / 2;
+					// Match each card's edge tangent so the connecting rail bends without a kink.
+					connectionPaths[index * 2 + edge].setAttribute(
+						'd',
+						`M ${start.x} ${start.y} C ${start.x + previous.cosine * handle} ${start.y + previous.sine * handle}, ${end.x - next.cosine * handle} ${end.y - next.sine * handle}, ${end.x} ${end.y}`
+					);
+				}
+			});
+
+			const first = frames[0];
+			const last = frames[frames.length - 1];
+			outerGuides.setAttribute(
+				'd',
+				[0, 1]
+					.map((edge) => {
+						const start = first.corners[edge * 2];
+						const end = last.corners[edge * 2 + 1];
+						return `M ${start.x - first.cosine * guideLength} ${start.y - first.sine * guideLength} L ${start.x} ${start.y} M ${end.x} ${end.y} L ${end.x + last.cosine * guideLength} ${end.y + last.sine * guideLength}`;
+					})
+					.join(' ')
+			);
 		};
 
 		recalculateDistances();
-		gsap.set(trackRef, { x: getEntryOffset() });
-		activeIndex = 0;
+		gsap.set(trackRef, { x: entryOffset });
 
 		timeline = gsap.timeline({
 			scrollTrigger: {
@@ -235,33 +304,55 @@
 				invalidateOnRefresh: true,
 				onRefreshInit: () => {
 					recalculateDistances();
-					gsap.set(trackRef, { x: getEntryOffset() });
+					gsap.set(trackRef, { x: entryOffset });
 				},
-				onUpdate: (self) => setActiveFromProgress(self.progress),
-				onRefresh: (self) => setActiveFromProgress(self.progress)
+				onUpdate: (self) => updateCards(self.progress),
+				onRefresh: (self) => updateCards(self.progress)
 			}
 		});
 
 		timeline.fromTo(
 			trackRef,
-			{ x: () => getEntryOffset() },
+			{ x: () => entryOffset },
 			{ x: () => -travelDistance, ease: 'none' },
 			0
 		);
 
-		setActiveFromProgress(0);
+		updateCards(timeline.scrollTrigger?.progress ?? 0);
 	}
 
 	function setupMobileLayout() {
 		if (!trackRef || cards.length === 0) return;
 
-		activeIndex = 0;
 		gsap.set(trackRef, { clearProps: 'transform' });
 		gsap.set(cards, { clearProps: 'opacity,transform' });
+		gsap.set(
+			cards.map((card) => card.firstElementChild),
+			{ clearProps: 'opacity' }
+		);
+	}
+
+	function focusCard(event: FocusEvent, index: number) {
+		const trigger = timeline?.scrollTrigger;
+		if (
+			!trigger ||
+			!(event.target instanceof HTMLElement) ||
+			!event.target.matches(':focus-visible')
+		) {
+			return;
+		}
+
+		// Keyboard navigation brings the whole project into view without a timed transition.
+		sectionRef.scrollTo(0, 0);
+		const card = cards[index];
+		const center =
+			getEntryOffset() + card.offsetLeft + card.offsetWidth / 2 - railRef.clientWidth / 2;
+		trigger.scroll(Math.max(trigger.start, Math.min(trigger.end, trigger.start + center)));
 	}
 
 	onMount(() => {
 		mediaQuery = window.matchMedia('(min-width: 1024px)');
+		motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 		setupIntroReveal();
 
 		const applyLayoutMode = () => {
@@ -279,9 +370,11 @@
 		applyLayoutMode();
 
 		mediaQuery.addEventListener('change', applyLayoutMode);
+		motionQuery.addEventListener('change', applyLayoutMode);
 
 		return () => {
 			mediaQuery?.removeEventListener('change', applyLayoutMode);
+			motionQuery?.removeEventListener('change', applyLayoutMode);
 			removeHeroRevealListener?.();
 			removeHeroRevealListener = null;
 			introFallbackTrigger?.kill();
@@ -293,13 +386,13 @@
 	});
 </script>
 
-<section bind:this={sectionRef} class="relative w-full overflow-hidden bg-[#050505]">
+<section bind:this={sectionRef} class="relative w-full overflow-hidden bg-[#050505] lg:-mt-8">
 	<div
 		class="pointer-events-none absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-20"
 	></div>
 
 	<div
-		class="relative z-10 mx-auto w-full max-w-7xl px-6 pt-20 pb-8 md:px-12 md:pt-28 lg:pt-12 lg:pb-10"
+		class="relative z-10 mx-auto w-full max-w-7xl px-6 pt-20 pb-8 md:px-12 md:pt-28 lg:pt-0 lg:pb-8"
 	>
 		<div class="max-w-3xl">
 			<h2 class="font-serif text-3xl font-medium text-white md:text-5xl lg:text-6xl">
@@ -313,8 +406,9 @@
 
 	<div
 		bind:this={railRef}
-		class="relative left-1/2 h-auto w-screen -translate-x-1/2 pb-20 lg:h-[72svh] lg:max-h-[760px] lg:min-h-[520px] lg:pb-0 lg:[--timeline-accent:rgba(255,255,255,0.22)]"
+		class="relative left-1/2 h-auto w-screen -translate-x-1/2 pb-20 lg:h-[72svh] lg:max-h-[760px] lg:min-h-[520px] lg:pb-0 lg:[--timeline-accent:#34312f]"
 	>
+		<div class="project-grid" aria-hidden="true"></div>
 		<div
 			class="pointer-events-none absolute inset-y-0 left-0 z-20 hidden w-[10vw] bg-gradient-to-r from-[#050505] to-transparent lg:block"
 			aria-hidden="true"
@@ -325,37 +419,29 @@
 		></div>
 
 		<div
-			class="pointer-events-none absolute inset-x-0 top-0 z-0 hidden h-[90%] lg:block"
-			aria-hidden="true"
-		>
-			<span
-				class="absolute top-0 right-0 left-0 border-t border-dashed border-[var(--timeline-accent)] opacity-[0.74]"
-			></span>
-			<span
-				class="absolute right-0 bottom-0 left-0 border-t border-dashed border-[var(--timeline-accent)] opacity-[0.74]"
-			></span>
-		</div>
-
-		<div
 			bind:this={trackRef}
-			class="relative z-10 flex flex-col gap-8 px-6 lg:h-[90%] lg:flex-row lg:gap-8 lg:px-[clamp(2rem,5vw,7rem)]"
+			class="relative z-10 flex flex-col gap-8 px-6 lg:h-[90%] lg:flex-row lg:gap-14 lg:px-[clamp(2rem,5vw,7rem)]"
 		>
-			{#each experienceItems as item, index}
+			<svg class="project-connections" aria-hidden="true">
+				<path bind:this={outerGuides}></path>
+				{#each experienceItems.slice(1) as item, index (item.title)}
+					{#each [0, 1] as edge (edge)}
+						<path class="project-connection" bind:this={connectionPaths[index * 2 + edge]}></path>
+					{/each}
+				{/each}
+			</svg>
+			{#each experienceItems as item, index (item.title)}
 				<article
 					bind:this={cards[index]}
-					class={`group relative flex w-full shrink-0 flex-col border border-white/10 bg-[#0a0a0a] transition-[opacity,transform,border-color,shadow] duration-500 ease-out lg:w-[clamp(45rem,75vw,65rem)] lg:flex-row lg:items-stretch lg:overflow-visible lg:border-dashed ${
-						index === activeIndex
-							? 'lg:scale-100 lg:border-[var(--timeline-accent)] lg:opacity-100 lg:shadow-[0_0_50px_-12px_rgba(255,255,255,0.08)]'
-							: 'lg:scale-[0.98] lg:opacity-40 lg:shadow-none'
-					}`}
+					onfocusin={(event) => focusCard(event, index)}
+					class="project-card group relative flex w-full shrink-0 flex-col border border-white/10 bg-[#0a0a0a] lg:w-[clamp(45rem,75vw,65rem)] lg:flex-row lg:items-stretch lg:overflow-visible lg:border-[var(--timeline-accent)]"
 				>
-					<div class="relative flex h-full w-full flex-col overflow-hidden lg:flex-row">
+					<div
+						class="project-surface relative flex h-full w-full flex-col overflow-hidden lg:flex-row"
+					>
 						<div
-							class="relative z-20 flex flex-1 flex-col justify-between overflow-hidden bg-[#0a0a0a] p-6 sm:p-8 lg:w-1/2 lg:p-12"
+							class="relative z-20 flex flex-1 flex-col justify-between overflow-hidden bg-[#0a0a0a] p-6 sm:p-8 lg:w-1/2 2xl:p-12"
 						>
-							<div
-								class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] opacity-50"
-							></div>
 							<div
 								class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,#ffffff03_0%,transparent_50%)]"
 							></div>
@@ -392,7 +478,7 @@
 
 							<div class="relative z-10 mt-10">
 								<div class="mb-8 flex flex-wrap gap-2">
-									{#each item.tags as tag}
+									{#each item.tags as tag (tag)}
 										<span
 											class="rounded-full border border-white/5 bg-white/[0.02] px-3.5 py-1.5 font-sans text-xs font-medium text-white/60 transition-colors group-hover:bg-white/[0.04]"
 										>
@@ -406,7 +492,7 @@
 										<a
 											href={item.url}
 											target="_blank"
-											rel="noreferrer"
+											rel="external noreferrer"
 											class="group relative flex items-center gap-2 overflow-hidden rounded-full bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black shadow-xs ring ring-white/80 transition-transform duration-150 hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-[0.98]"
 										>
 											<span
@@ -427,7 +513,7 @@
 										<a
 											href={item.githubUrl}
 											target="_blank"
-											rel="noreferrer"
+											rel="external noreferrer"
 											class="flex items-center gap-2 rounded-full px-2 py-2.5 font-sans text-sm font-semibold text-white/70 hover:text-white"
 										>
 											Source Code
@@ -508,50 +594,12 @@
 						</div>
 					</div>
 
-					<div
-						class="pointer-events-none absolute inset-0 z-[15] hidden lg:block"
-						aria-hidden="true"
-					>
-						<div
-							class={`absolute top-0 left-0 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out ${index === activeIndex ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}
-						>
-							<div
-								class="absolute top-1/2 left-0 h-[1px] w-full -translate-y-1/2 bg-[var(--timeline-accent)]"
-							></div>
-							<div
-								class="absolute top-0 left-1/2 h-full w-[1px] -translate-x-1/2 bg-[var(--timeline-accent)]"
-							></div>
-						</div>
-						<div
-							class={`absolute top-0 right-0 h-4 w-4 translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out ${index === activeIndex ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}
-						>
-							<div
-								class="absolute top-1/2 left-0 h-[1px] w-full -translate-y-1/2 bg-[var(--timeline-accent)]"
-							></div>
-							<div
-								class="absolute top-0 left-1/2 h-full w-[1px] -translate-x-1/2 bg-[var(--timeline-accent)]"
-							></div>
-						</div>
-						<div
-							class={`absolute bottom-0 left-0 h-4 w-4 -translate-x-1/2 translate-y-1/2 transition-all duration-500 ease-out ${index === activeIndex ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}
-						>
-							<div
-								class="absolute top-1/2 left-0 h-[1px] w-full -translate-y-1/2 bg-[var(--timeline-accent)]"
-							></div>
-							<div
-								class="absolute top-0 left-1/2 h-full w-[1px] -translate-x-1/2 bg-[var(--timeline-accent)]"
-							></div>
-						</div>
-						<div
-							class={`absolute right-0 bottom-0 h-4 w-4 translate-x-1/2 translate-y-1/2 transition-all duration-500 ease-out ${index === activeIndex ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}
-						>
-							<div
-								class="absolute top-1/2 left-0 h-[1px] w-full -translate-y-1/2 bg-[var(--timeline-accent)]"
-							></div>
-							<div
-								class="absolute top-0 left-1/2 h-full w-[1px] -translate-x-1/2 bg-[var(--timeline-accent)]"
-							></div>
-						</div>
+					<div class="project-frame" aria-hidden="true">
+						{#each [0, 100] as top (top)}
+							{#each [0, 100] as left (left)}
+								<span class="project-corner" style:top={`${top}%`} style:left={`${left}%`}></span>
+							{/each}
+						{/each}
 					</div>
 				</article>
 			{/each}
@@ -559,3 +607,88 @@
 	</div>
 	<div class="pt-0 lg:pt-20"></div>
 </section>
+
+<style>
+	.project-frame,
+	.project-connections,
+	.project-grid {
+		display: none;
+	}
+
+	@media (min-width: 1024px) {
+		.project-card {
+			z-index: 1;
+		}
+
+		.project-grid {
+			pointer-events: none;
+			position: absolute;
+			inset: -24px 0 -64px;
+			display: block;
+			background: radial-gradient(circle, #34312f 0.8px, transparent 1px) 0 0 / 18px 18px;
+			mask-image: linear-gradient(transparent, black 48px, black calc(100% - 96px), transparent);
+		}
+
+		.project-connections {
+			pointer-events: none;
+			position: absolute;
+			inset: 0;
+			display: block;
+			width: 100%;
+			height: 100%;
+			overflow: visible;
+			fill: none;
+			stroke: var(--timeline-accent);
+			stroke-width: 1px;
+		}
+
+		.project-frame {
+			pointer-events: none;
+			position: absolute;
+			inset: -1px;
+			z-index: 30;
+			display: block;
+			color: var(--timeline-accent);
+		}
+
+		/* Dashed construction lines continue through the square corner junctions. */
+		.project-frame::before,
+		.project-frame::after {
+			position: absolute;
+			top: -24px;
+			bottom: -24px;
+			width: 1px;
+			content: '';
+			background: repeating-linear-gradient(to bottom, currentColor 0 16px, transparent 16px 40px);
+		}
+
+		.project-frame::before {
+			left: 0;
+		}
+
+		.project-frame::after {
+			right: 0;
+		}
+
+		.project-corner {
+			position: absolute;
+			z-index: 1;
+			width: 1.125rem;
+			height: 1.125rem;
+			border: 1px solid currentColor;
+			border-radius: 4px;
+			transform: translate(-50%, -50%);
+			background: #10100f;
+		}
+	}
+
+	@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+		.project-card {
+			will-change: transform;
+		}
+
+		.project-surface {
+			will-change: opacity;
+		}
+	}
+</style>
