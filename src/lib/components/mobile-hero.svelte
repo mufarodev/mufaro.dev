@@ -5,11 +5,7 @@
 	import HeroArtwork from './core/hero-artwork.svelte';
 	import DiscordStatusMorphable from './discord-status-morphable.svelte';
 	import { getLanyard } from '$lib/stores/lanyard.svelte';
-	import {
-		accentColor,
-		morphProgress as morphProgressStore,
-		heroScrollLocked
-	} from '$lib/stores/hero-state';
+	import { accentColor, morphProgress as morphProgressStore } from '$lib/stores/hero-state';
 
 	const presence = getLanyard();
 	let currentColor = $derived($accentColor);
@@ -58,7 +54,6 @@
 			window.removeEventListener('resize', onScroll);
 			if (rafId !== null) cancelAnimationFrame(rafId);
 			morphProgressStore.set(0);
-			heroScrollLocked.set(false);
 		};
 	});
 </script>
