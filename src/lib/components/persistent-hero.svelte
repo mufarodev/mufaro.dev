@@ -3,9 +3,9 @@
 	import { page } from '$app/stores';
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import gsap from 'gsap';
-	import AnimatedLiquidBackground from './core/animated-liquid-background.svelte';
+	import HeroArtwork from './core/hero-artwork.svelte';
 	import DiscordStatusMorphable from './discord-status-morphable.svelte';
-	// import HeroNavbar from './hero-navbar.svelte';
+	import { getLanyard } from '$lib/stores/lanyard.svelte';
 	import {
 		accentColor,
 		heroScrollLocked,
@@ -15,21 +15,20 @@
 		type SmoothScroller
 	} from '$lib/stores/hero-state';
 
-	let currentColor = $state({ r: 136, g: 153, b: 170 });
+	const presence = getLanyard();
+	let currentColor = $derived($accentColor);
 
 	let discordMorphProgress = $state(0);
 
 	let headerContainer: HTMLDivElement;
-	let sparkleImage: HTMLDivElement;
-	let heroName: HTMLHeadingElement;
-	let heroTitleGroup: HTMLDivElement;
-	let heroDescription: HTMLDivElement;
+	let heroCopy: HTMLDivElement;
+	let pillIdentity: HTMLDivElement;
 	let discordContainer: HTMLDivElement;
 	let scrollIndicator: HTMLDivElement;
 	let heroGapCover: HTMLDivElement;
-	let navbarContainer: HTMLDivElement;
 
 	let morphTl: gsap.core.Timeline;
+	let morphPlayback: gsap.core.Tween | undefined;
 	let isAnimating = false;
 	let currentSection = 0;
 	let wheelUnlockUntil = 0;
@@ -37,48 +36,13 @@
 	let morphToPillTimeout: number | null = null;
 	let morphToHeroTimeout: number | null = null;
 	let currentScroller: SmoothScroller | null = null;
+	const MORPH_DURATION = 1;
 	const HERO_SCROLL_TARGET = 88;
 	const HERO_ENTER_THRESHOLD = 140;
 	const HERO_RETURN_THRESHOLD = 220;
-	const MOBILE_HERO_SCROLL_TARGET = 68;
-	const MOBILE_HERO_ENTER_THRESHOLD = 72;
-	const MOBILE_HERO_RETURN_THRESHOLD = 96;
-	const MOBILE_BREAKPOINT = 768;
-	const SMALL_BREAKPOINT = 640;
 	const POST_MORPH_SCROLL_LOCK_MS = 120;
 	const RETURN_SCROLL_LOCK_MS = 60;
-
 	let resizeRafId: number | null = null;
-
-	function isNarrowViewport() {
-		return typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
-	}
-
-	function isSmallViewport() {
-		return typeof window !== 'undefined' && window.innerWidth < SMALL_BREAKPOINT;
-	}
-
-	function getHeroScrollTarget() {
-		return isNarrowViewport() ? MOBILE_HERO_SCROLL_TARGET : HERO_SCROLL_TARGET;
-	}
-
-	function getHeroEnterThreshold() {
-		return isNarrowViewport() ? MOBILE_HERO_ENTER_THRESHOLD : HERO_ENTER_THRESHOLD;
-	}
-
-	function getHeroReturnThreshold() {
-		return isNarrowViewport() ? MOBILE_HERO_RETURN_THRESHOLD : HERO_RETURN_THRESHOLD;
-	}
-
-	let plasmaColor1 = $derived(
-		`rgb(${Math.round(currentColor.r * 0.8)}, ${Math.round(currentColor.g * 0.8)}, ${Math.round(currentColor.b * 0.8)})`
-	);
-	let plasmaColor2 = $derived(
-		`rgb(${Math.round(currentColor.r * 0.5)}, ${Math.round(currentColor.g * 0.5)}, ${Math.round(currentColor.b * 0.5)})`
-	);
-	let plasmaColor3 = $derived(
-		`rgb(${Math.round(currentColor.r * 0.3)}, ${Math.round(currentColor.g * 0.3)}, ${Math.round(currentColor.b * 0.3)})`
-	);
 
 	let accentColorCss = $derived(
 		`--accent-r: ${currentColor.r}; --accent-g: ${currentColor.g}; --accent-b: ${currentColor.b};`
@@ -89,6 +53,14 @@
 			window.clearTimeout(unlockTimeout);
 			unlockTimeout = null;
 		}
+	}
+
+	function clearMorphTimeouts() {
+		if (morphToPillTimeout !== null) window.clearTimeout(morphToPillTimeout);
+		if (morphToHeroTimeout !== null) window.clearTimeout(morphToHeroTimeout);
+		morphToPillTimeout = null;
+		morphToHeroTimeout = null;
+		clearUnlockTimeout();
 	}
 
 	function setMorphProgress(value: number) {
@@ -134,36 +106,28 @@
 		onComplete();
 	}
 
-	function handleAccentColorChange(color: { r: number; g: number; b: number } | null) {
-		if (!color) return;
-		gsap.to(currentColor, {
-			r: color.r,
-			g: color.g,
-			b: color.b,
-			duration: 1.5,
-			ease: 'power2.out',
-			onUpdate: () => {
-				accentColor.set({
-					r: Math.round(currentColor.r),
-					g: Math.round(currentColor.g),
-					b: Math.round(currentColor.b)
-				});
-			}
-		});
-	}
-
 	let isHomePage = $derived($page.url.pathname === '/');
+
+	function playMorph(target: 0 | 1) {
+		morphPlayback?.kill();
+		// Shorten interrupted moves according to the distance still on screen.
+		const duration = MORPH_DURATION * Math.sqrt(Math.abs(target - morphTl.progress()));
+		morphPlayback = morphTl.tweenTo(target * morphTl.duration(), {
+			duration,
+			ease: 'power3.inOut'
+		});
+		return duration;
+	}
 
 	export function morphToPill(instant = false) {
 		if (!morphTl) return;
+		instant ||= window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		if (morphToPillTimeout !== null) {
-			window.clearTimeout(morphToPillTimeout);
-			morphToPillTimeout = null;
-		}
+		clearMorphTimeouts();
 
 		if (instant) {
-			morphTl.progress(1);
+			morphPlayback?.kill();
+			morphTl.pause().progress(1);
 			currentSection = 1;
 			setMorphProgress(1);
 			setAnimating(false);
@@ -172,11 +136,11 @@
 		} else {
 			setAnimating(true);
 			currentSection = 1;
-			wheelUnlockUntil = Date.now() + 850;
+			const duration = playMorph(1);
+			wheelUnlockUntil = Date.now() + duration * 1000 + 50;
 			if (isHomePage) {
 				heroScrollLocked.set(true);
 			}
-			morphTl.play();
 
 			let completed = false;
 			const handleComplete = () => {
@@ -191,23 +155,22 @@
 				unlockScrollAfter(isHomePage ? POST_MORPH_SCROLL_LOCK_MS : 0);
 			};
 
-			// Backup timeout (950ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
-			morphToPillTimeout = window.setTimeout(handleComplete, 950);
+			// Release the scroll lock if the smooth scroller cannot finish.
+			morphToPillTimeout = window.setTimeout(handleComplete, duration * 1000 + 150);
 
-			scrollViewportTo(getHeroScrollTarget(), 0.8, handleComplete);
+			scrollViewportTo(HERO_SCROLL_TARGET, duration, handleComplete);
 		}
 	}
 
 	export function morphToHero(instant = false) {
 		if (!morphTl) return;
+		instant ||= window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		if (morphToHeroTimeout !== null) {
-			window.clearTimeout(morphToHeroTimeout);
-			morphToHeroTimeout = null;
-		}
+		clearMorphTimeouts();
 
 		if (instant) {
-			morphTl.progress(0);
+			morphPlayback?.kill();
+			morphTl.pause().progress(0);
 			currentSection = 0;
 			setMorphProgress(0);
 			setAnimating(false);
@@ -215,11 +178,11 @@
 		} else {
 			setAnimating(true);
 			currentSection = 0;
-			wheelUnlockUntil = Date.now() + 850;
+			const duration = playMorph(0);
+			wheelUnlockUntil = Date.now() + duration * 1000 + 50;
 			if (isHomePage) {
 				heroScrollLocked.set(true);
 			}
-			morphTl.reverse();
 
 			let completed = false;
 			const handleComplete = () => {
@@ -233,10 +196,10 @@
 				unlockScrollAfter(isHomePage ? RETURN_SCROLL_LOCK_MS : 0);
 			};
 
-			// Backup timeout (950ms) to ensure we always unlock even if Lenis cancels/interrupts scrollTo
-			morphToHeroTimeout = window.setTimeout(handleComplete, 950);
+			// Release the scroll lock if the smooth scroller cannot finish.
+			morphToHeroTimeout = window.setTimeout(handleComplete, duration * 1000 + 150);
 
-			scrollViewportTo(0, 0.8, handleComplete);
+			scrollViewportTo(0, duration, handleComplete);
 		}
 	}
 
@@ -255,10 +218,7 @@
 			if (previousWasHome && currentSection === 0) {
 				morphToPill();
 			} else if (morphTl.progress() < 1) {
-				morphTl.progress(1);
-				currentSection = 1;
-				setMorphProgress(1);
-				unlockScrollAfter(0);
+				morphToPill(true);
 			}
 		}
 	});
@@ -272,7 +232,7 @@
 		});
 
 		const initialScrollY = window.scrollY;
-		const startMorphed = !isHomePage || initialScrollY > getHeroEnterThreshold();
+		const startMorphed = !isHomePage || initialScrollY > HERO_ENTER_THRESHOLD;
 
 		if (startMorphed) {
 			currentSection = 1;
@@ -281,177 +241,64 @@
 			setMorphProgress(0);
 		}
 
-		const duration = 0.8;
-
-		const getTopPosition = (p: number) => {
-			const yStart = isNarrowViewport() ? 8 : 12;
-			const yPeak = window.innerHeight * 0.15;
-			const yFinal = isNarrowViewport() ? 12 : 24;
-
-			const A = (yPeak - yStart - 1.225 * (yFinal - yStart)) / -0.11025;
-			const B = -2.5 * (yFinal - yStart) - 1.175 * A;
-			const C = -1.47 * A - 1.4 * B;
-
-			return A * Math.pow(p, 3) + B * Math.pow(p, 2) + C * p + yStart;
-		};
-
-		const getWidth = (p: number) => {
-			const startWidth = isNarrowViewport() ? window.innerWidth - 16 : window.innerWidth - 24;
-			const endWidth =
-				window.innerWidth > 1333
-					? 1200
-					: isNarrowViewport()
-						? window.innerWidth - 20
-						: window.innerWidth * 0.9;
-			return startWidth + (endWidth - startWidth) * p;
-		};
-
-		const getHeight = (p: number) => {
-			const startHeight = isNarrowViewport() ? window.innerHeight - 16 : window.innerHeight - 24;
-			const endHeight = isNarrowViewport() ? 72 : 80;
-			return startHeight + (endHeight - startHeight) * p;
-		};
-
-		const getBorderRadius = (p: number) => {
-			const startRadius = isNarrowViewport() ? 16 : 24;
-			const endRadius = isNarrowViewport() ? 36 : 50;
-			return startRadius + (endRadius - startRadius) * p;
-		};
+		const duration = MORPH_DURATION;
 
 		function buildTimeline(snapProgress = 0) {
-			if (morphTl) {
-				morphTl.kill();
+			morphPlayback?.kill();
+			morphTl?.kill();
+			const startWidth = window.innerWidth - 24;
+			const startHeight = window.innerHeight - 24;
+			const endWidth = Math.min(1200, window.innerWidth * 0.9);
+			const arcHeight = Math.min(64, window.innerHeight * 0.07);
+			const heroStyle = getComputedStyle(heroCopy);
+			const bottom = parseFloat(heroStyle.bottom);
+			const gutter = parseFloat(heroStyle.left);
+			const presenceHeight = discordContainer.offsetHeight;
+			const state = { progress: 0 };
+			const lerp = (start: number, end: number, p: number) => start + (end - start) * p;
+
+			function render() {
+				const p = state.progress;
+				// Gather inward, then lift into place: a smaller version of the original arc.
+				// This peaks two-thirds through the collapse and has no settling oscillation.
+				const arc = 6.75 * p * p * (1 - p) * arcHeight;
+				setMorphProgress(p);
+				headerContainer.style.top = `${lerp(12, 24, p) + arc}px`;
+				headerContainer.style.width = `${lerp(startWidth, endWidth, p)}px`;
+				headerContainer.style.height = `${lerp(startHeight, 80, p)}px`;
+				headerContainer.style.borderRadius = `${lerp(24, 40, p)}px`;
 			}
 
-			morphTl = gsap.timeline({ paused: true });
-
+			// Keep the frame, wallpaper and player on one reversible motion path.
+			morphTl = gsap.timeline({ paused: true, defaults: { duration, ease: 'none' } });
+			morphTl.to(state, { progress: 1, onUpdate: render }, 0);
 			morphTl.fromTo(
-				sparkleImage,
-				{
-					width: isSmallViewport() ? '540px' : isNarrowViewport() ? '660px' : '800px',
-					left: isNarrowViewport() ? '-130px' : '-140px',
-					bottom: isNarrowViewport() ? '290px' : '360px',
-					yPercent: 0
-				},
-				{
-					width: isNarrowViewport() ? '72px' : '100px',
-					left: isNarrowViewport() ? '-10px' : '-5px',
-					bottom: isNarrowViewport() ? '50%' : '55%',
-					yPercent: 50,
-					ease: 'power3.inOut',
-					duration: duration
-				},
+				heroCopy,
+				{ autoAlpha: 1, y: 0 },
+				{ autoAlpha: 0, y: -16, duration: 0.22, ease: 'sine.inOut' },
 				0
 			);
-
-			morphTl.fromTo(
-				heroName,
-				{
-					fontSize: isSmallViewport() ? '68px' : isNarrowViewport() ? '80px' : '96px',
-					left: window.innerWidth >= 1024 ? '96px' : window.innerWidth >= 768 ? '64px' : '20px',
-					bottom: isNarrowViewport() ? '188px' : '220px'
-				},
-				{
-					fontSize: isSmallViewport() ? '24px' : isNarrowViewport() ? '30px' : '36px',
-					left: isNarrowViewport() ? '20px' : '100px',
-					bottom: isNarrowViewport() ? '20px' : '24px',
-					ease: 'power3.inOut',
-					duration: duration
-				},
-				0
-			);
-
-			morphTl.fromTo(
-				heroName,
-				{ opacity: 1 },
-				{
-					opacity: isSmallViewport() ? 0 : 1,
-					duration: 0.35,
-					ease: 'power3.out'
-				},
-				0
-			);
-
-			morphTl.fromTo(
-				[heroTitleGroup, heroDescription],
-				{ opacity: 1, y: 0 },
-				{ opacity: 0, y: -20, duration: 0.4, ease: 'power3.out' },
-				0
-			);
-
 			morphTl.fromTo(
 				discordContainer,
-				{
-					top: isNarrowViewport() ? '20px' : '32px',
-					right: isNarrowViewport() ? 'calc(50% - min(80vw, 320px) / 2)' : '32px',
-					yPercent: 0
-				},
-				{
-					top: '50%',
-					right: isNarrowViewport() ? '10px' : '16px',
-					yPercent: -50,
-					ease: 'power3.inOut',
-					duration: duration
-				},
+				{ x: 32 - gutter, y: startHeight - bottom - presenceHeight },
+				{ x: 0, y: (80 - presenceHeight) / 2 },
 				0
 			);
-
-			morphTl.to(
-				{ progress: 0 },
-				{
-					progress: 1,
-					duration: duration,
-					ease: 'power3.inOut',
-					onUpdate: function () {
-						const p = this.targets()[0].progress;
-						setMorphProgress(p);
-						if (headerContainer) {
-							headerContainer.style.top = `${getTopPosition(p)}px`;
-							headerContainer.style.width = `${getWidth(p)}px`;
-							headerContainer.style.height = `${getHeight(p)}px`;
-							headerContainer.style.borderRadius = `${getBorderRadius(p)}px`;
-						}
-					}
-				},
-				0
+			morphTl.fromTo(
+				pillIdentity,
+				{ autoAlpha: 0, x: -8 },
+				{ autoAlpha: 1, x: 0, duration: 0.25, ease: 'sine.inOut' },
+				duration - 0.25
 			);
-
 			morphTl.fromTo(
 				scrollIndicator,
-				{ opacity: 0.5 },
-				{ opacity: 0, duration: 0.2, ease: 'none' },
+				{ autoAlpha: 0.5 },
+				{ autoAlpha: 0, duration: 0.2, ease: 'none' },
 				0
 			);
-
-			morphTl.fromTo(
-				heroGapCover,
-				{ opacity: 1 },
-				{ opacity: 0, duration: 0.2, ease: 'none' },
-				0
-			);
-
-			// Navbar: animate from hero top position to pill center
-			// Uses y transform to avoid conflicts with CSS transforms
-			// In hero: top 56px (near top of screen)
-			// In pill: top 40px (center of 80px pill)
-			morphTl.fromTo(
-				navbarContainer,
-				{ top: isNarrowViewport() ? '48px' : '56px' },
-				{
-					top: isNarrowViewport() ? '36px' : '40px',
-					duration: duration,
-					ease: 'power3.inOut'
-				},
-				0
-			);
-
+			morphTl.fromTo(heroGapCover, { opacity: 1 }, { opacity: 0, duration: 0.2, ease: 'none' }, 0);
 			morphTl.progress(snapProgress, true);
-			if (headerContainer) {
-				headerContainer.style.top = `${getTopPosition(snapProgress)}px`;
-				headerContainer.style.width = `${getWidth(snapProgress)}px`;
-				headerContainer.style.height = `${getHeight(snapProgress)}px`;
-				headerContainer.style.borderRadius = `${getBorderRadius(snapProgress)}px`;
-			}
+			render();
 		}
 
 		const initialProgress = startMorphed ? 1 : 0;
@@ -459,20 +306,19 @@
 		setMorphProgress(initialProgress);
 
 		function handleWheel(e: WheelEvent) {
-			if (Date.now() < wheelUnlockUntil) {
+			if (!isHomePage || e.deltaY === 0) return;
+			const direction = e.deltaY > 0 ? 1 : -1;
+			if (isAnimating || Date.now() < wheelUnlockUntil) {
 				e.preventDefault();
-				return;
-			}
-
-			if (isAnimating) {
-				e.preventDefault();
+				// Reverse the existing timeline from its current frame, including during scroll settling.
+				if (currentSection === 1 && direction === -1) morphToHero();
+				else if (currentSection === 0 && direction === 1) morphToPill();
 				return;
 			}
 
 			const scrollY = window.scrollY;
-			const direction = e.deltaY > 0 ? 1 : -1;
-			const heroEnterThreshold = getHeroEnterThreshold();
-			const heroReturnThreshold = getHeroReturnThreshold();
+			const heroEnterThreshold = HERO_ENTER_THRESHOLD;
+			const heroReturnThreshold = HERO_RETURN_THRESHOLD;
 
 			// At hero, scrolling down -> morph to pill
 			if (currentSection === 0 && direction === 1 && scrollY < heroEnterThreshold) {
@@ -498,7 +344,7 @@
 
 				const scrollY = window.scrollY;
 
-				if (currentSection === 0 && scrollY > getHeroEnterThreshold()) {
+				if (currentSection === 0 && scrollY > HERO_ENTER_THRESHOLD) {
 					morphToPill();
 				} else if (currentSection === 1 && scrollY <= 8) {
 					morphToHero();
@@ -517,15 +363,21 @@
 				if (!morphTl) return;
 
 				const p = morphTl.progress();
-
+				const playing = morphPlayback?.isActive();
 				buildTimeline(p);
+				if (playing) {
+					playMorph(currentSection === 1 ? 1 : 0);
+				}
 			});
 		}
 
 		const resizeObserver = new ResizeObserver(handleResize);
 		resizeObserver.observe(document.documentElement);
+		resizeObserver.observe(discordContainer);
 
 		return () => {
+			morphPlayback?.kill();
+			morphTl?.kill();
 			unsubscribeScroller();
 			currentScroller = null;
 			if (scrollRafId !== null) {
@@ -570,80 +422,46 @@
 
 	<div
 		bind:this={headerContainer}
-		class="pointer-events-auto absolute z-50 overflow-hidden bg-[#050507] shadow-2xl"
+		class="hero-shell pointer-events-auto absolute z-50 overflow-hidden bg-[#050507] shadow-2xl"
 		style="width: calc(100vw - 16px); height: calc(100vh - 16px); top: 8px; left: 50%; transform: translateX(-50%); border-radius: 16px;"
 	>
-		<div class="pointer-events-none absolute inset-0 opacity-80">
-			<AnimatedLiquidBackground
-				color1={plasmaColor1}
-				color2={plasmaColor2}
-				color3={plasmaColor3}
-				speed={15}
-			/>
-			<div class="absolute inset-0 bg-black/40"></div>
-		</div>
+		<HeroArtwork morphProgress={discordMorphProgress} />
 
 		<div class="pointer-events-none relative h-full w-full">
-			<div
-				bind:this={sparkleImage}
-				class="pointer-events-none absolute origin-bottom-left"
-				style="width: clamp(540px, 70vw, 800px); left: -140px; bottom: clamp(290px, 40vh, 360px);"
-			>
-				<img
-					src="/images/sparkle.webp"
-					alt="Sparkle"
-					class="w-full drop-shadow-2xl"
-					style="mask-image: radial-gradient(circle closest-side, black 40%, transparent 100%); -webkit-mask-image: radial-gradient(circle closest-side, black 40%, transparent 100%);"
-				/>
+			<div bind:this={pillIdentity} class="pill-identity" aria-hidden={discordMorphProgress < 0.5}>
+				<img src="/images/avatar.webp" alt="" width="64" height="64" />
+				<div class="pill-identity-copy">
+					<span class="pill-name">Mufaro</span>
+					{#if !presence.activity}
+						<DiscordStatusMorphable
+							activity={null}
+							morphProgress={1}
+							active={discordMorphProgress > 0.5}
+						/>
+					{/if}
+				</div>
 			</div>
 
-			<div
-				bind:this={heroTitleGroup}
-				class="absolute right-5 bottom-64 left-5 z-10 origin-bottom-left sm:right-auto sm:bottom-78 sm:left-8 md:left-16 lg:left-24"
-			>
-				<h1
-					class="font-serif text-5xl leading-[0.9] font-medium tracking-tight text-white/50 sm:text-6xl md:text-8xl lg:text-9xl"
-				>
-					Hello, I'm <br />
+			<div bind:this={heroCopy} class="hero-copy" aria-hidden={discordMorphProgress > 0.5}>
+				<h1 class="hero-heading">
+					<span class="hero-greeting">Hello, I'm</span>
+					<span class="hero-name">Mufaro</span>
 				</h1>
-			</div>
-
-			<h1
-				bind:this={heroName}
-				class="absolute right-5 left-5 z-10 origin-bottom-left font-serif leading-[0.9] font-medium tracking-tight sm:right-auto sm:left-8 sm:whitespace-nowrap md:left-16 lg:left-24"
-				style="font-size: clamp(68px, 17vw, 96px); bottom: clamp(188px, 27vh, 220px); color: rgba(255, 255, 255, 0.8); mix-blend-mode: color-dodge; filter: brightness(0.8)"
-			>
-				Mufaro
-			</h1>
-
-			<div
-				bind:this={heroDescription}
-				class="hero-description absolute right-5 left-5 z-10 sm:right-auto sm:left-8 md:left-16 lg:left-24"
-			>
-				<p
-					class="hero-description-text max-w-[92vw] text-base leading-relaxed break-words text-white/80 sm:max-w-xl sm:text-lg md:text-xl lg:max-w-md"
-				>
+				<p class="hero-description">
 					I'm an 18 year old from Poland who makes software, reverse engineers, plays games and is
 					passionate about learning new things.
 				</p>
+				{#if !presence.activity}
+					<div class="hero-status">
+						<DiscordStatusMorphable activity={null} active={discordMorphProgress < 0.5} />
+					</div>
+				{/if}
 			</div>
 
-			<div
-				bind:this={navbarContainer}
-				class="pointer-events-auto absolute left-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
-				style="top: 56px;"
-			>
-				<!-- <HeroNavbar /> -->
-			</div>
-
-			<div
-				bind:this={discordContainer}
-				class="discord-container pointer-events-auto absolute z-20 origin-top-right"
-			>
-				<DiscordStatusMorphable
-					onAccentColorChange={handleAccentColorChange}
-					morphProgress={discordMorphProgress}
-				/>
+			<div bind:this={discordContainer} class="discord-container pointer-events-auto absolute z-20">
+				{#each presence.activity ? [presence.activity] : [] as activity (!!activity)}
+					<DiscordStatusMorphable {activity} morphProgress={discordMorphProgress} />
+				{/each}
 			</div>
 		</div>
 	</div>
@@ -659,38 +477,84 @@
 </div>
 
 <style>
+	.hero-shell {
+		--hero-inset-inline: clamp(32px, 5vw, 96px);
+		--hero-inset-block: clamp(48px, 8vh, 96px);
+	}
+	.hero-copy {
+		position: absolute;
+		left: var(--hero-inset-inline);
+		bottom: var(--hero-inset-block);
+		width: min(448px, calc(100vw - 24px - 2 * var(--hero-inset-inline) - 304px - 32px));
+		color: #f2eeea;
+	}
+	.hero-status {
+		position: absolute;
+		top: 100%;
+		margin-top: 16px;
+	}
+	.hero-heading {
+		font-family: var(--font-serif);
+		font-weight: 400;
+		letter-spacing: -0.035em;
+		line-height: 0.95;
+	}
+	.hero-greeting {
+		display: block;
+		font-size: clamp(80px, 8vw, 128px);
+		color: rgb(242 238 234 / 0.5);
+	}
+	.hero-name {
+		display: block;
+		font-size: 96px;
+	}
+	.hero-description {
+		margin-top: 28px;
+		font-size: 20px;
+		line-height: 1.65;
+		color: rgb(242 238 234 / 0.8);
+		text-wrap: pretty;
+	}
 	.discord-container {
-		top: 32px;
+		top: 0;
 		right: 32px;
 	}
-
-	.hero-description {
-		bottom: 2.5rem;
+	.pill-identity {
+		position: absolute;
+		inset-block: 0;
+		left: 8px;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		visibility: hidden;
 	}
-
-	@media (max-width: 639px) {
+	.pill-identity img {
+		width: 64px;
+		height: 64px;
+		border-radius: 50%;
+		object-fit: cover;
+	}
+	.pill-identity-copy {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.pill-name {
+		font-family: var(--font-serif);
+		font-size: 36px;
+		line-height: 1;
+		color: #f2eeea;
+	}
+	@media (max-height: 699px) {
+		.hero-greeting {
+			font-size: 72px;
+		}
+		.hero-name {
+			font-size: 80px;
+		}
 		.hero-description {
-			bottom: max(calc(env(safe-area-inset-bottom) + 3.25rem), 4.25rem);
-		}
-
-		.hero-description-text {
-			font-size: 0.95rem;
-			line-height: 1.6;
-			max-width: min(92vw, 30rem);
-			text-wrap: pretty;
-		}
-	}
-
-	@media (max-width: 767px) {
-		.discord-container {
-			top: 20px;
-			right: calc(50% - min(80vw, 320px) / 2);
-		}
-	}
-
-	@media (min-width: 640px) {
-		.hero-description {
-			bottom: 6.25rem;
+			margin-top: 20px;
+			font-size: 18px;
 		}
 	}
 </style>
