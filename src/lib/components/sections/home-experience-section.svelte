@@ -135,7 +135,7 @@
 	}
 
 	function setupIntroReveal() {
-		if (!sectionRef) return;
+		if (!sectionRef || mediaQuery?.matches) return;
 
 		waitsForHeroReveal = window.scrollY < 24;
 
@@ -188,6 +188,14 @@
 	function setupDesktopTimeline() {
 		if (!sectionRef || !railRef || !trackRef || cards.length === 0) return;
 
+		// The shrinking hero reveals the desktop content in place. A second reveal
+		// would move the pinned section vertically before the cards can scroll.
+		waitsForHeroReveal = false;
+		introRevealTl?.kill();
+		introFallbackTrigger?.kill();
+		removeHeroRevealListener?.();
+		gsap.set([sectionRef, ...cards], { clearProps: 'opacity,visibility,transform' });
+
 		const getGap = () => {
 			const styles = window.getComputedStyle(trackRef);
 			const value = styles.columnGap || styles.gap || '0';
@@ -211,8 +219,6 @@
 		};
 
 		recalculateDistances();
-		const getPinStartOffset = () => Math.round(Math.max(104, window.innerHeight * 0.12));
-
 		gsap.set(trackRef, { x: getEntryOffset() });
 		activeIndex = 0;
 
@@ -220,9 +226,11 @@
 			scrollTrigger: {
 				trigger: sectionRef,
 				pin: sectionRef,
-				start: () => `top top+=${getPinStartOffset()}`,
+				// Pin where the hero reveals the section, with no vertical lead-in.
+				start: 0,
 				end: () => `+=${totalDistance}`,
-				scrub: 0.75,
+				// ScrollSmoother already eases the page position; follow it without extra lag.
+				scrub: true,
 				anticipatePin: 1,
 				invalidateOnRefresh: true,
 				onRefreshInit: () => {
@@ -253,6 +261,7 @@
 	}
 
 	onMount(() => {
+		mediaQuery = window.matchMedia('(min-width: 1024px)');
 		setupIntroReveal();
 
 		const applyLayoutMode = () => {
@@ -267,7 +276,6 @@
 			ScrollTrigger.refresh();
 		};
 
-		mediaQuery = window.matchMedia('(min-width: 1024px)');
 		applyLayoutMode();
 
 		mediaQuery.addEventListener('change', applyLayoutMode);
@@ -407,7 +415,11 @@
 											></span>
 											<span class="relative flex items-center gap-2">
 												View Project
-												<HugeiconsIcon icon={ArrowUpRight01Icon} className="fill-current" size={16} />
+												<HugeiconsIcon
+													icon={ArrowUpRight01Icon}
+													className="fill-current"
+													size={16}
+												/>
 											</span>
 										</a>
 									{/if}

@@ -8,11 +8,8 @@
 	import { getLanyard } from '$lib/stores/lanyard.svelte';
 	import {
 		accentColor,
-		heroScrollLocked,
 		isAnimating as heroAnimatingStore,
-		morphProgress as morphProgressStore,
-		smoothScroller,
-		type SmoothScroller
+		morphProgress as morphProgressStore
 	} from '$lib/stores/hero-state';
 
 	const presence = getLanyard();
@@ -29,39 +26,17 @@
 
 	let morphTl: gsap.core.Timeline;
 	let morphPlayback: gsap.core.Tween | undefined;
-	let isAnimating = false;
 	let currentSection = 0;
-	let wheelUnlockUntil = 0;
-	let unlockTimeout: number | null = null;
-	let morphToPillTimeout: number | null = null;
-	let morphToHeroTimeout: number | null = null;
-	let currentScroller: SmoothScroller | null = null;
+	let isAnimating = false;
+	let contentHasScrolled = false;
 	const MORPH_DURATION = 1;
-	const HERO_SCROLL_TARGET = 88;
-	const HERO_ENTER_THRESHOLD = 140;
-	const HERO_RETURN_THRESHOLD = 220;
-	const POST_MORPH_SCROLL_LOCK_MS = 120;
-	const RETURN_SCROLL_LOCK_MS = 60;
+	const HERO_ENTER_THRESHOLD = 8;
 	let resizeRafId: number | null = null;
+	let navigationRafId: number | null = null;
 
 	let accentColorCss = $derived(
 		`--accent-r: ${currentColor.r}; --accent-g: ${currentColor.g}; --accent-b: ${currentColor.b};`
 	);
-
-	function clearUnlockTimeout() {
-		if (unlockTimeout !== null) {
-			window.clearTimeout(unlockTimeout);
-			unlockTimeout = null;
-		}
-	}
-
-	function clearMorphTimeouts() {
-		if (morphToPillTimeout !== null) window.clearTimeout(morphToPillTimeout);
-		if (morphToHeroTimeout !== null) window.clearTimeout(morphToHeroTimeout);
-		morphToPillTimeout = null;
-		morphToHeroTimeout = null;
-		clearUnlockTimeout();
-	}
 
 	function setMorphProgress(value: number) {
 		discordMorphProgress = value;
@@ -73,37 +48,9 @@
 		heroAnimatingStore.set(value);
 	}
 
-	function unlockScrollAfter(delay = 0) {
-		clearUnlockTimeout();
-
-		if (delay <= 0) {
-			heroScrollLocked.set(false);
-			return;
-		}
-
-		unlockTimeout = window.setTimeout(() => {
-			heroScrollLocked.set(false);
-			unlockTimeout = null;
-		}, delay);
-	}
-
 	function notifyExperienceReveal() {
 		if (!isHomePage) return;
 		window.dispatchEvent(new CustomEvent('hero:experience-reveal'));
-	}
-
-	function scrollViewportTo(target: number, duration: number, onComplete: () => void) {
-		if (currentScroller) {
-			currentScroller.scrollTo(target, {
-				duration,
-				force: true,
-				onComplete
-			});
-			return;
-		}
-
-		window.scrollTo({ top: target, behavior: duration > 0 ? 'smooth' : 'auto' });
-		onComplete();
 	}
 
 	let isHomePage = $derived($page.url.pathname === '/');
@@ -114,92 +61,30 @@
 		const duration = MORPH_DURATION * Math.sqrt(Math.abs(target - morphTl.progress()));
 		morphPlayback = morphTl.tweenTo(target * morphTl.duration(), {
 			duration,
-			ease: 'power3.inOut'
+			ease: 'power3.inOut',
+			onComplete: () => {
+				setAnimating(false);
+				if (target === 1) notifyExperienceReveal();
+			}
 		});
 		return duration;
 	}
 
-	export function morphToPill(instant = false) {
+	function morphTo(target: 0 | 1, instant = false) {
 		if (!morphTl) return;
 		instant ||= window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		clearMorphTimeouts();
-
-		if (instant) {
-			morphPlayback?.kill();
-			morphTl.pause().progress(1);
-			currentSection = 1;
-			setMorphProgress(1);
-			setAnimating(false);
-			notifyExperienceReveal();
-			unlockScrollAfter(0);
-		} else {
-			setAnimating(true);
-			currentSection = 1;
-			const duration = playMorph(1);
-			wheelUnlockUntil = Date.now() + duration * 1000 + 50;
-			if (isHomePage) {
-				heroScrollLocked.set(true);
-			}
-
-			let completed = false;
-			const handleComplete = () => {
-				if (completed) return;
-				completed = true;
-				if (morphToPillTimeout !== null) {
-					window.clearTimeout(morphToPillTimeout);
-					morphToPillTimeout = null;
-				}
-				setAnimating(false);
-				notifyExperienceReveal();
-				unlockScrollAfter(isHomePage ? POST_MORPH_SCROLL_LOCK_MS : 0);
-			};
-
-			// Release the scroll lock if the smooth scroller cannot finish.
-			morphToPillTimeout = window.setTimeout(handleComplete, duration * 1000 + 150);
-
-			scrollViewportTo(HERO_SCROLL_TARGET, duration, handleComplete);
-		}
-	}
-
-	export function morphToHero(instant = false) {
-		if (!morphTl) return;
-		instant ||= window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		clearMorphTimeouts();
+		if (!instant && currentSection === target) return;
+		currentSection = target;
+		morphPlayback?.kill();
 
 		if (instant) {
-			morphPlayback?.kill();
-			morphTl.pause().progress(0);
-			currentSection = 0;
-			setMorphProgress(0);
+			morphTl.pause().progress(target);
+			setMorphProgress(target);
 			setAnimating(false);
-			unlockScrollAfter(0);
+			if (target === 1) notifyExperienceReveal();
 		} else {
 			setAnimating(true);
-			currentSection = 0;
-			const duration = playMorph(0);
-			wheelUnlockUntil = Date.now() + duration * 1000 + 50;
-			if (isHomePage) {
-				heroScrollLocked.set(true);
-			}
-
-			let completed = false;
-			const handleComplete = () => {
-				if (completed) return;
-				completed = true;
-				if (morphToHeroTimeout !== null) {
-					window.clearTimeout(morphToHeroTimeout);
-					morphToHeroTimeout = null;
-				}
-				setAnimating(false);
-				unlockScrollAfter(isHomePage ? RETURN_SCROLL_LOCK_MS : 0);
-			};
-
-			// Release the scroll lock if the smooth scroller cannot finish.
-			morphToHeroTimeout = window.setTimeout(handleComplete, duration * 1000 + 150);
-
-			scrollViewportTo(0, duration, handleComplete);
+			playMorph(target);
 		}
 	}
 
@@ -209,29 +94,23 @@
 		previousWasHome = from?.url.pathname === '/';
 	});
 
-	afterNavigate(({ to }) => {
+	afterNavigate(({ to, type }) => {
 		if (!to || !morphTl) return;
-
-		const atHome = to.url.pathname === '/';
-
-		if (!atHome) {
-			if (previousWasHome && currentSection === 0) {
-				morphToPill();
-			} else if (morphTl.progress() < 1) {
-				morphToPill(true);
-			}
-		}
+		if (navigationRafId !== null) cancelAnimationFrame(navigationRafId);
+		navigationRafId = requestAnimationFrame(() => {
+			navigationRafId = null;
+			contentHasScrolled = window.scrollY > 0;
+			const target = to.url.pathname !== '/' || window.scrollY > HERO_ENTER_THRESHOLD ? 1 : 0;
+			// Let SvelteKit restore history/hash positions before choosing the hero state.
+			morphTo(target, type === 'popstate' || !previousWasHome || target === 0);
+		});
 	});
 
 	onMount(() => {
-		heroScrollLocked.set(false);
 		heroAnimatingStore.set(false);
 
-		const unsubscribeScroller = smoothScroller.subscribe((value) => {
-			currentScroller = value;
-		});
-
 		const initialScrollY = window.scrollY;
+		contentHasScrolled = initialScrollY > 0;
 		const startMorphed = !isHomePage || initialScrollY > HERO_ENTER_THRESHOLD;
 
 		if (startMorphed) {
@@ -305,55 +184,105 @@
 		buildTimeline(initialProgress);
 		setMorphProgress(initialProgress);
 
-		function handleWheel(e: WheelEvent) {
-			if (!isHomePage || e.deltaY === 0) return;
-			const direction = e.deltaY > 0 ? 1 : -1;
-			if (isAnimating || Date.now() < wheelUnlockUntil) {
-				e.preventDefault();
-				// Reverse the existing timeline from its current frame, including during scroll settling.
-				if (currentSection === 1 && direction === -1) morphToHero();
-				else if (currentSection === 0 && direction === 1) morphToPill();
+		// Keep the main morph separate from scrolling, but let the content respond
+		// while the pill finishes settling along the last 2% of its motion path.
+		let touchStartX = 0;
+		let touchStartY = 0;
+		let touchCaptured = false;
+
+		function canScrollContent() {
+			return currentSection === 1 && morphTl.progress() >= 0.98;
+		}
+
+		function captureScroll(direction: number) {
+			if (!isHomePage || window.scrollY > 0 || (canScrollContent() && direction > 0)) return false;
+
+			morphTo(direction > 0 ? 1 : 0);
+			return true;
+		}
+
+		function handleWheel(event: WheelEvent) {
+			if (!isHomePage || event.ctrlKey || event.deltaY === 0) return;
+			if (canScrollContent() && Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+			if (captureScroll(Math.sign(event.deltaY))) event.preventDefault();
+		}
+
+		function handleKeyDown(event: KeyboardEvent) {
+			if (!isHomePage || event.ctrlKey || event.metaKey || event.altKey) return;
+			const target = event.target;
+			if (
+				target instanceof HTMLElement &&
+				(target.isContentEditable || target.closest('input, textarea, select, button'))
+			)
 				return;
-			}
+			let direction = 0;
+			if (['ArrowDown', 'PageDown', ' '].includes(event.key)) direction = 1;
+			if (['ArrowUp', 'PageUp'].includes(event.key) || (event.key === ' ' && event.shiftKey))
+				direction = -1;
+			if (direction && captureScroll(direction)) event.preventDefault();
+		}
 
-			const scrollY = window.scrollY;
-			const heroEnterThreshold = HERO_ENTER_THRESHOLD;
-			const heroReturnThreshold = HERO_RETURN_THRESHOLD;
+		function handleTouchStart(event: TouchEvent) {
+			touchCaptured = false;
+			if (event.touches.length !== 1) return;
+			touchStartX = event.touches[0].clientX;
+			touchStartY = event.touches[0].clientY;
+		}
 
-			// At hero, scrolling down -> morph to pill
-			if (currentSection === 0 && direction === 1 && scrollY < heroEnterThreshold) {
-				e.preventDefault();
-				morphToPill();
+		function handleTouchMove(event: TouchEvent) {
+			if (!isHomePage || event.touches.length !== 1) return;
+			const x = touchStartX - event.touches[0].clientX;
+			const y = touchStartY - event.touches[0].clientY;
+			if (!touchCaptured && (Math.abs(y) < 8 || Math.abs(y) <= Math.abs(x))) return;
+			touchStartX = event.touches[0].clientX;
+			touchStartY = event.touches[0].clientY;
+			if (!y) return;
+
+			if (captureScroll(Math.sign(y))) {
+				event.preventDefault();
+				touchCaptured = true;
+			} else if (touchCaptured) {
+				// Canceling the opening touch disables native panning for this gesture.
+				// Forward only its remaining movement; the next gesture is native again.
+				event.preventDefault();
+				window.scrollBy({ top: y, behavior: 'instant' });
 			}
-			// At pill, scrolling up near top -> restore hero
-			else if (currentSection === 1 && direction === -1 && scrollY <= heroReturnThreshold) {
-				e.preventDefault();
-				morphToHero();
-			}
+		}
+
+		function releaseTouch() {
+			touchCaptured = false;
 		}
 
 		let scrollRafId: number | null = null;
-		function handleScroll() {
-			if (scrollRafId !== null) return;
-			scrollRafId = requestAnimationFrame(() => {
-				scrollRafId = null;
+		function updateScroll() {
+			scrollRafId = null;
+			if (!isHomePage || navigationRafId !== null) return;
 
-				if (!isHomePage || isAnimating || Date.now() < wheelUnlockUntil) {
-					return;
+			if (window.scrollY > 0) {
+				contentHasScrolled = true;
+				if (window.scrollY > HERO_ENTER_THRESHOLD && !canScrollContent()) {
+					// Scrollbar, End, anchors and history can explicitly bypass the introduction.
+					morphTo(1, true);
 				}
-
-				const scrollY = window.scrollY;
-
-				if (currentSection === 0 && scrollY > HERO_ENTER_THRESHOLD) {
-					morphToPill();
-				} else if (currentSection === 1 && scrollY <= 8) {
-					morphToHero();
-				}
-			});
+			} else if (contentHasScrolled) {
+				// Respond at the native top while the visual smoothing settles underneath.
+				contentHasScrolled = false;
+				morphTo(0);
+			}
 		}
 
-		const wheelListenerOptions: AddEventListenerOptions = { passive: false, capture: true };
-		window.addEventListener('wheel', handleWheel, wheelListenerOptions);
+		function handleScroll() {
+			if (scrollRafId === null) scrollRafId = requestAnimationFrame(updateScroll);
+		}
+
+		const inputOptions = { passive: false, capture: true };
+		window.addEventListener('wheel', handleWheel, inputOptions);
+		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('touchstart', handleTouchStart, { passive: true });
+		window.addEventListener('touchmove', handleTouchMove, inputOptions);
+		window.addEventListener('touchend', releaseTouch);
+		window.addEventListener('touchcancel', releaseTouch);
+		window.addEventListener('blur', releaseTouch);
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
 		function handleResize() {
@@ -363,7 +292,7 @@
 				if (!morphTl) return;
 
 				const p = morphTl.progress();
-				const playing = morphPlayback?.isActive();
+				const playing = isAnimating;
 				buildTimeline(p);
 				if (playing) {
 					playMorph(currentSection === 1 ? 1 : 0);
@@ -372,14 +301,12 @@
 		}
 
 		const resizeObserver = new ResizeObserver(handleResize);
-		resizeObserver.observe(document.documentElement);
+		window.addEventListener('resize', handleResize);
 		resizeObserver.observe(discordContainer);
 
 		return () => {
 			morphPlayback?.kill();
 			morphTl?.kill();
-			unsubscribeScroller();
-			currentScroller = null;
 			if (scrollRafId !== null) {
 				cancelAnimationFrame(scrollRafId);
 				scrollRafId = null;
@@ -388,19 +315,17 @@
 				cancelAnimationFrame(resizeRafId);
 				resizeRafId = null;
 			}
-			if (morphToPillTimeout !== null) {
-				window.clearTimeout(morphToPillTimeout);
-				morphToPillTimeout = null;
-			}
-			if (morphToHeroTimeout !== null) {
-				window.clearTimeout(morphToHeroTimeout);
-				morphToHeroTimeout = null;
-			}
-			window.removeEventListener('wheel', handleWheel, wheelListenerOptions);
+			if (navigationRafId !== null) cancelAnimationFrame(navigationRafId);
+			window.removeEventListener('wheel', handleWheel, inputOptions);
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('touchstart', handleTouchStart);
+			window.removeEventListener('touchmove', handleTouchMove, inputOptions);
+			window.removeEventListener('touchend', releaseTouch);
+			window.removeEventListener('touchcancel', releaseTouch);
+			window.removeEventListener('blur', releaseTouch);
 			window.removeEventListener('scroll', handleScroll);
+			window.removeEventListener('resize', handleResize);
 			resizeObserver.disconnect();
-			clearUnlockTimeout();
-			unlockScrollAfter(0);
 			setAnimating(false);
 		};
 	});
