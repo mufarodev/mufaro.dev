@@ -7,12 +7,12 @@
 	import '@fontsource-variable/jetbrains-mono';
 	import '@fontsource/instrument-serif';
 	import '@fontsource/caveat';
-	import FilmGrain from '$lib/components/core/film-grain.svelte';
-	import ParallaxGrid from '$lib/components/core/parallax-grid.svelte';
-	import LensDistortion from '$lib/components/core/lens-distortion.svelte';
 	import SmoothScroll from '$lib/components/core/smooth-scroll.svelte';
 	import PersistentHero from '$lib/components/persistent-hero.svelte';
 	import MobileHero from '$lib/components/mobile-hero.svelte';
+	import { initLanyard } from '$lib/stores/lanyard.svelte';
+
+	initLanyard();
 
 	let { children } = $props();
 
@@ -57,9 +57,6 @@
 	></div>
 </div>
 
-<!-- <ParallaxGrid /> -->
-<!-- <LensDistortion /> -->
-<!-- <FilmGrain /> -->
 <SmoothScroll />
 
 {#if !isMobile}
