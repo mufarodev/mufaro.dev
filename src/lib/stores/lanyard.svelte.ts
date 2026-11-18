@@ -1,8 +1,7 @@
 import { getContext, setContext } from 'svelte';
 import { useLanyard } from 'sveltekit-lanyard';
-import { getActivity, getPlayback, statusLabels } from '$lib/presence';
+import { avatarUrl, getActivity, getPlayback, statusLabels } from '$lib/presence';
 import { extractDominantColor } from '$lib/utils';
-import { accentColor } from './hero-state';
 
 const PRESENCE = Symbol('discord-presence');
 const DEFAULT_COLOR = { r: 136, g: 153, b: 170 };
@@ -15,6 +14,7 @@ export function initLanyard() {
 	});
 	const activity = $derived(getActivity(lanyard.data));
 	const status = $derived(lanyard.data?.discord_status ?? 'offline');
+	const avatar = $derived(avatarUrl(lanyard.data?.discord_user));
 	let now = $state(Date.now());
 	let waiting = $state(true);
 	let color = $state(DEFAULT_COLOR);
@@ -58,16 +58,15 @@ export function initLanyard() {
 		return () => controller.abort();
 	});
 
-	$effect(() => {
-		accentColor.set(color);
-	});
-
 	const presence = {
 		get activity() {
 			return activity;
 		},
 		get status() {
 			return status;
+		},
+		get avatar() {
+			return avatar;
 		},
 		get label() {
 			return lanyard.connected

@@ -1,6 +1,12 @@
 // Run with: node --experimental-strip-types scripts/check-presence.mjs
 import assert from 'node:assert/strict';
-import { activityImage, formatDuration, getActivity, getPlayback } from '../src/lib/presence.ts';
+import {
+	activityImage,
+	avatarUrl,
+	formatDuration,
+	getActivity,
+	getPlayback
+} from '../src/lib/presence.ts';
 
 const data = {
 	active_on_discord_mobile: false,
@@ -88,3 +94,8 @@ assert.equal(activityImage('cover', 'app'), 'https://cdn.discordapp.com/app-asse
 assert.equal(activityImage('https://example.com/art.jpg'), 'https://example.com/art.jpg');
 assert.equal(activityImage('unknown'), null);
 console.log('Presence checks passed');
+
+assert.equal(avatarUrl({ id: '1', avatar: 'abc' }), 'https://cdn.discordapp.com/avatars/1/abc.webp?size=160');
+assert.equal(avatarUrl({ id: '1', avatar: 'a_abc' }), 'https://cdn.discordapp.com/avatars/1/a_abc.gif?size=160');
+assert.equal(avatarUrl({ id: '1', avatar: null }), 'https://cdn.discordapp.com/embed/avatars/0.png');
+assert.equal(avatarUrl(null), null);

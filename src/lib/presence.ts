@@ -19,6 +19,13 @@ export function activityImage(image?: string, applicationId?: string): string | 
 		: null;
 }
 
+export function avatarUrl(user?: { id: string; avatar?: string | null } | null) {
+	if (!user) return null;
+	if (!user.avatar) return 'https://cdn.discordapp.com/embed/avatars/0.png';
+	const extension = user.avatar.startsWith('a_') ? 'gif' : 'webp';
+	return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=160`;
+}
+
 export function getActivity(data: LanyardPresenceData | null) {
 	if (!data || data.discord_status === 'offline') return null;
 	if (data.listening_to_spotify && data.spotify) {
