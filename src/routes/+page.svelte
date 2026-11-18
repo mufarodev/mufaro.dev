@@ -55,6 +55,7 @@
 			{ href: 'https://tiago.zip', image: '/images/88x31/tiago.gif', name: 'tiago.zip' },
 			{ href: 'https://anemoia.moe', image: '/images/88x31/jesx.gif', name: 'anemoia.moe' },
 			{ href: 'https://luniiya.me', image: '/images/88x31/luniiya.gif', name: 'luniiya.me' },
+			{ href: 'https://azee.sh', image: '/images/88x31/azee.gif', name: 'azee.sh' },
 			sticker('neovim', 'Made with Neovim'),
 			sticker('best_viewed_with_eyes', 'Best viewed with eyes'),
 			sticker('antinft', 'Anti-NFT site')
