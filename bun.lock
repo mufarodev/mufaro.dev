@@ -5,6 +5,7 @@
     "": {
       "name": "mufaro.dev",
       "dependencies": {
+        "@fontsource-variable/google-sans-flex": "^5.2.3",
         "@fontsource-variable/inter": "^5.2.8",
         "@fontsource-variable/jetbrains-mono": "^5.2.8",
         "@fontsource/caveat": "^5.2.8",
@@ -156,6 +157,8 @@
     "@fontsource-variable/doto": ["@fontsource-variable/doto@5.2.10", "", {}, "sha512-9wflNv5TCTaLCtm1W+Iv6gyGW0LS6CezDX1CiRy9pvqOWufT9zAhVhsNSPZ4Z+0YKOma/KDxvxmigSMelI4duw=="],
 
     "@fontsource-variable/google-sans-code": ["@fontsource-variable/google-sans-code@5.2.3", "", {}, "sha512-2ZQ8UkMMxz/MXve9PY8o5FjTnRZh94Jn5ZfND5mUDWwVh/t0JDgFaIdPPONyNGzlJOgn1Qlyhs2YEMbv5yQpLQ=="],
+
+    "@fontsource-variable/google-sans-flex": ["@fontsource-variable/google-sans-flex@5.3.2", "", {}, "sha512-y7k6vuO6ib6GdOns4Da7NungIK7W5PXblS+ObXyaHPcKNKNSmJrEFMzsMsIL2SINGjV3+knXzyGnyfcj4X44qw=="],
 
     "@fontsource-variable/inter": ["@fontsource-variable/inter@5.2.8", "", {}, "sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ=="],
 
