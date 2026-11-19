@@ -24,6 +24,15 @@
 			href: 'https://rollouts.wumpus.tools'
 		},
 		{
+			year: '’24–now',
+			name: 'Wumpus Central',
+			type: 'Core team',
+			blurb: 'Community covering Discord news, leaks and datamines. I’m on the core team.',
+			icon: '/images/projects/wumpus-central.png',
+			image: '/images/wumpus-central.webp',
+			href: 'https://x.com/WumpusCentral'
+		},
+		{
 			year: '’24–25',
 			name: 'Project Nova',
 			type: 'Game launcher',
@@ -31,15 +40,6 @@
 			icon: '/images/projects/nova.svg',
 			image: '/images/nova-website.png',
 			href: 'https://novafn.dev'
-		},
-		{
-			year: '2023',
-			name: 'Lythar',
-			type: 'Hackathon',
-			blurb: 'Team chat with channels, Markdown and LaTeX. Placed 3rd out of 200+ teams.',
-			icon: '/images/projects/lythar.svg',
-			image: '/images/lythar.png',
-			href: 'https://github.com/lythar/lythar-frontend'
 		}
 	];
 
@@ -250,7 +250,7 @@
 		</section>
 
 		<section>
-			<h2 class="fade" style="--d: 380ms">Projects</h2>
+			<h2 class="fade" style="--d: 380ms">Projects &amp; teams</h2>
 			<ul
 				class="projects"
 				bind:this={list}
