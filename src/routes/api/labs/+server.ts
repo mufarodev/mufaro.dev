@@ -21,7 +21,7 @@ export const GET: RequestHandler = async ({ request }) => {
 		const response = await fetch(env.LABS_URL, {
 			headers: { authorization: `Bearer ${env.LABS_TOKEN}` },
 			signal: AbortSignal.timeout(3000),
-			redirect: 'error'
+			redirect: 'manual' // Workers has no 'error'; a 3xx is not ok, so it is treated as a failure
 		});
 		if (response.ok) labs = cleanLabs(await response.json());
 		else console.error('labs origin answered', response.status);
