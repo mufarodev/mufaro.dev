@@ -24,8 +24,10 @@ export const GET: RequestHandler = async ({ request }) => {
 			redirect: 'error'
 		});
 		if (response.ok) labs = cleanLabs(await response.json());
-	} catch {
-		/* an empty list renders as offline */
+		else console.error('labs origin answered', response.status);
+	} catch (error) {
+		// An empty list renders as no widget; the reason goes to the logs (never the token).
+		console.error('labs origin unreachable', String(error));
 	}
 
 	// Failures are cached too, so a dead origin gets one request per window, not one per visitor.
