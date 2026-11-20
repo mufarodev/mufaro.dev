@@ -23,11 +23,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			signal: AbortSignal.timeout(3000),
 			redirect: 'manual' // Workers has no 'error'; a 3xx is not ok, so it is treated as a failure
 		});
-		if (response.ok) {
-			const body = await response.json();
-			labs = cleanLabs(body);
-			console.log('labs origin ok', response.status, Object.keys(body ?? {}), labs.length);
-		}
+		if (response.ok) labs = cleanLabs(await response.json());
 		else console.error('labs origin answered', response.status);
 	} catch (error) {
 		// An empty list renders as no widget; the reason goes to the logs (never the token).
