@@ -8,8 +8,10 @@
 	import sansFont from '@fontsource-variable/google-sans-flex/files/google-sans-flex-latin-rond-normal.woff2?url';
 	import dotoFont from '@fontsource-variable/doto/files/doto-latin-wght-normal.woff2?url';
 	import { initLanyard } from '$lib/stores/lanyard.svelte';
+	import { initLabs } from '$lib/stores/labs.svelte';
 
 	initLanyard();
+	initLabs();
 
 	let { children } = $props();
 
