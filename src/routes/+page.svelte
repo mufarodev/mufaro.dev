@@ -8,6 +8,7 @@
 	import WeatherIcon from '$lib/components/weather-icon.svelte';
 	import { getWeather } from '$lib/weather';
 	import Presence from '$lib/components/presence.svelte';
+	import LabsStatus from '$lib/components/labs-status.svelte';
 	import SwapText from '$lib/components/swap-text.svelte';
 	import { getLanyard } from '$lib/stores/lanyard.svelte';
 
@@ -203,6 +204,7 @@
 			<HeroArtwork />
 			<div class="presence-slot">
 				<Presence />
+				<LabsStatus />
 			</div>
 		</div>
 	</header>
@@ -386,6 +388,9 @@
 		background: #09090d;
 	}
 	.presence-slot {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
 		position: absolute;
 		left: 24px;
 		right: 24px;
