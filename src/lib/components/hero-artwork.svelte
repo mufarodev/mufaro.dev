@@ -281,6 +281,19 @@
 		);
 	}
 
+	/* On mobile the widgets sit in the main column, so the bottom of the artwork needs only a light vignette. */
+	@media (max-width: 899px) {
+		.shade {
+			background: linear-gradient(
+				180deg,
+				rgb(5 5 7 / 0.22),
+				rgb(5 5 7 / 0.04) 35%,
+				rgb(5 5 7 / 0.12) 70%,
+				rgb(5 5 7 / 0.48) 100%
+			);
+		}
+	}
+
 	.twinkles span {
 		position: absolute;
 		font-size: 18px;

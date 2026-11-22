@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Copy01Icon } from '@hugeicons/core-free-icons';
 	import HeroArtwork from '$lib/components/hero-artwork.svelte';
@@ -11,8 +12,14 @@
 	import LabsStatus from '$lib/components/labs-status.svelte';
 	import SwapText from '$lib/components/swap-text.svelte';
 	import { getLanyard } from '$lib/stores/lanyard.svelte';
+	import { getLabs } from '$lib/stores/labs.svelte';
 
 	const presence = getLanyard();
+	const labs = getLabs();
+	// Matches the single-column breakpoint below: on mobile the widgets move out of the hero
+	// frame into the main column so they don't bury the artwork.
+	const mobile = new MediaQuery('max-width: 899px', false);
+	let hasWidgets = $derived(Boolean(presence.avatar || labs.ready));
 
 	const projects = [
 		{
@@ -192,6 +199,11 @@
 	}
 </script>
 
+{#snippet widgets()}
+	<Presence />
+	<LabsStatus />
+{/snippet}
+
 <div
 	class="page"
 	style:--accent-r={presence.color.r}
@@ -202,10 +214,11 @@
 	<header class="hero">
 		<div class="frame">
 			<HeroArtwork />
-			<div class="presence-slot">
-				<Presence />
-				<LabsStatus />
-			</div>
+			{#if !mobile.current}
+				<div class="presence-slot">
+					{@render widgets()}
+				</div>
+			{/if}
 		</div>
 	</header>
 
@@ -250,6 +263,15 @@
 				<a href="mailto:contact@mufaro.dev">contact@mufaro.dev</a>.
 			</p>
 		</section>
+
+		{#if mobile.current && hasWidgets}
+			<section class="widgets">
+				<h2 class="fade" style="--d: 360ms">Right now</h2>
+				<div class="widgets-stack">
+					{@render widgets()}
+				</div>
+			</section>
+		{/if}
 
 		<section>
 			<h2 class="fade" style="--d: 380ms">Projects &amp; teams</h2>
@@ -486,6 +508,16 @@
 	}
 	.intro a:hover {
 		text-decoration-color: var(--accent);
+	}
+
+	.widgets h2 {
+		/* Extra clearance so the presence card's -12px top-right star sticker never touches the rule. */
+		margin-bottom: 16px;
+	}
+	.widgets-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
 	}
 
 	h2 {
@@ -857,11 +889,11 @@
 		}
 		.hero {
 			position: relative;
-			height: 56svh;
-			min-height: 380px;
+			height: clamp(220px, 34svh, 360px);
+			min-height: 0;
 		}
 		main {
-			padding-top: 32px;
+			padding-top: 24px;
 		}
 	}
 
