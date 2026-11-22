@@ -1,3 +1,3 @@
 my website, in sveltekit
 
-this is somehow a playground for me just trying out random things, the code is horrible, a lot of unused stuff and just all around a mess that i maybe will clean up some day.
+<img width="1822" height="1141" alt="image" src="https://github.com/user-attachments/assets/54a92f78-1e0f-414d-a9ce-17f07956d48d" />
