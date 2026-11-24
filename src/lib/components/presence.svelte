@@ -296,26 +296,6 @@
 	.status-dot[data-status='dnd'] {
 		background: #f07178;
 	}
-	/* A soft ping while online, like a live light. */
-	.status-dot[data-status='online']::after {
-		content: '';
-		position: absolute;
-		inset: -4px;
-		border-radius: 50%;
-		box-shadow: 0 0 0 2px #55c58a;
-		animation: ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
-	}
-	@keyframes ping {
-		from {
-			opacity: 0.7;
-			transform: scale(0.7);
-		}
-		60%,
-		to {
-			opacity: 0;
-			transform: scale(1.5);
-		}
-	}
 
 	.copy {
 		display: flex;
